@@ -212,6 +212,8 @@ describe("rules", () => {
   it("names a sports demo's synthetic source, match, scope and window, with a demo note", async () => {
     useApp([sportsView(4, 2n * 10n ** 15n, 10n ** 15n)]);
     render(<MarketDetailPage id={4} />);
+    // The events list names a window shorter than a day by its hours, so two such markets on one day stay apart.
+    expect(document.querySelector(".market-list .list-name strong")).toHaveTextContent("4 Nov 19:30–22:00");
     await userEvent.click(await screen.findByTestId("detail-tab-rules"));
     const labels = [...document.querySelectorAll(".rules-grid .rule > span")].map((label) => label.textContent);
     expect(labels.slice(0, 5)).toEqual(["Question", "Data source", "Yes when", "Betting closes", "Observation window"]);

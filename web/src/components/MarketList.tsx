@@ -6,7 +6,7 @@ import { useNow } from "../hooks/useApp";
 import { useActivity, useMarkets } from "../hooks/useMarkets";
 import { t } from "../i18n";
 import { marketStats } from "../lib/market";
-import { conditionOf, dayOf, metricShortOf, phaseOf } from "../lib/markets";
+import { conditionOf, metricShortOf, phaseOf, windowOf } from "../lib/markets";
 import { viewOf } from "../lib/phase";
 import { href } from "../lib/routes";
 import { Change, Share } from "./primitives";
@@ -28,7 +28,7 @@ export function MarketList({ current }: { current: number }) {
               <a href={href.market(m.id, viewOf(phaseOf(m, now)))}>
                 <MetricMark code={m.metric.code} small />
                 <span className="list-name">
-                  <strong>{dayOf(m.targetDate)}</strong>
+                  <strong>{windowOf(m)}</strong>
                   <small>
                     {metricShortOf(m.metric.code)} {conditionOf(m)}
                   </small>
