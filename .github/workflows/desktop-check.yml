@@ -19,8 +19,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # The read-only check before packing needs old receipts. The default RPC in the deployment file keeps them.
-      - run: npm run package:desktop
+      # Shared runners hit the public RPCs' rate limits, so this job skips the read-only Sepolia check.
+      # A release build runs it: npm run package:desktop.
+      - run: npx tsx scripts/package-desktop.ts
       - uses: actions/upload-artifact@v4
         with:
           name: desktop
