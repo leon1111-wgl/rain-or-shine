@@ -1,0 +1,12 @@
+{
+  "schema": "RAINPOOL_SPORTS_DEMO_V1",
+  "synthetic": true,
+  "matchId": "LAL_BOS_DEMO01",
+  "teamA": "LAL",
+  "teamB": "BOS",
+  "status": "FINAL",
+  "scoreA": 108,
+  "scoreB": 101,
+  "sport": "BASKETBALL",
+  "scoreScope": "INCLUDING_OVERTIME"
+}

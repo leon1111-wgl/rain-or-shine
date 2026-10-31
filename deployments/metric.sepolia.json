@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "product": "rainpool-metric-v1",
+  "environment": "SEPOLIA_UMA",
+  "network": "sepolia",
+  "chainId": 11155111,
+  "publicRpcUrl": "https://sepolia.gateway.tenderly.co",
+  "deployedAt": "2026-10-29T18:00:40.843Z",
+  "admin": "0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba",
+  "bindingTransactionHash": "0x33e435823d0087897dccd13ed505763d1fe32a26375cc5abb5b27c1471acdbbf",
+  "contracts": {
+    "PredictionMarket": {
+      "address": "0x668643AF961C4032909C1c15A741b6d2d6216e92",
+      "transactionHash": "0x3ce77f828243bd1e2b67bab470110150b3bdb8d19310d4325c4ce7fe17a5e919",
+      "blockNumber": 12021165,
+      "constructorArguments": [
+        "0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba"
+      ],
+      "abiKeccak256": "0xc48af2bb6c8de374516c53ae78f59ab0cdb76244355ff2dd86f603e23aa3c4cd",
+      "runtimeCodeKeccak256": "0xe19869e2a9da7c5c2ec941630b0bff78787c591fb21322077113ec41ffd0e0a0"
+    },
+    "UmaMetricOracleAdapter": {
+      "address": "0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc",
+      "transactionHash": "0xa444e37b0e2046d3828d348a18a41225f35bf32364d8eb3c4d3eafb8e503cc14",
+      "blockNumber": 12021167,
+      "constructorArguments": [
+        "0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944",
+        "0x668643AF961C4032909C1c15A741b6d2d6216e92",
+        "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+        "1000000"
+      ],
+      "abiKeccak256": "0xf7c8ada02592e3ae3c7de3bebb747f96293d9a8f6e6a4c807410d34c75c544f3",
+      "runtimeCodeKeccak256": "0x4368f0e07b43fae6452fa973c40c39d1f00c5b4c66b77359cc3f4a9b0fe33cb3"
+    }
+  },
+  "oracle": {
+    "optimisticOracleV3": "0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944",
+    "bondCurrency": "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+    "bondSymbol": "6TEST",
+    "bondDecimals": 6,
+    "policyBond": "1000000",
+    "minimumBond": "0",
+    "identifier": "0x4153534552545f54525554480000000000000000000000000000000000000000",
+    "runtimeCodeKeccak256": "0xb09ecb16112fd9cb2eccf24f64bcb491645cf45f2b817aabfd1f47a8aea71425",
+    "bondRuntimeCodeKeccak256": "0x3cc1da0377797f119ad343c86b9aa2dc9c71f687583b8d04e4e437d6ae6648cb",
+    "dvmSupport": false,
+    "note": "SEPOLIA_UMA: real canonical OOv3. Undisputed assertions may settle; Sepolia does not provide DVM vote resolution. Disputed bonds may remain locked. ASSERT_TRUTH is verified for this testnet deployment only."
+  }
+}

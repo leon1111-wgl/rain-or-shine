@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rain or Shine</title>
+<meta name="description" content="Prediction markets on Hong Kong weather. Built on Ethereum Sepolia. Settled with UMA's optimistic oracle.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='12' r='8' fill='%23ffb547'/%3E%3Cpath d='M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z' fill='%234c9bff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Shantell+Sans:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f7f5ef; --card: #ffffff; --ink: #1f2733; --muted: #586170; --line: #e4dfd2; --soft: #f0ece2;
+  --blue: #2f6fd6; --sun: #f5a524; --green: #2f7d55; --red: #b5523a; --amber: #a87414; --violet: #5c4fa8;
+  --hand: "Shantell Sans", "Comic Sans MS", cursive;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.65 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+img { max-width: 100%; }
+a { color: var(--blue); text-underline-offset: 3px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+.wide { max-width: 1240px; }
+
+.top { position: sticky; top: 0; z-index: 10; background: rgba(247, 245, 239, 0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 22px; height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--ink); text-decoration: none; white-space: nowrap; }
+.top nav { display: flex; gap: 18px; margin-left: auto; font-size: 15px; }
+.top nav a { color: var(--muted); text-decoration: none; }
+.top nav a:hover { color: var(--ink); }
+.top .app { margin-left: 4px; }
+
+.hero { padding-top: 56px; padding-bottom: 8px; }
+.hero h1 { display: flex; align-items: center; gap: 16px; margin: 0; font-size: clamp(40px, 6.4vw, 66px); line-height: 1.05; letter-spacing: -0.02em; }
+.lead { font-size: clamp(19px, 2.3vw, 23px); line-height: 1.5; max-width: 760px; margin: 18px 0 8px; }
+.note { color: var(--muted); font-size: 15px; margin: 0; }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 30px; }
+.btn { display: inline-flex; align-items: center; padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 16px; text-decoration: none; border: 1px solid var(--ink); color: var(--ink); background: transparent; }
+.btn.primary { background: var(--ink); color: #fff; }
+.btn:hover { background: var(--ink); color: #fff; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 6px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.stat b { display: block; font-size: 30px; line-height: 1.2; letter-spacing: -0.01em; }
+.stat span { color: var(--muted); font-size: 14.5px; }
+.asof { color: var(--muted); font-size: 13.5px; margin: 6px 0 0; }
+
+section { padding: 64px 0 8px; }
+h2 { font-size: clamp(28px, 3.6vw, 36px); line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.01em; }
+h2 .num { color: var(--blue); margin-right: 12px; }
+.sub { color: var(--muted); font-size: 18px; margin: 0 0 22px; max-width: 760px; }
+h3 { font-size: 22px; margin: 44px 0 10px; }
+h3 .num { color: var(--sun); margin-right: 8px; }
+p { margin: 0 0 14px; max-width: 780px; }
+ul, ol { max-width: 800px; padding-left: 22px; }
+li { margin: 4px 0; }
+
+figure { margin: 26px 0 8px; }
+figure img { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--line); background: #fffdf8; }
+figcaption { color: var(--muted); font-size: 15px; margin-top: 10px; max-width: 900px; }
+figcaption b { color: var(--ink); }
+
+.story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 28px; counter-reset: s; list-style: none; padding: 0; margin: 18px 0 18px; max-width: none; }
+.story li { position: relative; padding: 14px 16px 14px 60px; margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.story li::before { counter-increment: s; content: counter(s); position: absolute; left: 16px; top: 13px; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; font: 700 15px/30px Inter, system-ui, sans-serif; text-align: center; }
+.story li b { display: block; }
+.story .end { grid-column: 1 / -1; border-style: dashed; border-color: #d9a597; background: #fbefeb; padding-left: 16px; }
+.story .end::before { content: none; }
+.question { font-family: var(--hand); font-size: 18px; color: var(--ink); }
+
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.card h4 { margin: 0 0 6px; font-size: 17px; }
+.card p { font-size: 15.5px; color: var(--muted); margin: 0; }
+
+.table-wrap { overflow-x: auto; margin: 16px 0; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+table { border-collapse: collapse; width: 100%; font-size: 15.5px; line-height: 1.5; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-weight: 600; background: var(--soft); white-space: nowrap; }
+td.ours { background: #f3f8ff; }
+.tag { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #e3f1e8; color: var(--green); }
+.tag.custom { background: #e6eefc; color: var(--blue); }
+
+.callout { border-left: 4px solid var(--sun); background: #fff7e6; padding: 14px 18px; border-radius: 8px; margin: 18px 0; max-width: 820px; }
+.callout p:last-child { margin: 0; }
+.example { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 760px; margin: 12px 0 18px; }
+.example div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 15px; }
+.example b { display: block; font-size: 22px; }
+
+.walk { display: grid; gap: 40px; margin: 26px 0; }
+.step { display: grid; gap: 12px; }
+.step .label { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 14px; align-items: start; }
+.step .label .k { grid-row: span 3; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; font: 700 17px/40px Inter, system-ui, sans-serif; text-align: center; }
+.step .label h4 { margin: 2px 0 4px; font-size: 21px; }
+.step .label p { font-size: 16px; color: var(--muted); margin: 0 0 4px; max-width: 820px; }
+.step .shots { display: grid; gap: 12px; justify-items: start; }
+.step .shots.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.step img { display: block; width: auto; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #2a2f37; background: #0b0d10; }
+.step img.narrow { max-width: min(640px, 100%); }
+.where { font-size: 13px; color: var(--muted); }
+.live { color: var(--green); font-weight: 600; }
+.local { color: var(--amber); font-weight: 600; }
+
+code { font: 14.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--soft); padding: 1px 6px; border-radius: 6px; }
+pre { background: #1f2733; color: #f4f1e8; padding: 14px 16px; border-radius: 10px; overflow-x: auto; font: 14.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; max-width: 820px; }
+.try { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
+.try .card ol { padding-left: 18px; margin: 8px 0 0; font-size: 15.5px; }
+
+footer { margin-top: 70px; padding: 28px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14.5px; }
+footer p { margin: 0 0 6px; }
+
+@media (max-width: 900px) {
+  .top nav { display: none; }
+  .top .app { margin-left: auto; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .story, .cards, .try, .example { grid-template-columns: minmax(0, 1fr); }
+  .step .shots.two { grid-template-columns: minmax(0, 1fr); }
+  table { min-width: 600px; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap wide">
+    <a class="brand" href="#top"><svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="#ffb547"/><path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="none" stroke="#f7f5ef" stroke-width="3"/><path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="#4c9bff"/></svg>Rain or Shine</a>
+    <nav aria-label="Sections">
+      <a href="#built">What we built</a>
+      <a href="#design">Design and flow</a>
+      <a href="#build">Implementation</a>
+      <a href="#research">Research</a>
+    </nav>
+    <a class="btn primary app" href="app/">Open the app</a>
+  </div>
+</header>
+
+<main id="top">
+
+<div class="wrap hero">
+  <h1><svg viewBox="0 0 32 32" width="64" height="64" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="#ffb547"/><path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="none" stroke="#f7f5ef" stroke-width="3"/><path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="#4c9bff"/></svg>Rain or Shine</h1>
+  <p class="lead">Bet on Hong Kong weather. The Observatory reports what happened. An oracle confirms it on chain. A smart contract pays the winners.</p>
+  <p class="note">A COMP7610 group project at the University of Hong Kong. It runs on the Ethereum Sepolia test network with test ETH. No real money is used.</p>
+  <div class="buttons">
+    <a class="btn primary" href="app/">Open the app</a>
+    <a class="btn" href="https://github.com/leon1111-wgl/rain-or-shine/releases/latest">Download for Mac or Windows</a>
+    <a class="btn" href="https://github.com/leon1111-wgl/rain-or-shine">Source code</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>6</b><span>live weather markets</span></div>
+    <div class="stat"><b>23</b><span>bets on Sepolia</span></div>
+    <div class="stat"><b>0.049 ETH</b><span>staked by 6 test wallets</span></div>
+    <div class="stat"><b>0</b><span>platform fee</span></div>
+  </div>
+  <p class="asof">Read from Sepolia on 31 October 2026, 14:35 (Hong Kong time).</p>
+  <figure>
+    <img src="fig/loop.webp" width="3200" height="1600" alt="A loop of seven steps: ask, bet, observe, propose, challenge, settle and claim. In the middle, a refund if there is no valid result.">
+    <figcaption><b>Figure 1.</b> Every market is a closed loop. It starts with a question and ends with a payout. If no valid result arrives, the loop still closes: everyone gets their stake back.</figcaption>
+  </figure>
+</div>
+
+<section id="built">
+  <div class="wrap">
+    <h2><span class="num">1</span>What we built</h2>
+    <p class="sub">A prediction market for Hong Kong weather. Here is one market, start to end.</p>
+
+    <ol class="story">
+      <li><b>Ask</b>It is a cloudy Monday. Mei thinks Tuesday will be wet. Ken thinks it will stay dry. A market asks: <span class="question">"Will HKO headquarters record 1.0 mm of rain or more on Tuesday?"</span></li>
+      <li><b>Bet</b>Mei stakes 0.02 ETH on Yes. Ken stakes 0.01 ETH on No. The ETH waits in the smart contract. Nobody can take it out early. Not even us.</li>
+      <li><b>Observe</b>Tuesday passes. On Wednesday morning, the Hong Kong Observatory publishes Tuesday's rainfall: 3.2 mm.</li>
+      <li><b>Propose</b>The market's proposer sends "3.2 mm" to UMA's optimistic oracle. They lock a bond behind it. A false number would cost them the bond.</li>
+      <li><b>Challenge</b>For two hours, anyone can dispute the number. Anyone can check it against HKO's file. Nobody disputes.</li>
+      <li><b>Settle</b>Anyone can now settle. The contract checks the rule: 3.2 is at least 1.0. Yes wins.</li>
+      <li><b>Claim</b>Mei claims 0.03 ETH: her stake plus Ken's. There is no fee. Ken sees the result and the reason.</li>
+      <li class="end"><b>And if something goes wrong?</b>If only one side has bets, if UMA rejects the number, or if no valid number arrives in time, the market refunds. Mei and Ken each get their stake back.</li>
+    </ol>
+    <p>Mei and Ken are an example. Section 2.6 replays this exact story in the app, screen by screen.</p>
+
+    <h3>What we delivered</h3>
+    <div class="cards">
+      <div class="card"><h4>Smart contracts</h4><p>Markets, Yes and No pools, outcomes, refunds and claims. An adapter talks to UMA. Written in Solidity.</p></div>
+      <div class="card"><h4>A web app</h4><p>Browse, bet, follow and claim. English and Chinese. MetaMask signs every transaction.</p></div>
+      <div class="card"><h4>Live markets</h4><p>6 weather markets on Sepolia for 3 to 5 November, with 23 real bets so far.</p></div>
+      <div class="card"><h4>Custom markets</h4><p>Any HKO daily value, such as humidity or minimum temperature. Or any source the creator names. A local sports demo shows other topics work too.</p></div>
+      <div class="card"><h4>An HKO tool</h4><p>It downloads HKO's file and reads the value, so the proposer submits the right number.</p></div>
+      <div class="card"><h4>Desktop packages</h4><p>Zip files for macOS and Windows. Unzip, double-click, and the app opens. Nothing to install.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="design">
+  <div class="wrap">
+    <h2><span class="num">2</span>Product design and user flow</h2>
+    <p class="sub">Who uses it, what they need, the rules, how it runs, and what each screen does.</p>
+
+    <h3><span class="num">2.1</span>Who uses it</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Role</th><th>Can do</th><th>Cannot do</th></tr>
+      <tr><td><b>Bettor</b></td><td>Stake ETH on Yes or No. Add more to the same side. Claim a payout or a refund.</td><td>Bet on both sides. Take money out before the end.</td></tr>
+      <tr><td><b>Market admin</b></td><td>Add a metric. Create a market with fixed rules.</td><td>Change rules after creation. Decide a result.</td></tr>
+      <tr><td><b>Proposer</b></td><td>Submit HKO's reading to UMA with a bond.</td><td>Bet in its own market.</td></tr>
+      <tr><td><b>Anyone</b></td><td>Check a reading. Dispute it during the challenge window. Settle it after.</td><td>Change a result that is already final.</td></tr>
+    </table></div>
+    <p>The app hides buttons a wallet cannot use. The contracts check every permission again.</p>
+
+    <h3><span class="num">2.2</span>User stories</h3>
+    <div class="table-wrap"><table>
+      <tr><th>As a</th><th>I want to</th><th>So that</th><th>Where</th></tr>
+      <tr><td>Bettor</td><td>see the question, the data source and every deadline before I bet</td><td>I know exactly what I bet on</td><td>Event, Rules tab</td></tr>
+      <tr><td>Bettor</td><td>see the crowd's chance of Yes and my possible payout</td><td>I can judge the odds</td><td>Event, bet panel</td></tr>
+      <tr><td>Bettor</td><td>get my stake back when there is no valid result</td><td>a missing result never costs me</td><td>Settlement</td></tr>
+      <tr><td>Bettor</td><td>see all my bets and what I can claim in one place</td><td>I never miss a payout</td><td>My participation</td></tr>
+      <tr><td>Market admin</td><td>create a market from a metric card and a preview</td><td>new questions are quick and correct</td><td>Operations</td></tr>
+      <tr><td>Market admin</td><td>add a new metric, such as humidity</td><td>markets are not limited to rain</td><td>Operations</td></tr>
+      <tr><td>Proposer</td><td>load HKO's file and see the outcome before I submit</td><td>I submit the right reading</td><td>Operations</td></tr>
+      <tr><td>Anyone</td><td>check a reading and settle it after the challenge window</td><td>nobody has to trust us</td><td>Waiting</td></tr>
+    </table></div>
+
+    <h3><span class="num">2.3</span>The rules of a market</h3>
+    <ul>
+      <li>A market asks about one value on one Hong Kong day. Example: rainfall at HKO headquarters on 3 November.</li>
+      <li>The condition is fixed: at least, at most, more than, less than, or a range.</li>
+      <li>The smallest bet is 0.001 ETH. A wallet picks one side. It can add more to that side.</li>
+      <li>Bets cannot be withdrawn. All ETH stays in the contract until the end.</li>
+      <li>Winners share the whole pool, in proportion to their stakes. There is no fee. Gas is paid to the network as usual.</li>
+      <li>Everyone gets a full refund when there is no valid result. The cases are in Figure 3.</li>
+    </ul>
+    <div class="callout">
+      <p><b>Payout:</b> your stake × (Yes pool + No pool) ÷ winning pool.</p>
+      <p>In the story, the Yes pool is 0.02 ETH and the No pool is 0.01 ETH. Yes wins. Mei gets 0.02 × 0.03 ÷ 0.02 = <b>0.03 ETH</b>.</p>
+    </div>
+    <p>The Yes share, Yes pool ÷ (Yes pool + No pool), is the crowd's chance of Yes. In the story it is 67&nbsp;%.</p>
+
+    <h3><span class="num">2.4</span>How it runs</h3>
+    <figure>
+      <img src="fig/operations.webp" width="3200" height="1800" loading="lazy" alt="People use the web app and MetaMask. The contracts run on Sepolia. HKO publishes the data. UMA confirms the reading. Eight numbered steps connect them.">
+      <figcaption><b>Figure 2.</b> The people, the app, the contracts, the oracle and the data source. The numbers are the eight steps below.</figcaption>
+    </figure>
+    <ol>
+      <li><b>Create.</b> The admin creates a market in the app. Its question, source, deadlines and proposer are fixed in its rules.</li>
+      <li><b>Bet.</b> Bettors stake ETH on Yes or No. MetaMask signs. The contract adds the stake to a pool.</li>
+      <li><b>Publish.</b> After the day ends, HKO publishes the reading in its Daily Extract file.</li>
+      <li><b>Propose.</b> The proposer loads the file. The app shows the reading and the outcome it implies. The proposer submits it through the oracle adapter, with a bond.</li>
+      <li><b>Dispute (optional).</b> For two hours, anyone can dispute the reading on UMA.</li>
+      <li><b>Settle.</b> After two hours, anyone can settle.</li>
+      <li><b>Decide.</b> UMA tells the adapter that the reading stands. The contract compares it with the rule and sets Yes or No.</li>
+      <li><b>Claim.</b> Winners claim their share. In a refund, everyone claims their stake.</li>
+    </ol>
+    <div class="callout">
+      <p><b>What UMA does, and what it does not do.</b> UMA confirms a statement such as "the rainfall on 3 November was 3.2 mm". It answers true or false. It never says Yes or No to our question. Our contract does that, with the rule written at creation. A false answer does not mean No. It means the market refunds.</p>
+    </div>
+
+    <h3><span class="num">2.5</span>When things happen</h3>
+    <figure>
+      <img src="fig/timeline.webp" width="3200" height="1300" loading="lazy" alt="A time line: betting closes the night before the day, the day is observed, HKO publishes on the next working day, then propose, challenge, settle and claim. Below the line, the three refund cases.">
+      <figcaption><b>Figure 3.</b> The life of one market, in Hong Kong time. The example dates are from live market 1. Above the line is the normal path. Below are the refund cases.</figcaption>
+    </figure>
+    <ul>
+      <li>Betting closes at 23:59 the night before the day. Nobody can bet once the weather is known.</li>
+      <li>HKO publishes a day's row on the next working day, at about 10:30. A Friday waits until Monday.</li>
+      <li>A result can be proposed for seven days. That covers weekends and holidays.</li>
+      <li>If no result settles, refunds open at 02:00 the next day (D+9). A ready, undisputed result still settles first. A timeout never beats a valid result.</li>
+    </ul>
+
+    <h3><span class="num">2.6</span>The story in the app</h3>
+    <p>These screens replay the story from Section 1. <span class="live">Live</span> screens show the real Sepolia markets. <span class="local">Local</span> screens come from a test chain on our computer. There, time can be moved forward, and a stand-in replaces UMA. The steps and the code are the same.</p>
+    <div class="walk">
+      <div class="step">
+        <div class="label">
+          <span class="k">1</span>
+          <h4>Ask: the admin writes the question</h4>
+          <p>The admin picks a metric card or defines a new one. Then the condition and the time. The preview shows the exact question. One button creates the market, and its rules can never change.</p>
+          <span class="where"><span class="local">Local</span>, Operations page</span>
+        </div>
+        <div class="shots">
+          <img src="img/ask-cards.webp" loading="lazy" alt="Metric cards: two official, six custom and two sports demo cards">
+          <img src="img/ask-preview.webp" loading="lazy" alt="The preview of the new market before it is created">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">2</span>
+          <h4>Bet: find a market</h4>
+          <p>The markets page lists every question with its Yes share, pool, recent trades and close time. These are the six live markets on Sepolia.</p>
+          <span class="where"><span class="live">Live</span>, Markets page</span>
+        </div>
+        <div class="shots">
+          <img src="img/find-markets.webp" loading="lazy" alt="The live markets page on Sepolia">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">3</span>
+          <h4>Bet: read the rules first</h4>
+          <p>Each market shows a short spec: the question, the source, when betting closes, when results count, and what happens otherwise.</p>
+          <span class="where"><span class="live">Live</span>, Event page, Rules tab</span>
+        </div>
+        <div class="shots">
+          <img src="img/rules-spec.webp" class="narrow" loading="lazy" alt="The rules spec of live market 1">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">4</span>
+          <h4>Bet: Mei stakes 0.02 ETH on Yes</h4>
+          <p>She picks Yes and types 0.02. The review shows the side, the amount and the fee: none. Her wallet signs. Ken then stakes 0.01 ETH on No. The Yes share is now 67 %.</p>
+          <span class="where"><span class="local">Local</span>, Event page</span>
+        </div>
+        <div class="shots">
+          <img src="img/bet-review.webp" class="narrow" loading="lazy" alt="The bet review before signing">
+          <img src="img/bet-after.webp" loading="lazy" alt="The market after both bets: 0.020 on Yes, 0.010 on No">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">5</span>
+          <h4>Observe: wait for the data</h4>
+          <p>Betting is closed and the time window is over. The page shows each stage and its deadline. Now it waits for the proposer.</p>
+          <span class="where"><span class="local">Local</span>, Waiting page</span>
+        </div>
+        <div class="shots">
+          <img src="img/wait.webp" loading="lazy" alt="The waiting page before a proposal">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">6</span>
+          <h4>Propose: the proposer submits 3.2 mm</h4>
+          <p>The proposer loads the report and types 3.2. The app checks it and shows the outcome before anything is sent: Yes. Then the proposer approves the bond and submits.</p>
+          <span class="where"><span class="local">Local</span>, Operations page</span>
+        </div>
+        <div class="shots">
+          <img src="img/propose-reading.webp" class="narrow" loading="lazy" alt="The reading taken from the report">
+          <img src="img/propose-check.webp" class="narrow" loading="lazy" alt="The checks passed. The market would resolve Yes">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">7</span>
+          <h4>Challenge: time to dispute</h4>
+          <p>The reading is now with the oracle. Anyone can dispute it until the deadline. Nobody does. On Sepolia this window is 2 hours. On the local chain it is 2 minutes.</p>
+          <span class="where"><span class="local">Local</span>, Operations page</span>
+        </div>
+        <div class="shots">
+          <img src="img/challenge.webp" loading="lazy" alt="The submitted reading and its dispute deadline">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">8</span>
+          <h4>Settle: anyone closes it</h4>
+          <p>The window is over and nobody disputed. Anyone can now settle. The contract compares 3.2 with the rule and writes Yes.</p>
+          <span class="where"><span class="local">Local</span>, Waiting page</span>
+        </div>
+        <div class="shots">
+          <img src="img/settle.webp" loading="lazy" alt="Ready to settle after the challenge window">
+        </div>
+      </div>
+      <div class="step">
+        <div class="label">
+          <span class="k">9</span>
+          <h4>Claim: Mei is paid, Ken sees why</h4>
+          <p>Mei sees Yes and 0.030 ETH to claim: her stake plus Ken&#x27;s. One click pays her. Ken sees the same result and why he has nothing to claim.</p>
+          <span class="where"><span class="local">Local</span>, Settlement page</span>
+        </div>
+        <div class="shots">
+          <img src="img/claim-mei.webp" loading="lazy" alt="Mei&#x27;s settlement view with 0.030 ETH to claim">
+          <img src="img/claim-ken.webp" loading="lazy" alt="Ken&#x27;s settlement view with nothing to claim">
+        </div>
+      </div>
+    </div>
+
+    <h3><span class="num">2.7</span>How the code fits together</h3>
+    <figure>
+      <img src="fig/code.webp" width="3200" height="1980" loading="lazy" alt="Three layers: the web app, shared logic and smart contracts. Scripts on the left. Outside services on the right. Tests at the bottom.">
+      <figcaption><b>Figure 4.</b> The code in three layers. The web app and the scripts share one copy of the market rules. Tests cover every layer.</figcaption>
+    </figure>
+    <div class="table-wrap"><table>
+      <tr><th>Folder</th><th>What it holds</th></tr>
+      <tr><td><code>contracts/</code></td><td>The market, the metric registry, the oracle adapter and the condition library.</td></tr>
+      <tr><td><code>src/metric/</code></td><td>Market rules, conditions, payouts, deadlines, custom metrics and proposals. The app and the scripts both use it.</td></tr>
+      <tr><td><code>src/weather/</code></td><td>Downloads HKO files, reads them strictly and builds the evidence for a proposal.</td></tr>
+      <tr><td><code>web/src/</code></td><td>The React app: pages, components, the chain client and both languages.</td></tr>
+      <tr><td><code>scripts/</code></td><td>Deploys, seeds a local chain, exports addresses for the app and builds the desktop packages.</td></tr>
+      <tr><td><code>launcher/</code></td><td>The small server inside the desktop packages. It also relays HKO files.</td></tr>
+      <tr><td><code>test/</code></td><td>Contract, shared, web and browser tests.</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section id="build">
+  <div class="wrap">
+    <h2><span class="num">3</span>Implementation and demo</h2>
+    <p class="sub">What it is built with, what runs where, and how to try it.</p>
+
+    <h3><span class="num">3.1</span>Technology</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Part</th><th>Built with</th></tr>
+      <tr><td>Smart contracts</td><td>Solidity 0.8, Hardhat 3, OpenZeppelin 5</td></tr>
+      <tr><td>Oracle</td><td>UMA Optimistic Oracle V3 on Sepolia. Bond: 1 test token. Challenge window: 2 hours.</td></tr>
+      <tr><td>Web app</td><td>React 19, TypeScript, Vite, ethers.js 6, MetaMask</td></tr>
+      <tr><td>Data</td><td>Hong Kong Observatory: the Daily Extract file and the open data API</td></tr>
+      <tr><td>Tests</td><td>Hardhat and Mocha, Vitest, Playwright</td></tr>
+      <tr><td>Desktop</td><td>Node.js 24 runtime with a small local server, for macOS and Windows</td></tr>
+    </table></div>
+
+    <h3><span class="num">3.2</span>Smart contracts</h3>
+    <div class="cards">
+      <div class="card"><h4>PredictionMarket</h4><p>Holds the metric registry, every market and both ETH pools. Decides Yes, No or Refund. Pays claims.</p></div>
+      <div class="card"><h4>Oracle adapter</h4><p>Checks a proposal, writes the statement for UMA and takes the bond. Accepts answers only from UMA.</p></div>
+      <div class="card"><h4>Condition library</h4><p>Compares a reading with the rule. Readings are whole numbers: the value × 100, so 3.2 mm is 320.</p></div>
+    </div>
+    <p>Fairness rules in the code:</p>
+    <ul>
+      <li>The proposer cannot bet in its own market.</li>
+      <li>Rules are fixed at creation and stored on chain. Anyone can read them.</li>
+      <li>Betting closes before the day starts.</li>
+      <li>A market takes one proposal. A late or repeated answer from UMA cannot change a final result.</li>
+      <li>A ready, undisputed result always settles before a refund can start.</li>
+      <li>Stakes are ETH. The bond is UMA's test token. Gas is separate. The three never mix.</li>
+    </ul>
+
+    <h3><span class="num">3.3</span>Live on Sepolia</h3>
+    <p>Six markets went live on 30 October 2026. All read HKO headquarters. Bets close the night before each day.</p>
+    <div class="table-wrap"><table>
+      <tr><th>#</th><th>Question</th><th>Kind</th><th>Bets</th><th>Yes share</th><th>Status</th></tr>
+      <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>7</td><td>20 %</td><td>Open until 2 Nov, 23:59</td></tr>
+      <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>5</td><td>62 %</td><td>Open until 3 Nov, 23:59</td></tr>
+      <tr><td>3</td><td>Rain of 1.0 mm or more on 5 Nov</td><td><span class="tag">Official</span></td><td>3</td><td>29 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>4</td><td>20 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>5</td><td>Minimum temperature of 25.0 °C or less on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>2</td><td>50 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>6</td><td>Mean humidity from 65 % to 75 % on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>2</td><td>60 %</td><td>Open until 4 Nov, 23:59</td></tr>
+    </table></div>
+    <p class="asof">Read from Sepolia on 31 October 2026, 14:35 (Hong Kong time). Results are due from 4 to 6 November.</p>
+    <p>Contracts on Etherscan: <a href="https://sepolia.etherscan.io/address/0x668643AF961C4032909C1c15A741b6d2d6216e92">PredictionMarket</a>, <a href="https://sepolia.etherscan.io/address/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc">oracle adapter</a>, <a href="https://sepolia.etherscan.io/address/0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944">UMA Optimistic Oracle V3</a>, <a href="https://sepolia.etherscan.io/address/0x3870419Ba2BBf0127060bCB37f69A1b1C090992B">bond token</a>.</p>
+
+    <h3><span class="num">3.4</span>Try it</h3>
+    <div class="try">
+      <div class="card"><h4>In the browser</h4><p>Open the app. You can browse every market without a wallet.</p><ol><li>Install MetaMask.</li><li>Switch to Sepolia.</li><li>Get test ETH from a faucet.</li><li>Bet from 0.001 ETH.</li></ol><p style="margin-top:10px"><a href="app/">Open the app</a></p></div>
+      <div class="card"><h4>On a desktop</h4><p>Download the zip for your computer.</p><ol><li>Unzip it.</li><li>Mac: open START-MAC.command.</li><li>Windows: open START-WINDOWS.cmd.</li><li>The app opens in your browser.</li></ol><p style="margin-top:10px"><a href="https://github.com/leon1111-wgl/rain-or-shine/releases/latest">Downloads</a></p></div>
+      <div class="card"><h4>From the source</h4><p>Node.js 24 and npm. No key is needed to read Sepolia.</p><ol><li><code>npm ci</code></li><li><code>npm run dev:metric:sepolia</code></li><li>The README shows the full cycle on a local chain.</li></ol><p style="margin-top:10px"><a href="https://github.com/leon1111-wgl/rain-or-shine">Source code</a></p></div>
+    </div>
+
+    <h3><span class="num">3.5</span>Testing</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Suite</th><th>Tests</th><th>What it covers</th></tr>
+      <tr><td>Contracts</td><td>80</td><td>Bets, limits, outcomes, refunds, claims, permissions and oracle answers</td></tr>
+      <tr><td>Shared logic</td><td>632</td><td>Rules, conditions, payouts, deadlines and HKO parsing</td></tr>
+      <tr><td>Web app</td><td>217</td><td>Pages, forms and number formats in both languages</td></tr>
+      <tr><td>End to end</td><td>15</td><td>A real browser on a real local chain: create, bet, propose, settle, claim and refund</td></tr>
+    </table></div>
+    <p class="asof">All passing on 31 October 2026. Lint, type checks and the production build also pass.</p>
+  </div>
+</section>
+
+<section id="research">
+  <div class="wrap">
+    <h2><span class="num">4</span>Research, questions and answers</h2>
+    <p class="sub">Before building, we studied how two real platforms run weather markets: Polymarket and Kalshi.</p>
+
+    <h3><span class="num">4.1</span>The questions we asked</h3>
+    <p>We asked six questions of each platform. The last column is what we chose.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Question</th><th>Polymarket</th><th>Kalshi</th><th>Rain or Shine</th></tr>
+      <tr><td><b>How do people bet?</b></td><td>Buy Yes or No shares. Prices move with trades.</td><td>Tap Yes or No and enter an amount. The order fills at the best prices.</td><td class="ours">Pick Yes or No and stake ETH. One side per wallet.</td></tr>
+      <tr><td><b>Which wallet and money?</b></td><td>A crypto wallet such as MetaMask. USDC on Polygon.</td><td>An account in US dollars on a regulated exchange.</td><td class="ours">MetaMask. Test ETH on Sepolia.</td></tr>
+      <tr><td><b>When does betting stop?</b></td><td>It depends on each market.</td><td>When the target day ends, in local time.</td><td class="ours">At 23:59 the night before the day.</td></tr>
+      <tr><td><b>Who decides the result?</b></td><td>Official reports from a named weather station, confirmed by an optimistic oracle with a bond.</td><td>US National Weather Service reports. The exchange settles.</td><td class="ours">HKO's daily data, confirmed by UMA's optimistic oracle with a bond.</td></tr>
+      <tr><td><b>How are winnings paid?</b></td><td>$1 per winning share. Trading fees.</td><td>$1 per winning contract. A fee of 0.07 × price × (1 − price).</td><td class="ours">Winners share the whole pool. No fee.</td></tr>
+      <tr><td><b>What if data is late or missing?</b></td><td>Wait, switch to a backup source, or clarify within 7 days.</td><td>Extend the deadline, use a backup source, or settle at the last fair price.</td><td class="ours">Seven days to propose. Otherwise, full refunds.</td></tr>
+    </table></div>
+
+    <h3><span class="num">4.2</span>What we kept, and what we changed</h3>
+    <div class="cards">
+      <div class="card"><h4>Kept</h4><p>Price as probability. Official data as the judge. Clear rules for each market. An optimistic oracle with a bond. Written rules for late data.</p></div>
+      <div class="card"><h4>Changed: no fee</h4><p>A course project needs no revenue. Every wei of the pool goes to the winners.</p></div>
+      <div class="card"><h4>Changed: hold to the end</h4><p>Shares cannot be sold early. Pools are simpler, and every payout is always fully funded.</p></div>
+    </div>
+    <p>We also chose refunds over a "last fair price". Without an exchange, nobody can set a fair price.</p>
+
+    <h3><span class="num">4.3</span>Problems we found, and how we solved them</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Problem</th><th>Our answer</th></tr>
+      <tr><td>Who can be trusted to report the weather?</td><td>Nobody has to be. HKO publishes the data. UMA checks the claim. The admin cannot set a result.</td></tr>
+      <tr><td>The reporter could bet, then hide a bad result.</td><td>The proposer cannot bet in its own market. With no result, everyone is refunded.</td></tr>
+      <tr><td>Vague rules lead to disputes.</td><td>Each market fixes its question, source, condition and deadlines at creation. The app shows them as a short spec.</td></tr>
+      <tr><td>Data can be late or missing.</td><td>Seven days to propose, then refunds. The waiting page says when HKO usually publishes.</td></tr>
+      <tr><td>A wrong number could be submitted.</td><td>Anyone can dispute it for two hours. A rejected number refunds the market at once.</td></tr>
+      <tr><td>A timeout could override a valid result.</td><td>A ready, undisputed result always settles first.</td></tr>
+      <tr><td>Nobody bets on one side.</td><td>The market refunds in full at the close.</td></tr>
+    </table></div>
+
+    <h3><span class="num">4.4</span>Problems we hit while building</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Problem</th><th>What we did</th></tr>
+      <tr><td>A review found that a proposer could bet and then hold back a losing result.</td><td>We blocked proposers from betting, added the settle-first rule and redeployed on 30 October.</td></tr>
+      <tr><td>UMA on Sepolia has no voters to decide disputes.</td><td>A disputed market refunds at the deadline. The rules say so.</td></tr>
+      <tr><td>HKO publishes only on working days.</td><td>Deadlines leave seven days. The app shows when data is due.</td></tr>
+      <tr><td>Browsers on other sites cannot read HKO's daily file.</td><td>The desktop app relays it. A proposer can also load the file by hand.</td></tr>
+      <tr><td>A proposal sent right after HKO publishes could fail. Blocks trail the clock by a few seconds.</td><td>The tool now waits for a block after the data time.</td></tr>
+      <tr><td>Free public nodes limit requests. The backup node also drops old receipts.</td><td>The app paces its reads and falls back to a second node. For old receipts it asks the main node again.</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section id="next">
+  <div class="wrap">
+    <h2><span class="num">5</span>Limits and next steps</h2>
+    <ul>
+      <li>Each market has one named proposer. Next: let anyone propose, with a reward.</li>
+      <li>Sepolia has no dispute vote, so a dispute ends in refunds there.</li>
+      <li>Bets are held to the end. Next: an order book or AMM for early exits.</li>
+      <li>All markets read one station. Next: more stations, districts and typhoon signals.</li>
+      <li>The sports cards in the app are a local demo with sample data. They never run on Sepolia.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Rain or Shine. COMP7610 Introduction to Web3 and Blockchain, the University of Hong Kong, 2026.</p>
+    <p>Weather data: Hong Kong Observatory. Oracle: UMA. Test network only.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": [
+      "es2023",
+      "dom"
+    ],
+    "module": "node16",
+    "moduleResolution": "node16",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "types": [
+      "node",
+      "mocha"
+    ]
+  },
+  "include": [
+    "hardhat.config.ts",
+    "hardhat.fork.config.ts",
+    "scripts/**/*.ts",
+    "src/**/*.ts",
+    "test/contracts/**/*.ts",
+    "test/fork/**/*.ts",
+    "test/weather/**/*.ts",
+    "types/**/*.ts",
+    "test/metric/**/*.ts"
+  ]
+}

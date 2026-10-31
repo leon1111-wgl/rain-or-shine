@@ -1,0 +1,24 @@
+{
+  "captureTool": "scripts/weather.ts capture (rainpool-rain-parser/1.0.0)",
+  "requestUrl": "https://www.hko.gov.hk/cis/dailyExtract/dailyExtract_2026.xml",
+  "fetchedAt": "2026-10-02T09:55:07.192Z",
+  "httpStatus": 200,
+  "contentType": "text/xml; charset=utf-8",
+  "lastModified": "Fri, 02 Oct 2026 03:09:03 GMT",
+  "byteLength": 24333,
+  "sha256": "0xf675914f16f91f8f43fd1e9d2d0a520c2c1eb11a0d073c5810d6cdb2e0f33176",
+  "rawFile": "dailyExtract_2026_20261002T095507Z.raw",
+  "dailyExtractIndex": {
+    "endYear": 2026,
+    "endMonth": 9
+  },
+  "parseResult": {
+    "ok": true,
+    "date": "20260101",
+    "kind": "NUMERIC",
+    "valueText": "0.0",
+    "valueMm100": 0,
+    "outcomeAtThreshold": "NO",
+    "row": "[\"01\",\"1017.9\",\"21.7\",\"18.8\",\"16.5\",\"12.9\",\"69\",\"43\",\"  0.0\",\"4.7\",\"070\",\"29.3\"]"
+  }
+}

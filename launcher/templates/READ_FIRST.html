@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rain or Shine</title>
+<style>
+  :root { --bg: #f6f7f9; --card: #fff; --text: #14171c; --muted: #5b6573; --line: #e3e6eb; --brand: #1e6bff; --sun: #ffb547; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0b0d10; --card: #14171c; --text: #eef1f5; --muted: #9aa4b2; --line: #262b33; --brand: #4c9bff; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 48px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  header svg { width: 44px; height: 44px; flex: none; }
+  h1 { margin: 0; font-size: 28px; letter-spacing: -0.5px; }
+  .lead { margin: 0 0 4px; color: var(--muted); }
+  .system { display: inline-block; margin: 0 0 24px; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 13px; }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .columns { grid-template-columns: 1fr; } }
+  section { padding: 4px 22px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+  h2 { margin: 18px 0 6px; font-size: 16px; }
+  ol, ul { margin: 0; padding-left: 20px; }
+  li { margin: 4px 0; }
+  b { font-weight: 650; }
+  code { padding: 1px 6px; border-radius: 6px; background: color-mix(in srgb, var(--brand) 12%, transparent); font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  footer { margin-top: 16px; padding: 14px 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--muted); font-size: 13px; }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0 0 8px; }
+  dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+  footer p { margin: 0; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <svg viewBox="0 0 32 32" aria-hidden="true">
+    <defs><linearGradient id="rain" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc4ff"/><stop offset="1" stop-color="#2f73ff"/></linearGradient></defs>
+    <circle cx="12" cy="12" r="8" fill="#ffb547"/>
+    <path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="none" stroke="var(--bg)" stroke-width="3"/>
+    <path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="url(#rain)"/>
+  </svg>
+  <h1>Rain or Shine</h1>
+</header>
+<p class="lead">Hong Kong weather markets on the Sepolia test network. 香港天气预测市场，运行在 Sepolia 测试网。</p>
+<p class="system">@@SYSTEM@@</p>
+<div class="columns">
+<section lang="en">
+  <h2>Start</h2>
+  <ol>
+    <li>Unzip the whole file.</li>
+    <li>Open <b>@@START@@</b>.<!--@@MAC--> If macOS blocks it, open System Settings, then Privacy &amp; Security, and click Open Anyway.<!--@@END--><!--@@WINDOWS--> If Windows shows a warning, click More info, then Run anyway.<!--@@END--></li>
+    <li>The app opens in your browser. Keep the black window open while you use it.</li>
+    <li>Use Chrome or Edge with MetaMask. Switch MetaMask to Sepolia.</li>
+  </ol>
+  <h2>What you can do</h2>
+  <ul>
+    <li>Anyone can browse markets, bet Yes or No with Sepolia test ETH, and claim winnings.</li>
+    <li>The admin account creates markets.</li>
+    <li>The market's proposer submits the result after the Hong Kong Observatory publishes it. <b>@@WEATHER@@</b> downloads the file to import.</li>
+  </ul>
+  <h2>If something goes wrong</h2>
+  <ul>
+    <li>No page opened? Copy the address shown in the window into your browser.</li>
+    <li>Wrong network? Switch MetaMask to Sepolia.</li>
+    <li>Still stuck? Send us launch-report.log from this folder.</li>
+  </ul>
+</section>
+<section lang="zh-CN">
+  <h2>开始</h2>
+  <ol>
+    <li>完整解压压缩包。</li>
+    <li>打开 <b>@@START@@</b>。<!--@@MAC-->如果 macOS 阻止打开，请进入“系统设置”的“隐私与安全性”，点击“仍要打开”。<!--@@END--><!--@@WINDOWS-->如果 Windows 弹出提示，点击“更多信息”，再点击“仍要运行”。<!--@@END--></li>
+    <li>浏览器会自动打开应用。使用期间请不要关闭黑色窗口。</li>
+    <li>请使用装有 MetaMask 的 Chrome 或 Edge，并把网络切换到 Sepolia。</li>
+  </ol>
+  <h2>可以做什么</h2>
+  <ul>
+    <li>所有人都可以浏览市场，用 Sepolia 测试 ETH 押 Yes 或 No，结算后领取。</li>
+    <li>管理员账户负责创建市场。</li>
+    <li>天文台发布数据后，由市场指定的提交者提交结果。<b>@@WEATHER@@</b> 用来下载要导入的天文台文件。</li>
+  </ul>
+  <h2>遇到问题</h2>
+  <ul>
+    <li>网页没有打开：把窗口里显示的地址复制到浏览器。</li>
+    <li>网络不对：在 MetaMask 中切换到 Sepolia。</li>
+    <li>仍然不行：把本文件夹里的 launch-report.log 发给我们。</li>
+  </ul>
+</section>
+</div>
+<footer>
+  <dl>
+    <dt>PredictionMarket</dt><dd>@@MARKET@@</dd>
+    <dt>UmaMetricOracleAdapter</dt><dd>@@ADAPTER@@</dd>
+    <dt>Admin</dt><dd>@@ADMIN@@</dd>
+    <dt>Bond token</dt><dd>@@BOND@@</dd>
+  </dl>
+  <p>@@RELEASE@@</p>
+</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,160 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "predictionMarket": "0x668643AF961C4032909C1c15A741b6d2d6216e92",
+  "readAtBlock": 12023690,
+  "markets": [
+    {
+      "marketId": 1,
+      "transactionHash": "0x4718d014d02e8c15b1fd2876017a6bf4abca1bda56a6603693fb5b88336887f0",
+      "blockNumber": 12021178,
+      "rulesHash": "0xc3ae8e695747f46076221e6829d4335cb356e4482dec9c45060a6c8e79e8dcc7",
+      "rulesDocument": "{\"schema\":\"RAINPOOL_NUMERIC_MARKET_V1\",\"protocol\":\"NUMERIC_OBSERVATION_V1\",\"title\":\"Rainfall at HKO headquarters on 3 November 2026: 1.0 mm or more\",\"synthetic\":false,\"config\":{\"proposer\":\"0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba\",\"sourceId\":\"HKO_DAILY_EXTRACT\",\"subjectId\":\"HKO\",\"condition\":{\"metricId\":1,\"comparison\":4,\"lower\":100,\"upper\":0},\"times\":{\"openAt\":1793297244,\"closeAt\":1793635140,\"observationStart\":1793635200,\"observationEnd\":1793721600,\"earliestAssertionAt\":1793721600,\"proposalCutoff\":1794326400,\"refundAt\":1794420000,\"assertionLiveness\":7200}},\"metric\":{\"code\":\"TOTAL_RAINFALL\",\"unit\":\"mm\",\"minValue\":0,\"maxValue\":999990,\"valueStep\":10,\"allowsTrace\":true,\"scale\":100,\"rulesHash\":\"0x6502d965e15cc099b1fa362c283c2acc48a39cf7620aa46fd54bf8345a3201c6\",\"rulesDocument\":\"{\\\"schema\\\":\\\"RAINPOOL_NUMERIC_METRIC_V1\\\",\\\"code\\\":\\\"TOTAL_RAINFALL\\\",\\\"unit\\\":\\\"mm\\\",\\\"scale\\\":100,\\\"minValue\\\":0,\\\"maxValue\\\":999990,\\\"valueStep\\\":10,\\\"allowsTrace\\\":true,\\\"interpretation\\\":\\\"Total rainfall over the market observation window, in mm. NUMERIC is the exact amount multiplied by 100, without rounding. TRACE means 0 < rainfall < 0.05 mm; kind=2,value=0 is only a placeholder, never exact zero.\\\"}\"},\"source\":{\"uri\":\"https://www.hko.gov.hk/cis/dailyExtract/dailyExtract_202611.xml\",\"resultSchema\":\"RAINPOOL_WEATHER_EVIDENCE_V3\",\"procedure\":\"Use an authentic HTTP 200 snapshot of the official monthly Daily Extract JSON, Hong Kong Observatory headquarters group. Select the unique targetDate row (9 strings): TOTAL_RAINFALL uses column 8; DAILY_MAX_TEMPERATURE uses column 2. Accept available, unflagged values with one decimal place; rainfall also accepts Trace. Reject missing, malformed, duplicate or incomplete data. For rainfall, if Mean/Total exists and all daily values are usable, verify the sum (Trace counts as zero only for this check). Capture at/after the Hong Kong day ends. Retain complete response bytes for rawSha256; excerpt is JSON.stringify of the selected full row. capturedAt is acquisition time. Hashes prove byte consistency, not source or capture-time authenticity.\"},\"subject\":{\"description\":\"Hong Kong Observatory headquarters; one complete Hong Kong calendar day.\",\"parameters\":{\"station\":\"HKO\",\"targetDate\":\"20261103\",\"timezone\":\"Asia/Hong_Kong\"}},\"policies\":{\"finality\":\"Use the available, unflagged daily value from the authentic captured snapshot after the complete Hong Kong day.\",\"missingData\":\"Do not propose missing, unavailable, incomplete or invalid data; unresolved markets follow the contract refund deadline.\",\"revision\":\"A proposal commits its captured snapshot. Later downloads or corrections do not rewrite that snapshot or a finalized outcome.\"}}",
+      "config": {
+        "proposer": "0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba",
+        "sourceId": "0x484b4f5f4441494c595f45585452414354000000000000000000000000000000",
+        "subjectId": "0x484b4f0000000000000000000000000000000000000000000000000000000000",
+        "condition": {
+          "metricId": 1,
+          "comparison": 4,
+          "lower": 100,
+          "upper": 0
+        },
+        "times": {
+          "openAt": 1793297244,
+          "closeAt": 1793635140,
+          "observationStart": 1793635200,
+          "observationEnd": 1793721600,
+          "earliestAssertionAt": 1793721600,
+          "proposalCutoff": 1794326400,
+          "refundAt": 1794420000,
+          "assertionLiveness": 7200
+        }
+      },
+      "metricId": 1,
+      "metric": {
+        "code": "0x544f54414c5f5241494e46414c4c000000000000000000000000000000000000",
+        "unit": "0x6d6d000000000000000000000000000000000000000000000000000000000000",
+        "minValue": 0,
+        "maxValue": 999990,
+        "valueStep": 10,
+        "allowsTrace": true,
+        "rulesHash": "0x6502d965e15cc099b1fa362c283c2acc48a39cf7620aa46fd54bf8345a3201c6"
+      }
+    },
+    {
+      "marketId": 2,
+      "transactionHash": "0x061d6ebe609bb8b60232f74adae5666e979328d217102240efe364febc1c951a",
+      "blockNumber": 12021180,
+      "rulesHash": "0xc30d440442a9bd2192c20f21123bbc6df7e692d8815211b5cfe8e96330537d65",
+      "rulesDocument": "{\"schema\":\"RAINPOOL_NUMERIC_MARKET_V1\",\"protocol\":\"NUMERIC_OBSERVATION_V1\",\"title\":\"Maximum temperature at HKO headquarters on 4 November 2026: 28.0 °C or higher\",\"synthetic\":false,\"config\":{\"proposer\":\"0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba\",\"sourceId\":\"HKO_DAILY_EXTRACT\",\"subjectId\":\"HKO\",\"condition\":{\"metricId\":2,\"comparison\":4,\"lower\":2800,\"upper\":0},\"times\":{\"openAt\":1793297256,\"closeAt\":1793721540,\"observationStart\":1793721600,\"observationEnd\":1793808000,\"earliestAssertionAt\":1793808000,\"proposalCutoff\":1794412800,\"refundAt\":1794506400,\"assertionLiveness\":7200}},\"metric\":{\"code\":\"DAILY_MAX_TEMPERATURE\",\"unit\":\"degC\",\"minValue\":-10000,\"maxValue\":10000,\"valueStep\":10,\"allowsTrace\":false,\"scale\":100,\"rulesHash\":\"0x0ac984186994a9a2324771f107446ea1ffc0c9fb99a733f2ab9bfccd0a935f93\",\"rulesDocument\":\"{\\\"schema\\\":\\\"RAINPOOL_NUMERIC_METRIC_V1\\\",\\\"code\\\":\\\"DAILY_MAX_TEMPERATURE\\\",\\\"unit\\\":\\\"degC\\\",\\\"scale\\\":100,\\\"minValue\\\":-10000,\\\"maxValue\\\":10000,\\\"valueStep\\\":10,\\\"allowsTrace\\\":false,\\\"interpretation\\\":\\\"Maximum temperature over the market observation window, in degrees Celsius, not mean or minimum. NUMERIC is the exact temperature multiplied by 100, without rounding. Negative values are allowed; TRACE is invalid.\\\"}\"},\"source\":{\"uri\":\"https://www.hko.gov.hk/cis/dailyExtract/dailyExtract_202611.xml\",\"resultSchema\":\"RAINPOOL_WEATHER_EVIDENCE_V3\",\"procedure\":\"Use an authentic HTTP 200 snapshot of the official monthly Daily Extract JSON, Hong Kong Observatory headquarters group. Select the unique targetDate row (9 strings): TOTAL_RAINFALL uses column 8; DAILY_MAX_TEMPERATURE uses column 2. Accept available, unflagged values with one decimal place; rainfall also accepts Trace. Reject missing, malformed, duplicate or incomplete data. For rainfall, if Mean/Total exists and all daily values are usable, verify the sum (Trace counts as zero only for this check). Capture at/after the Hong Kong day ends. Retain complete response bytes for rawSha256; excerpt is JSON.stringify of the selected full row. capturedAt is acquisition time. Hashes prove byte consistency, not source or capture-time authenticity.\"},\"subject\":{\"description\":\"Hong Kong Observatory headquarters; one complete Hong Kong calendar day.\",\"parameters\":{\"station\":\"HKO\",\"targetDate\":\"20261104\",\"timezone\":\"Asia/Hong_Kong\"}},\"policies\":{\"finality\":\"Use the available, unflagged daily value from the authentic captured snapshot after the complete Hong Kong day.\",\"missingData\":\"Do not propose missing, unavailable, incomplete or invalid data; unresolved markets follow the contract refund deadline.\",\"revision\":\"A proposal commits its captured snapshot. Later downloads or corrections do not rewrite that snapshot or a finalized outcome.\"}}",
+      "config": {
+        "proposer": "0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba",
+        "sourceId": "0x484b4f5f4441494c595f45585452414354000000000000000000000000000000",
+        "subjectId": "0x484b4f0000000000000000000000000000000000000000000000000000000000",
+        "condition": {
+          "metricId": 2,
+          "comparison": 4,
+          "lower": 2800,
+          "upper": 0
+        },
+        "times": {
+          "openAt": 1793297256,
+          "closeAt": 1793721540,
+          "observationStart": 1793721600,
+          "observationEnd": 1793808000,
+          "earliestAssertionAt": 1793808000,
+          "proposalCutoff": 1794412800,
+          "refundAt": 1794506400,
+          "assertionLiveness": 7200
+        }
+      },
+      "metricId": 2,
+      "metric": {
+        "code": "0x4441494c595f4d41585f54454d50455241545552450000000000000000000000",
+        "unit": "0x6465674300000000000000000000000000000000000000000000000000000000",
+        "minValue": -10000,
+        "maxValue": 10000,
+        "valueStep": 10,
+        "allowsTrace": false,
+        "rulesHash": "0x0ac984186994a9a2324771f107446ea1ffc0c9fb99a733f2ab9bfccd0a935f93"
+      }
+    },
+    {
+      "marketId": 3,
+      "transactionHash": "0xfc10d20e693160af57535a062fe0b670e6831108d498b2282b59e9f1e8511c4b",
+      "blockNumber": 12021181,
+      "rulesHash": "0xad3e8d1cf8b5d71f8407a1b577d31336b507e13091a7231c3fda823d996e0189",
+      "rulesDocument": "{\"schema\":\"RAINPOOL_NUMERIC_MARKET_V1\",\"protocol\":\"NUMERIC_OBSERVATION_V1\",\"title\":\"Rainfall at HKO headquarters on 5 November 2026: 1.0 mm or more\",\"synthetic\":false,\"config\":{\"proposer\":\"0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba\",\"sourceId\":\"HKO_DAILY_EXTRACT\",\"subjectId\":\"HKO\",\"condition\":{\"metricId\":1,\"comparison\":4,\"lower\":100,\"upper\":0},\"times\":{\"openAt\":1793297280,\"closeAt\":1793807940,\"observationStart\":1793808000,\"observationEnd\":1793894400,\"earliestAssertionAt\":1793894400,\"proposalCutoff\":1794499200,\"refundAt\":1794592800,\"assertionLiveness\":7200}},\"metric\":{\"code\":\"TOTAL_RAINFALL\",\"unit\":\"mm\",\"minValue\":0,\"maxValue\":999990,\"valueStep\":10,\"allowsTrace\":true,\"scale\":100,\"rulesHash\":\"0x6502d965e15cc099b1fa362c283c2acc48a39cf7620aa46fd54bf8345a3201c6\",\"rulesDocument\":\"{\\\"schema\\\":\\\"RAINPOOL_NUMERIC_METRIC_V1\\\",\\\"code\\\":\\\"TOTAL_RAINFALL\\\",\\\"unit\\\":\\\"mm\\\",\\\"scale\\\":100,\\\"minValue\\\":0,\\\"maxValue\\\":999990,\\\"valueStep\\\":10,\\\"allowsTrace\\\":true,\\\"interpretation\\\":\\\"Total rainfall over the market observation window, in mm. NUMERIC is the exact amount multiplied by 100, without rounding. TRACE means 0 < rainfall < 0.05 mm; kind=2,value=0 is only a placeholder, never exact zero.\\\"}\"},\"source\":{\"uri\":\"https://www.hko.gov.hk/cis/dailyExtract/dailyExtract_202611.xml\",\"resultSchema\":\"RAINPOOL_WEATHER_EVIDENCE_V3\",\"procedure\":\"Use an authentic HTTP 200 snapshot of the official monthly Daily Extract JSON, Hong Kong Observatory headquarters group. Select the unique targetDate row (9 strings): TOTAL_RAINFALL uses column 8; DAILY_MAX_TEMPERATURE uses column 2. Accept available, unflagged values with one decimal place; rainfall also accepts Trace. Reject missing, malformed, duplicate or incomplete data. For rainfall, if Mean/Total exists and all daily values are usable, verify the sum (Trace counts as zero only for this check). Capture at/after the Hong Kong day ends. Retain complete response bytes for rawSha256; excerpt is JSON.stringify of the selected full row. capturedAt is acquisition time. Hashes prove byte consistency, not source or capture-time authenticity.\"},\"subject\":{\"description\":\"Hong Kong Observatory headquarters; one complete Hong Kong calendar day.\",\"parameters\":{\"station\":\"HKO\",\"targetDate\":\"20261105\",\"timezone\":\"Asia/Hong_Kong\"}},\"policies\":{\"finality\":\"Use the available, unflagged daily value from the authentic captured snapshot after the complete Hong Kong day.\",\"missingData\":\"Do not propose missing, unavailable, incomplete or invalid data; unresolved markets follow the contract refund deadline.\",\"revision\":\"A proposal commits its captured snapshot. Later downloads or corrections do not rewrite that snapshot or a finalized outcome.\"}}",
+      "config": {
+        "proposer": "0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba",
+        "sourceId": "0x484b4f5f4441494c595f45585452414354000000000000000000000000000000",
+        "subjectId": "0x484b4f0000000000000000000000000000000000000000000000000000000000",
+        "condition": {
+          "metricId": 1,
+          "comparison": 4,
+          "lower": 100,
+          "upper": 0
+        },
+        "times": {
+          "openAt": 1793297280,
+          "closeAt": 1793807940,
+          "observationStart": 1793808000,
+          "observationEnd": 1793894400,
+          "earliestAssertionAt": 1793894400,
+          "proposalCutoff": 1794499200,
+          "refundAt": 1794592800,
+          "assertionLiveness": 7200
+        }
+      },
+      "metricId": 1,
+      "metric": {
+        "code": "0x544f54414c5f5241494e46414c4c000000000000000000000000000000000000",
+        "unit": "0x6d6d000000000000000000000000000000000000000000000000000000000000",
+        "minValue": 0,
+        "maxValue": 999990,
+        "valueStep": 10,
+        "allowsTrace": true,
+        "rulesHash": "0x6502d965e15cc099b1fa362c283c2acc48a39cf7620aa46fd54bf8345a3201c6"
+      }
+    },
+    {
+      "marketId": 4,
+      "transactionHash": "0x79d6ed6d9b1de688806b8f54638f091d1115ba043d0618cea15f80db04687845",
+      "blockNumber": 12021183,
+      "rulesHash": "0x87e51c9f6bf5bf6183a8cb0d1073e86b338057ed9bc68e42a1b752d44f067c5c",
+      "rulesDocument": "{\"schema\":\"RAINPOOL_NUMERIC_MARKET_V1\",\"protocol\":\"NUMERIC_OBSERVATION_V1\",\"title\":\"Maximum temperature at HKO headquarters on 5 November 2026: 29.0 °C or higher\",\"synthetic\":false,\"config\":{\"proposer\":\"0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba\",\"sourceId\":\"HKO_DAILY_EXTRACT\",\"subjectId\":\"HKO\",\"condition\":{\"metricId\":2,\"comparison\":4,\"lower\":2900,\"upper\":0},\"times\":{\"openAt\":1793297292,\"closeAt\":1793807940,\"observationStart\":1793808000,\"observationEnd\":1793894400,\"earliestAssertionAt\":1793894400,\"proposalCutoff\":1794499200,\"refundAt\":1794592800,\"assertionLiveness\":7200}},\"metric\":{\"code\":\"DAILY_MAX_TEMPERATURE\",\"unit\":\"degC\",\"minValue\":-10000,\"maxValue\":10000,\"valueStep\":10,\"allowsTrace\":false,\"scale\":100,\"rulesHash\":\"0x0ac984186994a9a2324771f107446ea1ffc0c9fb99a733f2ab9bfccd0a935f93\",\"rulesDocument\":\"{\\\"schema\\\":\\\"RAINPOOL_NUMERIC_METRIC_V1\\\",\\\"code\\\":\\\"DAILY_MAX_TEMPERATURE\\\",\\\"unit\\\":\\\"degC\\\",\\\"scale\\\":100,\\\"minValue\\\":-10000,\\\"maxValue\\\":10000,\\\"valueStep\\\":10,\\\"allowsTrace\\\":false,\\\"interpretation\\\":\\\"Maximum temperature over the market observation window, in degrees Celsius, not mean or minimum. NUMERIC is the exact temperature multiplied by 100, without rounding. Negative values are allowed; TRACE is invalid.\\\"}\"},\"source\":{\"uri\":\"https://www.hko.gov.hk/cis/dailyExtract/dailyExtract_202611.xml\",\"resultSchema\":\"RAINPOOL_WEATHER_EVIDENCE_V3\",\"procedure\":\"Use an authentic HTTP 200 snapshot of the official monthly Daily Extract JSON, Hong Kong Observatory headquarters group. Select the unique targetDate row (9 strings): TOTAL_RAINFALL uses column 8; DAILY_MAX_TEMPERATURE uses column 2. Accept available, unflagged values with one decimal place; rainfall also accepts Trace. Reject missing, malformed, duplicate or incomplete data. For rainfall, if Mean/Total exists and all daily values are usable, verify the sum (Trace counts as zero only for this check). Capture at/after the Hong Kong day ends. Retain complete response bytes for rawSha256; excerpt is JSON.stringify of the selected full row. capturedAt is acquisition time. Hashes prove byte consistency, not source or capture-time authenticity.\"},\"subject\":{\"description\":\"Hong Kong Observatory headquarters; one complete Hong Kong calendar day.\",\"parameters\":{\"station\":\"HKO\",\"targetDate\":\"20261105\",\"timezone\":\"Asia/Hong_Kong\"}},\"policies\":{\"finality\":\"Use the available, unflagged daily value from the authentic captured snapshot after the complete Hong Kong day.\",\"missingData\":\"Do not propose missing, unavailable, incomplete or invalid data; unresolved markets follow the contract refund deadline.\",\"revision\":\"A proposal commits its captured snapshot. Later downloads or corrections do not rewrite that snapshot or a finalized outcome.\"}}",
+      "config": {
+        "proposer": "0x5B5cc58541Fbe8b8F51D6E002737d4dE9117F5Ba",
+        "sourceId": "0x484b4f5f4441494c595f45585452414354000000000000000000000000000000",
+        "subjectId": "0x484b4f0000000000000000000000000000000000000000000000000000000000",
+        "condition": {
+          "metricId": 2,
+          "comparison": 4,
+          "lower": 2900,
+          "upper": 0
+        },
+        "times": {
+          "openAt": 1793297292,
+          "closeAt": 1793807940,
+          "observationStart": 1793808000,
+          "observationEnd": 1793894400,
+          "earliestAssertionAt": 1793894400,
+          "proposalCutoff": 1794499200,
+          "refundAt": 1794592800,
+          "assertionLiveness": 7200
+        }
+      },
+      "metricId": 2,
+      "metric": {
+        "code": "0x4441494c595f4d41585f54454d50455241545552450000000000000000000000",
+        "unit": "0x6465674300000000000000000000000000000000000000000000000000000000",
+        "minValue": -10000,
+        "maxValue": 10000,
+        "valueStep": 10,
+        "allowsTrace": false,
+        "rulesHash": "0x0ac984186994a9a2324771f107446ea1ffc0c9fb99a733f2ab9bfccd0a935f93"
+      }
+    }
+  ]
+}

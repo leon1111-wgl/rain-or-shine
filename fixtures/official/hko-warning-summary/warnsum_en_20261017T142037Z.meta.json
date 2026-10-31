@@ -1,0 +1,12 @@
+{
+  "captureTool": "PowerShell Invoke-WebRequest",
+  "purpose": "Real HKO warnsum snapshot for ingestion tests; no historical coverage or settlement claim",
+  "requestUrl": "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=en",
+  "fetchedAt": "2026-10-17T14:20:37.9872297+00:00",
+  "httpStatus": 200,
+  "contentType": "application/json; charset=utf-8",
+  "lastModified": null,
+  "byteLength": 2,
+  "sha256": "0x44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "rawFile": "warnsum_en_20261017T142037Z.json"
+}

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "network": "sepolia",
+  "chainId": 11155111,
+  "oracleProvider": "UMA Optimistic Oracle V3",
+  "optimisticOracleV3": "0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944",
+  "source": {
+    "file": "https://raw.githubusercontent.com/UMAprotocol/protocol/d1a2373e2e0a3cbb28bce48ca72379a2abb97c69/packages/core/networks/11155111.json",
+    "repoCommit": "d1a2373e2e0a3cbb28bce48ca72379a2abb97c69",
+    "lastCommitTouchingFile": "e2224e92675092a2caf4838e89aed18bc5a5f249",
+    "archivedCopy": "references/uma/networks-11155111.json",
+    "archivedSha256": "c43bba3dba82f8cccc4d221a40f00bd9737faaf5f9ee113ea583b8c6f9907a95",
+    "retrievedAt": "2026-10-01T19:22:00Z",
+    "docsNetworkPage": "https://docs.uma.xyz/resources/network-addresses",
+    "dvmSupport": false,
+    "dvmNote": "UMA's network page lists Sepolia with DVM Support = No. Disputes reach VotingV2 but no vote is expected to resolve them; this project never claims a DVM result on Sepolia."
+  },
+  "interfaceSource": {
+    "implementation": "https://raw.githubusercontent.com/UMAprotocol/protocol/d1a2373e2e0a3cbb28bce48ca72379a2abb97c69/packages/core/contracts/optimistic-oracle-v3/implementation/OptimisticOracleV3.sol",
+    "interface": "https://raw.githubusercontent.com/UMAprotocol/protocol/d1a2373e2e0a3cbb28bce48ca72379a2abb97c69/packages/core/contracts/optimistic-oracle-v3/interfaces/OptimisticOracleV3Interface.sol",
+    "callbackInterface": "https://raw.githubusercontent.com/UMAprotocol/protocol/d1a2373e2e0a3cbb28bce48ca72379a2abb97c69/packages/core/contracts/optimistic-oracle-v3/interfaces/OptimisticOracleV3CallbackRecipientInterface.sol",
+    "sha256": {
+      "OptimisticOracleV3.sol": "9ec1b19da4adc8771c8f02c7a3210fdfb80927f2dcfd775b6bd3e55b97479346",
+      "OptimisticOracleV3Interface.sol": "3a32922de084694b0e7fa29cf4a8f026eb9e6fb594fe3c54a52023f409604441",
+      "OptimisticOracleV3CallbackRecipientInterface.sol": "e5f01fed607c621a7a9ed52c98205aa8821d710a637a071a9df0d65fe599c8e1"
+    },
+    "license": "AGPL-3.0-only (UMA). This repo does not copy UMA source; contracts/interfaces/IOptimisticOracleV3.sol is an independently written minimal ABI declaration."
+  },
+  "expected": {
+    "identifier": "ASSERT_TRUTH",
+    "bondRuntimeCodeKeccak256": "0x3cc1da0377797f119ad343c86b9aa2dc9c71f687583b8d04e4e437d6ae6648cb",
+    "runtimeCodeKeccak256": "0xb09ecb16112fd9cb2eccf24f64bcb491645cf45f2b817aabfd1f47a8aea71425",
+    "runtimeCodeBytes": 17837
+  },
+  "bondCurrencyCandidates": [
+    {
+      "address": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+      "label": "Circle Sepolia USDC (OOV3 defaultCurrency)",
+      "decimals": 6,
+      "preferred": true,
+      "acquisition": "Circle's public testnet faucet (manual, per-address rate limits). No mint function.",
+      "caveat": "OOV3 caches finalFee=200 USDC (minimum bond 400 USDC) while the UMA Store now reports 0. Anyone may call OOV3.syncUmaParams(ASSERT_TRUTH, USDC) to refresh the cache; that is a public Sepolia transaction and needs explicit authorization."
+    },
+    {
+      "address": "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+      "label": "Stackup '6TEST' test token (UMA-whitelisted on Sepolia)",
+      "decimals": 6,
+      "preferred": false,
+      "acquisition": "Verified source (Sourcify match) exposes public mint(to, amount) with amount < 1e18.",
+      "caveat": "Third-party test token; minting is a public Sepolia transaction from the user's own test account."
+    }
+  ],
+  "rejectedCurrencies": [
+    {
+      "address": "0x96d738c9Fd8Ab12d92ef215FE4cbd6A07F254799",
+      "reason": "Verified MockERC20 exposes public burn(from, amount): anyone could destroy escrowed bonds."
+    },
+    {
+      "address": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+      "reason": "WETH: our policy bond = max(minBond, 1 whole token) = 1 WETH, impractical from Sepolia faucets."
+    }
+  ],
+  "selectedBondCurrency": "0x3870419Ba2BBf0127060bCB37f69A1b1C090992B",
+  "selectionNote": "Frozen 2026-10-02: the default currency (Circle Sepolia USDC) is impractical to obtain because OOV3's cached final fee makes the minimum bond 400 USDC (faucet gives ~10-20/request) and lowering it needs a shared-state syncUmaParams transaction. 6TEST is UMA-whitelisted on Sepolia (CollateralWhitelist.isOnWhitelist == true, verified by npm run preflight:sepolia), 6 decimals, minimum bond 0 -> policy bond 1 6TEST, and its verified source (Sourcify match) exposes a public mint. Switch back to USDC only with an explicit decision (then run ACTION=sync-uma-params and obtain USDC from Circle's faucet). The value is re-read live at every assertion; maxBond protects proposers."
+}

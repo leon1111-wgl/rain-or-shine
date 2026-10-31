@@ -1,0 +1,11 @@
+{
+  "captureTool": "scripts/weather.ts live-capture",
+  "purpose": "test input for the live HKO panel (display data; never pool evidence)",
+  "requestUrl": "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en",
+  "fetchedAt": "2026-10-04T00:15:57.875Z",
+  "httpStatus": 200,
+  "contentType": "application/json; charset=utf-8",
+  "byteLength": 2982,
+  "sha256": "0xc272fcd9367c011ab16d9f97bf119ed9d117975ab91ce64ce28c43449873c992",
+  "rawFile": "rhrread_en_20261004T001557Z.json"
+}

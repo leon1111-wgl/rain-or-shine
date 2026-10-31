@@ -1,0 +1,12 @@
+{
+  "schema": "RAINPOOL_SPORTS_DEMO_V1",
+  "synthetic": true,
+  "matchId": "ARS_CHE_DEMO01",
+  "teamA": "ARS",
+  "teamB": "CHE",
+  "status": "FINAL",
+  "scoreA": 2,
+  "scoreB": 1,
+  "sport": "FOOTBALL",
+  "scoreScope": "REGULATION_90"
+}

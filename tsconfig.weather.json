@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["src/weather/**/*.ts", "scripts/weather-data.ts", "test/weather/**/*.ts"]
+}
