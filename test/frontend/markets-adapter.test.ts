@@ -163,7 +163,9 @@ describe("market view model", () => {
     expect(marketsFrom(sepolia, dashboard(markets)).map((m) => m.id)).toEqual([3, 1]);
     expect(marketsFrom(local, dashboard(markets)).map((m) => m.id)).toEqual([3, 1]);
     expect(["TOTAL_RAINFALL", "DAILY_MAX_TEMPERATURE", "WEEKLY_RAINFALL", "DAILY_MIN_TEMPERATURE", "DAILY_MEAN_HUMIDITY"].map(metricKindOf))
-      .toEqual(["rain", "heat", "custom", "heat", "humidity"]);
+      .toEqual(["rain", "heat", "rain", "heat", "humidity"]);
+    // A custom metric goes under the weather word in its code.
+    expect(["HOURLY_RAINFALL", "AFTERNOON_TEMPERATURE", "MSL_PRESSURE"].map(metricKindOf)).toEqual(["rain", "heat", "custom"]);
     // Dew point measures moisture. Pressure and cloud go under "other".
     const added = ["DAILY_MEAN_PRESSURE", "DAILY_MEAN_DEW_POINT", "DAILY_MEAN_CLOUD"];
     expect(added.map(metricKindOf)).toEqual(["custom", "humidity", "custom"]);

@@ -8,9 +8,10 @@ let rain = 0;
 test.beforeAll(async () => {
   rain = (await createRainMarket(3)).id;
   await createQuickMarket(60);
-  // Every weather type, so the type chips are as wide as on Sepolia: rain, temperature, humidity and other.
+  // Every weather type, so the type chips are as wide as on Sepolia: rain, temperature, humidity and other (pressure).
   await createOfficialMarket("DAILY_MAX_TEMPERATURE", 3, "28.0");
   await createFieldMarket("mean-humidity", 3, "65", "75");
+  await createFieldMarket("mean-pressure", 3, "1005", "1015");
   await directBet(3, rain, "YES", E(10));
   await directBet(4, rain, "NO", E(5));
 });

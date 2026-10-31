@@ -359,6 +359,9 @@ const KINDS: Record<string, MetricKind> = {
   GOAL_MARGIN: "sport",
 };
 
+/** A custom metric goes under the weather word in its code. Anything else goes under "other". */
+const KIND_WORDS: [RegExp, MetricKind][] = [[/RAIN/, "rain"], [/TEMP/, "heat"], [/HUMID|DEW/, "humidity"]];
+
 export function metricKindOf(code: string): MetricKind {
-  return KINDS[code] ?? "custom";
+  return KINDS[code] ?? KIND_WORDS.find(([word]) => word.test(code))?.[1] ?? "custom";
 }
