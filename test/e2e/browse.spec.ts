@@ -16,11 +16,15 @@ test.beforeAll(async () => {
   await directBet(4, rain, "NO", E(5));
 });
 
-for (const [width, locale] of [[1440, "zh-CN"], [1024, "zh-CN"], [390, "zh-CN"], [360, "zh-CN"], [1440, "en"], [390, "en"], [360, "en"]] as const) {
-  test(`no horizontal overflow at ${width}px in ${locale}`, async ({ page }) => {
+// Without a wallet the top bar shows the read-only pill, and the English menu is the longest: laptop and tablet widths.
+for (const [width, locale, wallet] of [
+  [1440, "zh-CN", true], [1024, "zh-CN", true], [390, "zh-CN", true], [360, "zh-CN", true], [1440, "en", true], [390, "en", true], [360, "en", true],
+  [1280, "en", false], [1024, "en", false], [780, "en", false],
+] as const) {
+  test(`no horizontal overflow at ${width}px in ${locale}${wallet ? "" : " without a wallet"}`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.addInitScript((l) => localStorage.setItem("rainmark.locale", l), locale);
-    await installWallet(page, 3);
+    if (wallet) await installWallet(page, 3);
     for (const hash of ["#/", "#/markets", "#/markets/ranks", "#/markets/data", `#/market/${rain}`, `#/market/${rain}/waiting`, `#/market/${rain}/settlement`, "#/mine", "#/ops"]) {
       await page.goto(`/${hash}`);
       await expect(page.locator(".topbar, .intro-nav").first()).toBeVisible(); // the intro has its own navigation
