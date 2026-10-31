@@ -127,7 +127,7 @@ npm run package:desktop
 ```
 
 This builds three zips in `release/`: macOS for Apple silicon, macOS for Intel, and Windows x64. Ready-made copies
-are on the Releases page. Each zip holds the
+are on the Releases page. The Desktop check workflow builds the zips and starts them on Windows and macOS. Each zip holds the
 built Sepolia app, a small local server and a Node runtime. The other computer installs nothing. Unzip one and open
 `READ_FIRST.html`.
 

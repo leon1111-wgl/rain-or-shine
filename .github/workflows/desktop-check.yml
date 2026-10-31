@@ -1,0 +1,87 @@
+# Builds the desktop packages, then starts each one on its own system: Windows and macOS.
+# Run it by hand from the Actions tab.
+name: Desktop check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run package:desktop
+        env:
+          SEPOLIA_RPC_URL: https://ethereum-sepolia-rpc.publicnode.com
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop
+          path: release/*/*.zip
+
+  windows:
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop
+          path: zips
+      - name: Unzip and start the Windows package
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem zips -Recurse -Filter Rain-or-Shine-Windows-x64.zip | Select-Object -First 1
+          Expand-Archive $zip.FullName -DestinationPath "test folder"
+          $start = Get-ChildItem "test folder" -Recurse -Filter START-WINDOWS.cmd | Select-Object -First 1
+          $app = Start-Process -FilePath $start.FullName -ArgumentList "--no-open", "--port", "17640" -PassThru
+          $url = "http://127.0.0.1:17640/"
+          $health = $null
+          for ($i = 0; $i -lt 40 -and -not $health; $i++) {
+            Start-Sleep -Seconds 1
+            try { $health = Invoke-RestMethod "$($url)_health" } catch {}
+          }
+          if (-not $health) { throw "The app did not start." }
+          "Health: $($health | ConvertTo-Json -Compress)"
+          $page = Invoke-WebRequest $url -UseBasicParsing
+          if ($page.Content -notmatch "<title>Rain or Shine</title>") { throw "The page is not the app." }
+          "Page: $($page.StatusCode)"
+          $config = Invoke-RestMethod "$($url)config.public.json"
+          "RPC: $($config.rpcOrigins -join ', ')"
+          try {
+            $hko = Invoke-WebRequest "$($url)hko-open-data/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en" -UseBasicParsing
+            "HKO relay: $($hko.StatusCode)"
+          } catch { "HKO relay: $($_.Exception.Message)" }
+          Stop-Process -Id $app.Id -Force
+          Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
+
+  macos:
+    needs: build
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: desktop
+          path: zips
+      - name: Unzip and start the macOS package
+        run: |
+          zip=$(find zips -name 'Rain-or-Shine-macOS-arm64.zip' | head -1)
+          mkdir -p "test folder"
+          ditto -x -k "$zip" "test folder"
+          start=$(find "test folder" -name START-MAC.command | head -1)
+          "$start" --no-open --port 17641 > app.log 2>&1 &
+          for i in $(seq 1 40); do curl -sf http://127.0.0.1:17641/_health && break; sleep 1; done
+          echo
+          curl -sf http://127.0.0.1:17641/ | grep -q '<title>Rain or Shine</title>'
+          echo "Page: ok"
+          curl -s -o /dev/null -w 'HKO relay: %{http_code}\n' 'http://127.0.0.1:17641/hko-open-data/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en' || true
+          cat app.log

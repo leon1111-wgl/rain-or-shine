@@ -152,7 +152,7 @@ footer p { margin: 0 0 6px; }
     <div class="stat"><b>0.049 ETH</b><span>staked by 6 test wallets</span></div>
     <div class="stat"><b>0</b><span>platform fee</span></div>
   </div>
-  <p class="asof">Read from Sepolia on 31 October 2026, 14:35 (Hong Kong time).</p>
+  <p class="asof">Read from Sepolia on 31 October 2026, 14:48 (Hong Kong time).</p>
   <figure>
     <img src="fig/loop.webp" width="3200" height="1600" alt="A loop of seven steps: ask, bet, observe, propose, challenge, settle and claim. In the middle, a refund if there is no valid result.">
     <figcaption><b>Figure 1.</b> Every market is a closed loop. It starts with a question and ends with a payout. If no valid result arrives, the loop still closes: everyone gets their stake back.</figcaption>
@@ -168,19 +168,19 @@ footer p { margin: 0 0 6px; }
       <li><b>Ask</b>It is a cloudy Monday. Mei thinks Tuesday will be wet. Ken thinks it will stay dry. A market asks: <span class="question">"Will HKO headquarters record 1.0 mm of rain or more on Tuesday?"</span></li>
       <li><b>Bet</b>Mei stakes 0.02 ETH on Yes. Ken stakes 0.01 ETH on No. The ETH waits in the smart contract. Nobody can take it out early. Not even us.</li>
       <li><b>Observe</b>Tuesday passes. On Wednesday morning, the Hong Kong Observatory publishes Tuesday's rainfall: 3.2 mm.</li>
-      <li><b>Propose</b>The market's proposer sends "3.2 mm" to UMA's optimistic oracle. They lock a bond behind it. A false number would cost them the bond.</li>
+      <li><b>Propose</b>The market's proposer sends "3.2 mm" to UMA's optimistic oracle. They lock a bond behind it, so a false number puts their own money at risk.</li>
       <li><b>Challenge</b>For two hours, anyone can dispute the number. Anyone can check it against HKO's file. Nobody disputes.</li>
       <li><b>Settle</b>Anyone can now settle. The contract checks the rule: 3.2 is at least 1.0. Yes wins.</li>
       <li><b>Claim</b>Mei claims 0.03 ETH: her stake plus Ken's. There is no fee. Ken sees the result and the reason.</li>
       <li class="end"><b>And if something goes wrong?</b>If only one side has bets, if UMA rejects the number, or if no valid number arrives in time, the market refunds. Mei and Ken each get their stake back.</li>
     </ol>
-    <p>Mei and Ken are an example. Section 2.6 replays this exact story in the app, screen by screen.</p>
+    <p>Mei and Ken are an example. Section 2.6 replays their story in the app, screen by screen.</p>
 
     <h3>What we delivered</h3>
     <div class="cards">
       <div class="card"><h4>Smart contracts</h4><p>Markets, Yes and No pools, outcomes, refunds and claims. An adapter talks to UMA. Written in Solidity.</p></div>
       <div class="card"><h4>A web app</h4><p>Browse, bet, follow and claim. English and Chinese. MetaMask signs every transaction.</p></div>
-      <div class="card"><h4>Live markets</h4><p>6 weather markets on Sepolia for 3 to 5 November, with 23 real bets so far.</p></div>
+      <div class="card"><h4>Live markets</h4><p>6 weather markets on Sepolia for 3 to 5 November, with 23 bets from our test wallets so far.</p></div>
       <div class="card"><h4>Custom markets</h4><p>Any HKO daily value, such as humidity or minimum temperature. Or any source the creator names. A local sports demo shows other topics work too.</p></div>
       <div class="card"><h4>An HKO tool</h4><p>It downloads HKO's file and reads the value, so the proposer submits the right number.</p></div>
       <div class="card"><h4>Desktop packages</h4><p>Zip files for macOS and Windows. Unzip, double-click, and the app opens. Nothing to install.</p></div>
@@ -234,7 +234,7 @@ footer p { margin: 0 0 6px; }
     <h3><span class="num">2.4</span>How it runs</h3>
     <figure>
       <img src="fig/operations.webp" width="3200" height="1800" loading="lazy" alt="People use the web app and MetaMask. The contracts run on Sepolia. HKO publishes the data. UMA confirms the reading. Eight numbered steps connect them.">
-      <figcaption><b>Figure 2.</b> The people, the app, the contracts, the oracle and the data source. The numbers are the eight steps below.</figcaption>
+      <figcaption><b>Figure 2.</b> The people, the app, the contracts, the oracle and the data source. The numbers are the eight steps below. Figure 1 shows settle and decide as one step.</figcaption>
     </figure>
     <ol>
       <li><b>Create.</b> The admin creates a market in the app. Its question, source, deadlines and proposer are fixed in its rules.</li>
@@ -242,8 +242,8 @@ footer p { margin: 0 0 6px; }
       <li><b>Publish.</b> After the day ends, HKO publishes the reading in its Daily Extract file.</li>
       <li><b>Propose.</b> The proposer loads the file. The app shows the reading and the outcome it implies. The proposer submits it through the oracle adapter, with a bond.</li>
       <li><b>Dispute (optional).</b> For two hours, anyone can dispute the reading on UMA.</li>
-      <li><b>Settle.</b> After two hours, anyone can settle.</li>
-      <li><b>Decide.</b> UMA tells the adapter that the reading stands. The contract compares it with the rule and sets Yes or No.</li>
+      <li><b>Settle.</b> After two hours, anyone can settle. UMA returns the bond to the proposer.</li>
+      <li><b>Decide.</b> In the same transaction, UMA tells the adapter that the reading stands. The contract compares it with the rule and sets Yes or No.</li>
       <li><b>Claim.</b> Winners claim their share. In a refund, everyone claims their stake.</li>
     </ol>
     <div class="callout">
@@ -259,11 +259,11 @@ footer p { margin: 0 0 6px; }
       <li>Betting closes at 23:59 the night before the day. Nobody can bet once the weather is known.</li>
       <li>HKO publishes a day's row on the next working day, at about 10:30. A Friday waits until Monday.</li>
       <li>A result can be proposed for seven days. That covers weekends and holidays.</li>
-      <li>If no result settles, refunds open at 02:00 the next day (D+9). A ready, undisputed result still settles first. A timeout never beats a valid result.</li>
+      <li>If no result has settled, refunds open at D+9, 02:00. That is 26 hours after the last proposal time. A ready, undisputed result still settles first. A timeout never beats a valid result.</li>
     </ul>
 
     <h3><span class="num">2.6</span>The story in the app</h3>
-    <p>These screens replay the story from Section 1. <span class="live">Live</span> screens show the real Sepolia markets. <span class="local">Local</span> screens come from a test chain on our computer. There, time can be moved forward, and a stand-in replaces UMA. The steps and the code are the same.</p>
+    <p>These screens replay the story from Section 1. <span class="live">Live</span> screens show the real Sepolia markets. <span class="local">Local</span> screens come from a test chain on our computer. There, time can be moved forward, and a stand-in replaces UMA. The question covers one hour of rain, so the whole loop fits in one sitting. The screens and the contracts are the same as on Sepolia.</p>
     <div class="walk">
       <div class="step">
         <div class="label">
@@ -391,7 +391,7 @@ footer p { margin: 0 0 6px; }
 <section id="build">
   <div class="wrap">
     <h2><span class="num">3</span>Implementation and demo</h2>
-    <p class="sub">What it is built with, what runs where, and how to try it.</p>
+    <p class="sub">What it is built with, what runs where, and how to try it. The screen-by-screen demo is in Section 2.6.</p>
 
     <h3><span class="num">3.1</span>Technology</h3>
     <div class="table-wrap"><table>
@@ -421,17 +421,17 @@ footer p { margin: 0 0 6px; }
     </ul>
 
     <h3><span class="num">3.3</span>Live on Sepolia</h3>
-    <p>Six markets went live on 30 October 2026. All read HKO headquarters. Bets close the night before each day.</p>
+    <p>Six markets went live on 30 October 2026. All read HKO headquarters. Bets close the night before each day. In these six markets the admin wallet is also the proposer, so it cannot bet in them.</p>
     <div class="table-wrap"><table>
       <tr><th>#</th><th>Question</th><th>Kind</th><th>Bets</th><th>Yes share</th><th>Status</th></tr>
-      <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>7</td><td>20 %</td><td>Open until 2 Nov, 23:59</td></tr>
-      <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>5</td><td>62 %</td><td>Open until 3 Nov, 23:59</td></tr>
-      <tr><td>3</td><td>Rain of 1.0 mm or more on 5 Nov</td><td><span class="tag">Official</span></td><td>3</td><td>29 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>4</td><td>20 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>5</td><td>Minimum temperature of 25.0 °C or less on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>2</td><td>50 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>6</td><td>Mean humidity from 65 % to 75 % on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>2</td><td>60 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>7</td><td>20.0 %</td><td>Open until 2 Nov, 23:59</td></tr>
+      <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>5</td><td>62.5 %</td><td>Open until 3 Nov, 23:59</td></tr>
+      <tr><td>3</td><td>Rain of 1.0 mm or more on 5 Nov</td><td><span class="tag">Official</span></td><td>3</td><td>28.6 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>4</td><td>20.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>5</td><td>Minimum temperature of 25.0 °C or less on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>2</td><td>50.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>6</td><td>Mean humidity from 65 % to 75 % on 5 Nov, both included</td><td><span class="tag custom">Custom</span></td><td>2</td><td>60.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
     </table></div>
-    <p class="asof">Read from Sepolia on 31 October 2026, 14:35 (Hong Kong time). Results are due from 4 to 6 November.</p>
+    <p class="asof">Read from Sepolia on 31 October 2026, 14:48 (Hong Kong time). Results are due from 4 to 6 November.</p>
     <p>Contracts on Etherscan: <a href="https://sepolia.etherscan.io/address/0x668643AF961C4032909C1c15A741b6d2d6216e92">PredictionMarket</a>, <a href="https://sepolia.etherscan.io/address/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc">oracle adapter</a>, <a href="https://sepolia.etherscan.io/address/0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944">UMA Optimistic Oracle V3</a>, <a href="https://sepolia.etherscan.io/address/0x3870419Ba2BBf0127060bCB37f69A1b1C090992B">bond token</a>.</p>
 
     <h3><span class="num">3.4</span>Try it</h3>
@@ -473,7 +473,7 @@ footer p { margin: 0 0 6px; }
     <h3><span class="num">4.2</span>What we kept, and what we changed</h3>
     <div class="cards">
       <div class="card"><h4>Kept</h4><p>Price as probability. Official data as the judge. Clear rules for each market. An optimistic oracle with a bond. Written rules for late data.</p></div>
-      <div class="card"><h4>Changed: no fee</h4><p>A course project needs no revenue. Every wei of the pool goes to the winners.</p></div>
+      <div class="card"><h4>Changed: no fee</h4><p>A course project needs no revenue. The whole pool goes to the winners. We keep nothing.</p></div>
       <div class="card"><h4>Changed: hold to the end</h4><p>Shares cannot be sold early. Pools are simpler, and every payout is always fully funded.</p></div>
     </div>
     <p>We also chose refunds over a "last fair price". Without an exchange, nobody can set a fair price.</p>
@@ -481,7 +481,7 @@ footer p { margin: 0 0 6px; }
     <h3><span class="num">4.3</span>Problems we found, and how we solved them</h3>
     <div class="table-wrap"><table>
       <tr><th>Problem</th><th>Our answer</th></tr>
-      <tr><td>Who can be trusted to report the weather?</td><td>Nobody has to be. HKO publishes the data. UMA checks the claim. The admin cannot set a result.</td></tr>
+      <tr><td>Who can be trusted to report the weather?</td><td>Nobody has to be. HKO publishes the data. Anyone can check the claim on UMA and dispute it. The admin cannot set a result.</td></tr>
       <tr><td>The reporter could bet, then hide a bad result.</td><td>The proposer cannot bet in its own market. With no result, everyone is refunded.</td></tr>
       <tr><td>Vague rules lead to disputes.</td><td>Each market fixes its question, source, condition and deadlines at creation. The app shows them as a short spec.</td></tr>
       <tr><td>Data can be late or missing.</td><td>Seven days to propose, then refunds. The waiting page says when HKO usually publishes.</td></tr>
@@ -493,11 +493,11 @@ footer p { margin: 0 0 6px; }
     <h3><span class="num">4.4</span>Problems we hit while building</h3>
     <div class="table-wrap"><table>
       <tr><th>Problem</th><th>What we did</th></tr>
-      <tr><td>A review found that a proposer could bet and then hold back a losing result.</td><td>We blocked proposers from betting, added the settle-first rule and redeployed on 30 October.</td></tr>
+      <tr><td>We found that a proposer could bet, then hold back a losing result.</td><td>We blocked proposers from betting, added the settle-first rule and redeployed on 30 October.</td></tr>
       <tr><td>UMA on Sepolia has no voters to decide disputes.</td><td>A disputed market refunds at the deadline. The rules say so.</td></tr>
       <tr><td>HKO publishes only on working days.</td><td>Deadlines leave seven days. The app shows when data is due.</td></tr>
       <tr><td>Browsers on other sites cannot read HKO's daily file.</td><td>The desktop app relays it. A proposer can also load the file by hand.</td></tr>
-      <tr><td>A proposal sent right after HKO publishes could fail. Blocks trail the clock by a few seconds.</td><td>The tool now waits for a block after the data time.</td></tr>
+      <tr><td>The evidence carried our computer's time. The chain's clock runs a few seconds behind, so the contract would reject it.</td><td>The tools now use the chain's own time, and wait for the next block when needed.</td></tr>
       <tr><td>Free public nodes limit requests. The backup node also drops old receipts.</td><td>The app paces its reads and falls back to a second node. For old receipts it asks the main node again.</td></tr>
     </table></div>
   </div>
@@ -508,7 +508,6 @@ footer p { margin: 0 0 6px; }
     <h2><span class="num">5</span>Limits and next steps</h2>
     <ul>
       <li>Each market has one named proposer. Next: let anyone propose, with a reward.</li>
-      <li>Sepolia has no dispute vote, so a dispute ends in refunds there.</li>
       <li>Bets are held to the end. Next: an order book or AMM for early exits.</li>
       <li>All markets read one station. Next: more stations, districts and typhoon signals.</li>
       <li>The sports cards in the app are a local demo with sample data. They never run on Sepolia.</li>
