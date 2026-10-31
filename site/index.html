@@ -29,6 +29,8 @@ a { color: var(--blue); text-underline-offset: 3px; }
 .top nav { display: flex; gap: 18px; margin-left: auto; font-size: 15px; }
 .top nav a { color: var(--muted); text-decoration: none; }
 .top nav a:hover { color: var(--ink); }
+.top .me { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 15px; text-decoration: none; white-space: nowrap; }
+.top .me:hover { color: var(--ink); }
 .top .app { margin-left: 4px; }
 
 .hero { padding-top: 56px; padding-bottom: 8px; }
@@ -36,7 +38,7 @@ a { color: var(--blue); text-underline-offset: 3px; }
 .lead { font-size: clamp(19px, 2.3vw, 23px); line-height: 1.5; max-width: 760px; margin: 18px 0 8px; }
 .note { color: var(--muted); font-size: 15px; margin: 0; }
 .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 30px; }
-.btn { display: inline-flex; align-items: center; padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 16px; text-decoration: none; border: 1px solid var(--ink); color: var(--ink); background: transparent; }
+.btn { display: inline-flex; align-items: center; padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 16px; text-decoration: none; white-space: nowrap; border: 1px solid var(--ink); color: var(--ink); background: transparent; }
 .btn.primary { background: var(--ink); color: #fff; }
 .btn:hover { background: var(--ink); color: #fff; }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 6px; }
@@ -112,7 +114,8 @@ footer p { margin: 0 0 6px; }
 
 @media (max-width: 900px) {
   .top nav { display: none; }
-  .top .app { margin-left: auto; }
+  .top .me { margin-left: auto; }
+  .top .me span { display: none; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .story, .cards, .try, .example { grid-template-columns: minmax(0, 1fr); }
   .step .shots.two { grid-template-columns: minmax(0, 1fr); }
@@ -131,6 +134,7 @@ footer p { margin: 0 0 6px; }
       <a href="#build">Implementation</a>
       <a href="#research">Research</a>
     </nav>
+    <a class="me" href="https://github.com/leon1111-wgl" aria-label="leon1111-wgl on GitHub"><svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg><span>leon1111-wgl</span></a>
     <a class="btn primary app" href="app/">Open the app</a>
   </div>
 </header>
@@ -148,11 +152,11 @@ footer p { margin: 0 0 6px; }
   </div>
   <div class="stats">
     <div class="stat"><b>6</b><span>live weather markets</span></div>
-    <div class="stat"><b>23</b><span>bets on Sepolia</span></div>
-    <div class="stat"><b>0.049 ETH</b><span>staked by 6 test wallets</span></div>
+    <div class="stat"><b>25</b><span>bets on Sepolia</span></div>
+    <div class="stat"><b>0.053 ETH</b><span>staked by 7 test wallets</span></div>
     <div class="stat"><b>0</b><span>platform fee</span></div>
   </div>
-  <p class="asof">Read from Sepolia on 31 October 2026, 14:48 (Hong Kong time).</p>
+  <p class="asof">Read from Sepolia on 31 October 2026, 16:02 (Hong Kong time).</p>
   <figure>
     <img src="fig/loop.webp" width="3200" height="1600" alt="A loop of seven steps: ask, bet, observe, propose, challenge, settle and claim. In the middle, a refund if there is no valid result.">
     <figcaption><b>Figure 1.</b> Every market is a closed loop. It starts with a question and ends with a payout. If no valid result arrives, the loop still closes: everyone gets their stake back.</figcaption>
@@ -180,7 +184,7 @@ footer p { margin: 0 0 6px; }
     <div class="cards">
       <div class="card"><h4>Smart contracts</h4><p>Markets, Yes and No pools, outcomes, refunds and claims. An adapter talks to UMA. Written in Solidity.</p></div>
       <div class="card"><h4>A web app</h4><p>Browse, bet, follow and claim. English and Chinese. MetaMask signs every transaction.</p></div>
-      <div class="card"><h4>Live markets</h4><p>6 weather markets on Sepolia for 3 to 5 November, with 23 bets from our test wallets so far.</p></div>
+      <div class="card"><h4>Live markets</h4><p>6 weather markets on Sepolia for 3 to 5 November, with 25 bets from our test wallets so far.</p></div>
       <div class="card"><h4>Custom markets</h4><p>Any HKO daily value, such as humidity or minimum temperature. Or any source the creator names. A local sports demo shows other topics work too.</p></div>
       <div class="card"><h4>An HKO tool</h4><p>It downloads HKO's file and reads the value, so the proposer submits the right number.</p></div>
       <div class="card"><h4>Desktop packages</h4><p>Zip files for macOS and Windows. Unzip, double-click, and the app opens. Nothing to install.</p></div>
@@ -425,13 +429,13 @@ footer p { margin: 0 0 6px; }
     <div class="table-wrap"><table>
       <tr><th>#</th><th>Question</th><th>Kind</th><th>Bets</th><th>Yes share</th><th>Status</th></tr>
       <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>7</td><td>20.0 %</td><td>Open until 2 Nov, 23:59</td></tr>
-      <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>5</td><td>62.5 %</td><td>Open until 3 Nov, 23:59</td></tr>
+      <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>6</td><td>70.0 %</td><td>Open until 3 Nov, 23:59</td></tr>
       <tr><td>3</td><td>Rain of 1.0 mm or more on 5 Nov</td><td><span class="tag">Official</span></td><td>3</td><td>28.6 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>4</td><td>20.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>5</td><td>33.3 %</td><td>Open until 4 Nov, 23:59</td></tr>
       <tr><td>5</td><td>Minimum temperature of 25.0 °C or less on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>2</td><td>50.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
       <tr><td>6</td><td>Mean humidity from 65 % to 75 % on 5 Nov, both included</td><td><span class="tag custom">Custom</span></td><td>2</td><td>60.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
     </table></div>
-    <p class="asof">Read from Sepolia on 31 October 2026, 14:48 (Hong Kong time). Results are due from 4 to 6 November.</p>
+    <p class="asof">Read from Sepolia on 31 October 2026, 16:02 (Hong Kong time). Results are due from 4 to 6 November.</p>
     <p>Contracts on Etherscan: <a href="https://sepolia.etherscan.io/address/0x668643AF961C4032909C1c15A741b6d2d6216e92">PredictionMarket</a>, <a href="https://sepolia.etherscan.io/address/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc">oracle adapter</a>, <a href="https://sepolia.etherscan.io/address/0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944">UMA Optimistic Oracle V3</a>, <a href="https://sepolia.etherscan.io/address/0x3870419Ba2BBf0127060bCB37f69A1b1C090992B">bond token</a>.</p>
 
     <h3><span class="num">3.4</span>Try it</h3>
