@@ -87,6 +87,27 @@ describe("Sepolia reads with a fallback RPC", () => {
     expect(main.methods.filter((m) => m === "eth_getTransactionReceipt")).toHaveLength(2);
   });
 
+  it("asks the main RPC again when the fallback has pruned old logs", async () => {
+    let logCalls = 0;
+    const main = rpc("main", "0x1", (method, id) => (method === "eth_getLogs" && logCalls++ === 0
+      ? answer(200, { jsonrpc: "2.0", id, error: { code: -32005, message: "rate limit exceeded" } }) : undefined));
+    const backup = rpc("backup", "0x2", (method, id) => (method === "eth_getLogs"
+      ? answer(200, { jsonrpc: "2.0", id, error: { code: 4444, message: "pruned history unavailable" } }) : undefined));
+    provider = new PacedReadProvider(main.request, 0, backup.request);
+    expect(await provider.send("eth_getLogs", [{ fromBlock: "0x1", toBlock: "0x2" }])).toBe("0x1");
+    expect(backup.methods).toContain("eth_getLogs");
+    expect(main.methods.filter((m) => m === "eth_getLogs")).toHaveLength(2);
+  });
+
+  it("moves missing history from the main RPC to the fallback without resting the main RPC", async () => {
+    const main = rpc("main", "0x1", (method, id) => (method === "eth_getLogs"
+      ? answer(200, { jsonrpc: "2.0", id, error: { code: 4444, message: "pruned history unavailable" } }) : undefined));
+    const backup = rpc("backup", "0x2");
+    provider = new PacedReadProvider(main.request, 0, backup.request);
+    expect(await provider.send("eth_getLogs", [{ fromBlock: "0x1", toBlock: "0x2" }])).toBe("0x2");
+    expect(await provider.send("eth_blockNumber", [])).toBe("0x1");
+  });
+
   it("without a fallback, a failure stays a failure", async () => {
     const main = rpc("main", "0x1", (method) => (method === "eth_blockNumber" ? answer(503, {}) : undefined));
     provider = new PacedReadProvider(main.request, 0);

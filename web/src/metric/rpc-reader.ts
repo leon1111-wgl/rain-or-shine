@@ -1,12 +1,12 @@
 import { FetchRequest, JsonRpcProvider, isError, type JsonRpcPayload, type JsonRpcResult } from "ethers";
 
-/** A public Sepolia RPC that, like the manifest's gateway, serves getLogs over the deployment's range without a key. */
+/** A public Sepolia RPC without a key. Some of its servers drop old history, so old logs and receipts go back to the
+ * manifest's gateway, which keeps them. */
 export const SEPOLIA_FALLBACK_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 /** After the main RPC fails, calls start on the fallback for this long. */
 const MAIN_REST_MS = 60_000;
-/** The fallback has pruned old receipts. After a null receipt from it, the main RPC is asked again this often. */
-const RECEIPT_RETRIES = 2;
-const RECEIPT_PAUSE_MS = 1500;
+/** When the fallback has no old receipt or log, the main RPC is asked again after each of these pauses. */
+const HISTORY_PAUSES_MS = [1500, 3000, 6000];
 
 function connectionOf(request: string | FetchRequest, maxAttempts: number): FetchRequest {
   const connection = typeof request === "string" ? new FetchRequest(request) : request.clone();
@@ -25,6 +25,12 @@ function unavailable(error: unknown): boolean {
 
 /** Some gateways answer a rate limit with HTTP 200 and JSON-RPC error -32005. */
 const rateLimited = (results: JsonRpcResult[]) => results.some((r) => (r as { error?: { code?: number } }).error?.code === -32005);
+
+/** History the node no longer keeps. publicnode answers code 4444, "pruned history unavailable". */
+const prunedHistory = (results: JsonRpcResult[]) => results.some((r) => {
+  const error = (r as { error?: { code?: number; message?: string } }).error;
+  return error !== undefined && (error.code === 4444 || /pruned/i.test(error.message ?? ""));
+});
 
 /** A receipt the answer says does not exist. From the fallback that can mean pruned, not missing. */
 function nullReceipt(payload: JsonRpcPayload | JsonRpcPayload[], results: JsonRpcResult[]): boolean {
@@ -68,21 +74,25 @@ export class PacedReadProvider extends JsonRpcProvider {
     return result;
   }
 
-  /** Each RPC in turn while one cannot serve the call. The main one rests a minute after it fails. */
+  /** Each RPC in turn while one cannot serve the call. The main one rests a minute after a rate limit or an outage.
+   * Missing history is not an outage: the call moves on, and the main RPC does not rest. */
   private async sendAnywhere(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcResult[]> {
     const order = this.connections.length > 1 && Date.now() < this.mainRestsUntil ? [1, 0] : this.connections.map((_, i) => i);
     try {
       for (const [n, index] of order.entries()) {
         const last = n === order.length - 1;
         this.active = index;
+        let busy = false;
         try {
           const results = await super._send(payload);
-          if (index !== 0 && nullReceipt(payload, results)) return await this.receiptFromMain(payload, results);
-          if (last || !rateLimited(results)) return results;
+          if (index !== 0 && (nullReceipt(payload, results) || prunedHistory(results))) return await this.historyFromMain(payload, results);
+          if (last || !(rateLimited(results) || prunedHistory(results))) return results;
+          busy = rateLimited(results);
         } catch (error) {
           if (last || !unavailable(error)) throw error;
+          busy = true;
         }
-        if (index === 0) this.mainRestsUntil = Date.now() + MAIN_REST_MS;
+        if (index === 0 && busy) this.mainRestsUntil = Date.now() + MAIN_REST_MS;
       }
       throw new Error("no RPC to send to");
     } finally {
@@ -90,10 +100,10 @@ export class PacedReadProvider extends JsonRpcProvider {
     }
   }
 
-  /** The fallback has no receipt. The main RPC keeps old receipts, so it is asked again after a short pause. */
-  private async receiptFromMain(payload: JsonRpcPayload | JsonRpcPayload[], fromFallback: JsonRpcResult[]): Promise<JsonRpcResult[]> {
-    for (let attempt = 0; attempt < RECEIPT_RETRIES; attempt++) {
-      await new Promise<void>((resolve) => setTimeout(resolve, RECEIPT_PAUSE_MS));
+  /** The fallback has dropped this history. The main RPC keeps it, so it is asked again after each pause. */
+  private async historyFromMain(payload: JsonRpcPayload | JsonRpcPayload[], fromFallback: JsonRpcResult[]): Promise<JsonRpcResult[]> {
+    for (const pause of HISTORY_PAUSES_MS) {
+      await new Promise<void>((resolve) => setTimeout(resolve, pause));
       this.active = 0;
       try {
         const results = await super._send(payload);
