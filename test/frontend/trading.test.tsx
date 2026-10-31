@@ -235,7 +235,7 @@ describe("waiting", () => {
     mocks.now = v.config.times.observationEnd + 60n;
     useApp([v]);
     render(<WaitingPage id={1} />);
-    expect(screen.getByTestId("late-data")).toHaveTextContent(/HKO publishes a day's data on the next working day, around 10:30\. The proposer can submit it until .+\. A dispute goes to UMA\. Without a settled result by .+, every stake is refunded\./);
+    expect(screen.getByTestId("late-data")).toHaveTextContent(/HKO publishes a day's data on the next working day, around 10:30\. The proposer can submit it until .+\. A dispute goes to UMA\. At .+, a market with no proposal, or a disputed one, refunds every stake\./);
   });
 
   it("after the refund deadline asks anyone to settle an undisputed result instead of offering a refund", () => {
