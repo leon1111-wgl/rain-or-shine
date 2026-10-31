@@ -84,6 +84,10 @@ td.ours { background: #f3f8ff; }
 .tag { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #e3f1e8; color: var(--green); }
 .tag.custom { background: #e6eefc; color: var(--blue); }
 
+.mini { font-size: 18px; margin: 26px 0 8px; }
+.loop-list { list-style: none; padding: 0; margin: 8px 0 14px; max-width: 820px; }
+.loop-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+.loop-list li b { font-variant-numeric: tabular-nums; }
 .callout { border-left: 4px solid var(--sun); background: #fff7e6; padding: 14px 18px; border-radius: 8px; margin: 18px 0; max-width: 820px; }
 .callout p:last-child { margin: 0; }
 .example { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; max-width: 760px; margin: 12px 0 18px; }
@@ -151,12 +155,12 @@ footer p { margin: 0 0 6px; }
     <a class="btn" href="https://github.com/leon1111-wgl/rain-or-shine">Source code</a>
   </div>
   <div class="stats">
-    <div class="stat"><b>7</b><span>weather markets on Sepolia</span></div>
-    <div class="stat"><b>31</b><span>bets on Sepolia</span></div>
-    <div class="stat"><b>0.07 ETH</b><span>staked by 8 test wallets</span></div>
+    <div class="stat"><b>8</b><span>weather markets on Sepolia</span></div>
+    <div class="stat"><b>38</b><span>bets on Sepolia</span></div>
+    <div class="stat"><b>0.088 ETH</b><span>staked by 8 test wallets</span></div>
     <div class="stat"><b>0</b><span>platform fee</span></div>
   </div>
-  <p class="asof">Read from Sepolia on 31 October 2026, 18:12 (Hong Kong time).</p>
+  <p class="asof">Read from Sepolia on 31 October 2026, 21:28 (Hong Kong time).</p>
   <figure>
     <img src="fig/loop.webp" width="3200" height="1600" alt="A loop of seven steps: ask, bet, observe, propose, challenge, settle and claim. In the middle, a refund if there is no valid result.">
     <figcaption><b>Figure 1.</b> Every market is a closed loop. It starts with a question and ends with a payout. If no valid result arrives, the loop still closes: everyone gets their stake back.</figcaption>
@@ -184,7 +188,7 @@ footer p { margin: 0 0 6px; }
     <div class="cards">
       <div class="card"><h4>Smart contracts</h4><p>Markets, Yes and No pools, outcomes, refunds and claims. An adapter talks to UMA. Written in Solidity.</p></div>
       <div class="card"><h4>A web app</h4><p>Browse, bet, follow and claim. English and Chinese. MetaMask signs every transaction.</p></div>
-      <div class="card"><h4>Live markets</h4><p>Six weather markets on Sepolia for 3 to 5 November and a one-hour rehearsal, with 31 bets from our test wallets so far.</p></div>
+      <div class="card"><h4>Live markets</h4><p>Six weather markets on Sepolia for 3 to 5 November and two one-hour rehearsals, with 38 bets from our test wallets so far.</p></div>
       <div class="card"><h4>Custom markets</h4><p>Any HKO daily value, such as humidity or minimum temperature. Or any source the creator names. A local sports demo shows other topics work too.</p></div>
       <div class="card"><h4>An HKO tool</h4><p>It downloads HKO's file and reads the value, so the proposer submits the right number.</p></div>
       <div class="card"><h4>Desktop packages</h4><p>Zip files for macOS and Windows. Unzip, double-click, and the app opens. Nothing to install.</p></div>
@@ -425,18 +429,21 @@ footer p { margin: 0 0 6px; }
     </ul>
 
     <h3><span class="num">3.3</span>Live on Sepolia</h3>
-    <p>Six weather markets went live on 30 October 2026. They read HKO headquarters, and bets close the night before each day. Market 7 is a one-hour rehearsal on 31 October with HKO's hourly rain data. It runs the whole loop early, on the real oracle. In every market the admin wallet is also the proposer, so it cannot bet in them.</p>
+    <p>Six weather markets went live on 30 October 2026. They read HKO headquarters, and bets close the night before each day. Markets 7 and 8 are one-hour rehearsals on 31 October with HKO's hourly rain data. They run the loop early, on the real oracle. In every market the admin wallet is also the proposer, so it cannot bet in them.</p>
     <div class="table-wrap"><table>
       <tr><th>#</th><th>Question</th><th>Kind</th><th>Bets</th><th>Yes share</th><th>Status</th></tr>
-      <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>7</td><td>20.0 %</td><td>Open until 2 Nov, 23:59</td></tr>
+      <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>9</td><td>40.0 %</td><td>Open until 2 Nov, 23:59</td></tr>
       <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>6</td><td>70.0 %</td><td>Open until 3 Nov, 23:59</td></tr>
       <tr><td>3</td><td>Rain of 1.0 mm or more on 5 Nov</td><td><span class="tag">Official</span></td><td>5</td><td>14.3 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>6</td><td>50.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>5</td><td>Minimum temperature of 25.0 °C or less on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>3</td><td>60.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>7</td><td>55.6 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>5</td><td>Minimum temperature of 25.0 °C or less on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>5</td><td>54.5 %</td><td>Open until 4 Nov, 23:59</td></tr>
       <tr><td>6</td><td>Mean humidity from 65 % to 75 % on 5 Nov, both included</td><td><span class="tag custom">Custom</span></td><td>2</td><td>60.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>7</td><td>Rain at HKO headquarters from 19:15 to 20:15 on 31 Oct (one-hour rehearsal)</td><td><span class="tag custom">Custom</span></td><td>2</td><td>40.0 %</td><td>Open until 31 Oct, 19:15</td></tr>
+      <tr><td>7</td><td>Rain at HKO headquarters from 19:15 to 20:15 on 31 Oct (one-hour rehearsal)</td><td><span class="tag custom">Custom</span></td><td>2</td><td>40.0 %</td><td>Waiting for the result</td></tr>
+      <tr><td>8</td><td>Rain at HKO headquarters from 22:30 to 23:30 on 31 Oct (one-hour rehearsal)</td><td><span class="tag custom">Custom</span></td><td>2</td><td>40.0 %</td><td>Open until 31 Oct, 22:30</td></tr>
     </table></div>
-    <p class="asof">Read from Sepolia on 31 October 2026, 18:12 (Hong Kong time). Results are due from 4 to 6 November.</p>
+    <p class="asof">Read from Sepolia on 31 October 2026, 21:28 (Hong Kong time). Results are due from 4 to 6 November.</p>
+    <h4 class="mini">The whole loop, live</h4>
+    <p>Market 8 runs the whole loop tonight on the real UMA oracle: bets, the reading, the challenge window, settle and claim.</p>
     <p>Contracts on Etherscan: <a href="https://sepolia.etherscan.io/address/0x668643AF961C4032909C1c15A741b6d2d6216e92">PredictionMarket</a>, <a href="https://sepolia.etherscan.io/address/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc">oracle adapter</a>, <a href="https://sepolia.etherscan.io/address/0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944">UMA Optimistic Oracle V3</a>, <a href="https://sepolia.etherscan.io/address/0x3870419Ba2BBf0127060bCB37f69A1b1C090992B">bond token</a>.</p>
 
     <h3><span class="num">3.4</span>Try it</h3>
@@ -451,7 +458,7 @@ footer p { margin: 0 0 6px; }
       <tr><th>Suite</th><th>Tests</th><th>What it covers</th></tr>
       <tr><td>Contracts</td><td>80</td><td>Bets, limits, outcomes, refunds, claims, permissions and oracle answers</td></tr>
       <tr><td>Shared logic</td><td>632</td><td>Rules, conditions, payouts, deadlines and HKO parsing</td></tr>
-      <tr><td>Web app</td><td>217</td><td>Pages, forms and number formats in both languages</td></tr>
+      <tr><td>Web app</td><td>223</td><td>Pages, forms and number formats in both languages</td></tr>
       <tr><td>End to end</td><td>15</td><td>A real browser on a real local chain: create, bet, propose, settle, claim and refund</td></tr>
     </table></div>
     <p class="asof">All passing on 31 October 2026. Lint, type checks and the production build also pass.</p>

@@ -195,6 +195,8 @@ describe("market view model", () => {
     expect(questionOf(fall)).toBe("PRESSURE CHANGE, 7 Nov 08:30–11:30: will it be < -5 hPa?");
     expect(conditionWithUnitOf(band)).toBe("between 70% and 85% (inclusive)");
     expect(shortLabelOf(band)).toBe("5 Nov Humidity between 70 and 85 (inclusive)");
+    // Markets on the same day are told apart by their hours, and a longer window shows its days.
+    expect([shortLabelOf(fall), shortLabelOf(week)]).toEqual(["7 Nov 08:30–11:30 PRESSURE CHANGE < -5", "2 Nov to 8 Nov WEEKLY RAINFALL ≥ 20.0"]);
   });
 
   it("shows custom markets on a public network after the official ones and labels each kind", () => {
@@ -214,7 +216,7 @@ describe("market view model", () => {
     setActiveLocale("zh-CN");
     expect(questionOf(game)).toBe("LAL 对 BOS：分差（LAL − BOS）> 0 分？");
     expect(questionOf(derby)).toBe("ARS 对 CHE：净胜球（ARS − CHE）> -1 球？");
-    expect([sourceOf(game), metricNameOf("SCORE_MARGIN"), shortLabelOf(game)]).toEqual(["合成演示数据", "篮球分差", "11月7日 分差 > 0"]);
+    expect([sourceOf(game), metricNameOf("SCORE_MARGIN"), shortLabelOf(game)]).toEqual(["合成演示数据", "篮球分差", "11月7日 19:30–22:00 分差 > 0"]);
     setActiveLocale("en");
     expect(questionOf(game)).toBe("LAL vs BOS: will the margin (LAL − BOS) be > 0 points?");
     expect(questionOf(derby)).toBe("ARS vs CHE: will the goal margin (ARS − CHE) be > -1 goals?");

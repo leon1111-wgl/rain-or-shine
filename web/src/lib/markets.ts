@@ -340,9 +340,10 @@ export function metricShortOf(code: string): string {
   return key ? t(key) : code.replaceAll("_", " ");
 }
 
-/** "11月3日 雨量 ≥ 1.0": the compact name in dense lists and cards. */
+/** "11月3日 雨量 ≥ 1.0": the compact name in dense lists and cards. A window shorter than a day shows its hours, so
+ * two markets on the same day stay apart: "10月31日 22:30–23:30 HOURLY RAINFALL ≥ 0.1". */
 export function shortLabelOf(m: MarketData): string {
-  return `${dayOf(m.targetDate)} ${metricShortOf(m.metric.code)} ${conditionOf(m)}`;
+  return `${windowOf(m)} ${metricShortOf(m.metric.code)} ${conditionOf(m)}`;
 }
 
 /** A metric's type: one icon, one accent colour (CSS `data-metric`) and one filter chip each. Sports come last. */
