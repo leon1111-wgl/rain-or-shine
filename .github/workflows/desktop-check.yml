@@ -19,9 +19,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # The read-only check before packing needs old receipts. The default RPC in the deployment file keeps them.
       - run: npm run package:desktop
-        env:
-          SEPOLIA_RPC_URL: https://ethereum-sepolia-rpc.publicnode.com
       - uses: actions/upload-artifact@v4
         with:
           name: desktop
