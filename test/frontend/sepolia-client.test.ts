@@ -173,6 +173,14 @@ describe("Sepolia deployment verification", () => {
     providerMethods.getTransactionReceipt.mockImplementation(async (tx: string) => tx === missing ? null : original(tx));
     await expect(verifyMetricDeployment(dep, provider)).rejects.toThrow(/receipt is unavailable from this RPC/);
   });
+  it("can skip the receipts for reads, and still checks the code", async () => {
+    const dep = deployment(); prepare(dep);
+    providerMethods.getTransactionReceipt.mockResolvedValue(null);
+    await expect(verifyMetricDeployment(dep, provider, { receipts: false })).resolves.toBeUndefined();
+    expect(providerMethods.getTransactionReceipt).not.toHaveBeenCalled();
+    providerMethods.getCode.mockResolvedValue("0x1234");
+    await expect(verifyMetricDeployment(dep, provider, { receipts: false })).rejects.toThrow(/does not match the deployment/);
+  });
   it.each(["status", "block", "address", "code"] as const)("still rejects a deployment with mismatched %s", async (field) => {
     const dep = deployment(); prepare(dep);
     const entry = dep.contracts.PredictionMarket;

@@ -48,7 +48,7 @@ describe("paced public RPC reads", () => {
     await expect(next).resolves.toEqual([{ jsonrpc: "2.0", id: 2, result: "0x10" }]);
   });
 
-  it("splits concurrent RPC calls into batches of at most four while still checking the network", async () => {
+  it("splits concurrent RPC calls into batches of at most eight while still checking the network", async () => {
     const calls: JsonRpcPayload[][] = [];
     const request = new FetchRequest("https://rpc.invalid");
     request.getUrlFunc = async req => {
@@ -60,7 +60,7 @@ describe("paced public RPC reads", () => {
     const pending = Promise.all(Array.from({ length: 10 }, () => provider!.send("eth_blockNumber", [])));
     await vi.advanceTimersByTimeAsync(6000);
     await expect(pending).resolves.toEqual(Array(10).fill("0x10"));
-    expect(calls.every(batch => batch.length <= 4)).toBe(true);
+    expect(calls.every(batch => batch.length <= 8)).toBe(true);
     expect(calls.flat().filter(call => call.method === "eth_blockNumber")).toHaveLength(10);
     expect(calls.flat().some(call => call.method === "eth_chainId")).toBe(true);
   });

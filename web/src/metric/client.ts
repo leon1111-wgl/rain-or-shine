@@ -120,7 +120,8 @@ export function selectMetricDeployment(
 
 export function createReader(dep: MetricDeployment): JsonRpcProvider {
   // Never pin the network without checking it: a local RPC can be restarted or switched.
-  if (dep.environment === "SEPOLIA_UMA") return new PacedReadProvider(dep.publicRpcUrl, 1000, SEPOLIA_FALLBACK_RPC);
+  // Current state from the fast public RPC, history from the manifest's gateway, which keeps it.
+  if (dep.environment === "SEPOLIA_UMA") return new PacedReadProvider(SEPOLIA_FALLBACK_RPC, 250, dep.publicRpcUrl);
   return new JsonRpcProvider(dep.publicRpcUrl, undefined, { batchMaxCount: 20, cacheTimeout: -1 });
 }
 
@@ -191,8 +192,11 @@ export function marketSourceLabel(market: MarketView): string {
   } catch { return "Unrecognized rules"; }
 }
 
-/** Call at startup and immediately before writes. A successful old check is not permanent. */
-export async function verifyMetricDeployment(dep: MetricDeployment, reader: Provider): Promise<void> {
+/** Call at startup and immediately before writes. A successful old check is not permanent. Reads may skip the
+ * deployment receipts, which public RPCs can drop: the code and bindings checks still run. The check before a write,
+ * on the wallet's RPC, keeps the receipts. */
+export async function verifyMetricDeployment(dep: MetricDeployment, reader: Provider, options: { receipts?: boolean } = {}): Promise<void> {
+  const receipts = options.receipts ?? true;
   assertNumericMarketAbi(ABI.PredictionMarket);
   validateMetricManifest(dep);
   const network = await reader.getNetwork();
@@ -204,14 +208,14 @@ export async function verifyMetricDeployment(dep: MetricDeployment, reader: Prov
     const entry = dep.contracts[name]!;
     const [code, receipt] = await Promise.all([
       reader.getCode(entry.address, block.number),
-      reader.getTransactionReceipt(entry.transactionHash),
+      receipts ? reader.getTransactionReceipt(entry.transactionHash) : Promise.resolve(undefined),
     ]);
-    if (!receipt) {
+    if (receipts && !receipt) {
       throw new Error(`${name} deployment receipt is unavailable from this RPC. Use a ${dep.network} RPC with historical transaction receipts in the app and wallet, then retry. No redeployment is required solely for an unavailable receipt.`);
     }
-    if (code === "0x" || keccak256(code) !== entry.runtimeCodeKeccak256 ||
-        receipt.status !== 1 || receipt.blockNumber !== entry.blockNumber ||
-        !receipt.contractAddress || !sameAddress(receipt.contractAddress, entry.address)) {
+    if (code === "0x" || keccak256(code) !== entry.runtimeCodeKeccak256 || (receipt &&
+        (receipt.status !== 1 || receipt.blockNumber !== entry.blockNumber ||
+        !receipt.contractAddress || !sameAddress(receipt.contractAddress, entry.address)))) {
       throw new Error(`${name} does not match the deployment. Check the network, addresses and exported configuration.`);
     }
   }));
@@ -221,9 +225,9 @@ export async function verifyMetricDeployment(dep: MetricDeployment, reader: Prov
     market.oracleAdapter(at), adapter.market(at), market.metricAdmin(at), adapter.oov3(at),
     adapter.bondCurrency(at), adapter.policyBond(at), adapter.identifier(at), token.decimals(at),
     token.symbol(at), oracle.defaultIdentifier(at),
-    reader.getTransactionReceipt(dep.bindingTransactionHash),
+    receipts ? reader.getTransactionReceipt(dep.bindingTransactionHash) : Promise.resolve(undefined),
   ]);
-  if (!binding) {
+  if (receipts && !binding) {
     throw new Error(`The adapter binding receipt is unavailable from this RPC. Use a ${dep.network} RPC with historical transaction receipts in the app and wallet, then retry. No redeployment is required solely for an unavailable receipt.`);
   }
   if (!sameAddress(boundAdapter, dep.contracts.UmaMetricOracleAdapter.address) ||
@@ -232,7 +236,7 @@ export async function verifyMetricDeployment(dep: MetricDeployment, reader: Prov
       !sameAddress(oo, dep.oracle.optimisticOracleV3) || !sameAddress(currency, dep.oracle.bondCurrency) ||
       policy !== BigInt(dep.oracle.policyBond) || identifier !== dep.oracle.identifier || identifier !== oracleIdentifier ||
       decimals !== BigInt(dep.oracle.bondDecimals) || symbol !== dep.oracle.bondSymbol ||
-      binding.status !== 1 || !binding.to || !sameAddress(binding.to, dep.contracts.PredictionMarket.address)) {
+      (binding && (binding.status !== 1 || !binding.to || !sameAddress(binding.to, dep.contracts.PredictionMarket.address)))) {
     throw new Error("Market, adapter, oracle or bond token bindings do not match the deployment.");
   }
   if (dep.environment === "LOCAL_MOCK") {

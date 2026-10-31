@@ -42,7 +42,7 @@ function useController(dep: MetricDeployment) {
           const check = { dep, reader, promise: Promise.resolve() };
           pendingReadVerification.current = check;
           check.promise = (async () => {
-            try { await verifyMetricDeployment(dep, reader); }
+            try { await verifyMetricDeployment(dep, reader, { receipts: false }); }
             finally { if (pendingReadVerification.current === check) pendingReadVerification.current = null; }
           })();
           verification = check;
@@ -80,7 +80,7 @@ function useController(dep: MetricDeployment) {
     if (lock.current) return false;
     lock.current = true; setBusy(true); setMessage(label + "…"); setTxHash("");
     try {
-      await verifyMetricDeployment(dep, reader);
+      await verifyMetricDeployment(dep, reader, { receipts: false });
       await task();
       setMessage(label + ": complete");
       await refreshRef.current(true);

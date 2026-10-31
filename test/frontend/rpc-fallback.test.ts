@@ -1,4 +1,5 @@
-// The Sepolia reader's fallback: a call the main RPC cannot serve goes to the second RPC, in the same paced queue.
+// The Sepolia reader: current state from the first RPC, history from the second. A call one RPC cannot serve goes to
+// the other, in the same paced queue.
 import { FetchRequest, toUtf8Bytes, toUtf8String, type GetUrlResponse, type JsonRpcPayload } from "ethers";
 import { afterEach, describe, expect, it } from "vitest";
 import { PacedReadProvider } from "../../web/src/metric/rpc-reader";
@@ -32,7 +33,7 @@ afterEach(() => {
   provider = undefined;
 });
 
-describe("Sepolia reads with a fallback RPC", () => {
+describe("Sepolia reads with a state RPC and a history RPC", () => {
   it.each([
     ["a rate limit", () => answer(429, { error: "too many requests" })],
     ["a server error", () => answer(503, { error: "unavailable" })],
@@ -76,36 +77,72 @@ describe("Sepolia reads with a fallback RPC", () => {
     expect(await provider.send("eth_blockNumber", [])).toBe("0x1");
   });
 
-  it("asks the main RPC again when the fallback has pruned an old receipt", async () => {
-    let receiptCalls = 0;
-    const main = rpc("main", "0x1", (method, id) => (method === "eth_getTransactionReceipt" && receiptCalls++ === 0
-      ? answer(200, { jsonrpc: "2.0", id, error: { code: -32005, message: "rate limit exceeded" } }) : undefined));
-    const backup = rpc("backup", "0x2", (method, id) => (method === "eth_getTransactionReceipt" ? answer(200, { jsonrpc: "2.0", id, result: null }) : undefined));
-    provider = new PacedReadProvider(main.request, 0, backup.request);
-    expect(await provider.send("eth_getTransactionReceipt", [`0x${"ab".repeat(32)}`])).toBe("0x1");
-    expect(backup.methods).toContain("eth_getTransactionReceipt");
-    expect(main.methods.filter((m) => m === "eth_getTransactionReceipt")).toHaveLength(2);
-  });
-
-  it("asks the main RPC again when the fallback has pruned old logs", async () => {
-    let logCalls = 0;
-    const main = rpc("main", "0x1", (method, id) => (method === "eth_getLogs" && logCalls++ === 0
-      ? answer(200, { jsonrpc: "2.0", id, error: { code: -32005, message: "rate limit exceeded" } }) : undefined));
-    const backup = rpc("backup", "0x2", (method, id) => (method === "eth_getLogs"
-      ? answer(200, { jsonrpc: "2.0", id, error: { code: 4444, message: "pruned history unavailable" } }) : undefined));
-    provider = new PacedReadProvider(main.request, 0, backup.request);
-    expect(await provider.send("eth_getLogs", [{ fromBlock: "0x1", toBlock: "0x2" }])).toBe("0x1");
-    expect(backup.methods).toContain("eth_getLogs");
-    expect(main.methods.filter((m) => m === "eth_getLogs")).toHaveLength(2);
-  });
-
-  it("moves missing history from the main RPC to the fallback without resting the main RPC", async () => {
-    const main = rpc("main", "0x1", (method, id) => (method === "eth_getLogs"
-      ? answer(200, { jsonrpc: "2.0", id, error: { code: 4444, message: "pruned history unavailable" } }) : undefined));
-    const backup = rpc("backup", "0x2");
-    provider = new PacedReadProvider(main.request, 0, backup.request);
-    expect(await provider.send("eth_getLogs", [{ fromBlock: "0x1", toBlock: "0x2" }])).toBe("0x2");
+  it("sends receipts to the history RPC first, and state calls and logs to the state RPC first", async () => {
+    const state = rpc("state", "0x1");
+    const history = rpc("history", "0x2");
+    provider = new PacedReadProvider(state.request, 0, history.request);
+    expect(await provider.send("eth_getTransactionReceipt", [`0x${"ef".repeat(32)}`])).toBe("0x2");
+    expect(state.methods).not.toContain("eth_getTransactionReceipt");
     expect(await provider.send("eth_blockNumber", [])).toBe("0x1");
+    expect(await provider.send("eth_getLogs", [{ fromBlock: "0x1", toBlock: "0x2" }])).toBe("0x1");
+    expect(history.methods).not.toContain("eth_blockNumber");
+    expect(history.methods).not.toContain("eth_getLogs");
+  });
+
+  it("asks the history RPC again when it is busy and the state RPC has pruned old logs", async () => {
+    let logCalls = 0;
+    const state = rpc("state", "0x1", (method, id) => (method === "eth_getLogs"
+      ? answer(200, { jsonrpc: "2.0", id, error: { code: 4444, message: "pruned history unavailable" } }) : undefined));
+    const history = rpc("history", "0x2", (method, id) => (method === "eth_getLogs" && logCalls++ === 0
+      ? answer(200, { jsonrpc: "2.0", id, error: { code: -32005, message: "rate limit exceeded" } }) : undefined));
+    provider = new PacedReadProvider(state.request, 0, history.request);
+    expect(await provider.send("eth_getLogs", [{ fromBlock: "0x1", toBlock: "0x2" }])).toBe("0x2");
+    expect(state.methods).toContain("eth_getLogs");
+    expect(history.methods.filter((m) => m === "eth_getLogs")).toHaveLength(2);
+  });
+
+  it("asks the history RPC again when it is busy and the state RPC has no old receipt", async () => {
+    let receiptCalls = 0;
+    const state = rpc("state", "0x1", (method, id) => (method === "eth_getTransactionReceipt" ? answer(200, { jsonrpc: "2.0", id, result: null }) : undefined));
+    const history = rpc("history", "0x2", (method, id) => (method === "eth_getTransactionReceipt" && receiptCalls++ === 0
+      ? answer(200, { jsonrpc: "2.0", id, error: { code: -32005, message: "rate limit exceeded" } }) : undefined));
+    provider = new PacedReadProvider(state.request, 0, history.request);
+    expect(await provider.send("eth_getTransactionReceipt", [`0x${"ab".repeat(32)}`])).toBe("0x2");
+    expect(state.methods).toContain("eth_getTransactionReceipt");
+    expect(history.methods.filter((m) => m === "eth_getTransactionReceipt")).toHaveLength(2);
+  });
+
+  it("sends a block the state RPC has dropped to the history RPC, without resting the state RPC", async () => {
+    const state = rpc("state", "0x1", (method, id) => (method === "eth_getBlockByNumber" ? answer(200, { jsonrpc: "2.0", id, result: null }) : undefined));
+    const history = rpc("history", "0x2");
+    provider = new PacedReadProvider(state.request, 0, history.request);
+    expect(await provider.send("eth_getBlockByNumber", ["0x10", false])).toBe("0x2");
+    expect(await provider.send("eth_blockNumber", [])).toBe("0x1");
+  });
+
+  it("sends logs the state RPC has pruned to the history RPC, at most four calls per request", async () => {
+    const state = rpc("state", "0x1", (method, id) => (method === "eth_getLogs"
+      ? answer(200, { jsonrpc: "2.0", id, error: { code: 4444, message: "pruned history unavailable" } }) : undefined));
+    const sizes: number[] = [];
+    const history = rpc("history", "0x2");
+    const plain = history.request.getUrlFunc!;
+    history.request.getUrlFunc = async (req, signal) => {
+      const body = JSON.parse(toUtf8String(req.body!)) as Payload;
+      sizes.push(Array.isArray(body) ? body.length : 1);
+      return plain(req, signal);
+    };
+    provider = new PacedReadProvider(state.request, 0, history.request);
+    const logs = Array.from({ length: 7 }, (_, i) => provider!.send("eth_getLogs", [{ fromBlock: `0x${i + 1}`, toBlock: `0x${i + 1}` }]));
+    expect(await Promise.all(logs)).toEqual(Array(7).fill("0x2"));
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(4);
+  });
+
+  it("takes the history RPC's own empty answer as final", async () => {
+    const state = rpc("state", "0x1");
+    const history = rpc("history", "0x2", (method, id) => (method === "eth_getTransactionReceipt" ? answer(200, { jsonrpc: "2.0", id, result: null }) : undefined));
+    provider = new PacedReadProvider(state.request, 0, history.request);
+    expect(await provider.send("eth_getTransactionReceipt", [`0x${"cd".repeat(32)}`])).toBeNull();
+    expect(state.methods).not.toContain("eth_getTransactionReceipt");
   });
 
   it("without a fallback, a failure stays a failure", async () => {

@@ -1,12 +1,22 @@
 import { FetchRequest, JsonRpcProvider, isError, type JsonRpcPayload, type JsonRpcResult } from "ethers";
 
-/** A public Sepolia RPC without a key. Some of its servers drop old history, so old logs and receipts go back to the
- * manifest's gateway, which keeps them. */
+/** A public Sepolia RPC without a key. It is fast, so the reader asks it first for current state and logs. Some of its
+ * servers drop old history: receipts go to the manifest's gateway first, and logs it has dropped move there too. */
 export const SEPOLIA_FALLBACK_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-/** After the main RPC fails, calls start on the fallback for this long. */
-const MAIN_REST_MS = 60_000;
-/** When the fallback has no old receipt or log, the main RPC is asked again after each of these pauses. */
-const HISTORY_PAUSES_MS = [1500, 3000, 6000];
+/** After an RPC fails or rate-limits, calls start on the other one for this long. */
+const REST_MS = 60_000;
+/** When the history RPC is busy and the other one has no history, the history RPC is asked again after these pauses. */
+const HISTORY_PAUSES_MS = [1500, 3000, 6000, 12000];
+/** The history gateway rejects a request with more than five calls, so it gets at most this many per request. */
+const HISTORY_BATCH = 4;
+/** Calls that go to the history RPC first. Logs go to the fast RPC first: it usually still has them, and when it has
+ * dropped them it says so, and the call moves on. */
+const HISTORY_METHODS = new Set(["eth_getTransactionReceipt", "eth_getTransactionByHash"]);
+
+type Payload = JsonRpcPayload | JsonRpcPayload[];
+/** Nothing final yet: the best answer so far, or the last failure. */
+type Retry = { best: JsonRpcResult[] | undefined; failure: unknown };
+const listOf = (payload: Payload) => (Array.isArray(payload) ? payload : [payload]);
 
 function connectionOf(request: string | FetchRequest, maxAttempts: number): FetchRequest {
   const connection = typeof request === "string" ? new FetchRequest(request) : request.clone();
@@ -26,35 +36,38 @@ function unavailable(error: unknown): boolean {
 /** Some gateways answer a rate limit with HTTP 200 and JSON-RPC error -32005. */
 const rateLimited = (results: JsonRpcResult[]) => results.some((r) => (r as { error?: { code?: number } }).error?.code === -32005);
 
-/** History the node no longer keeps. publicnode answers code 4444, "pruned history unavailable". */
-const prunedHistory = (results: JsonRpcResult[]) => results.some((r) => {
-  const error = (r as { error?: { code?: number; message?: string } }).error;
-  return error !== undefined && (error.code === 4444 || /pruned/i.test(error.message ?? ""));
-});
-
-/** A receipt the answer says does not exist. From the fallback that can mean pruned, not missing. */
-function nullReceipt(payload: JsonRpcPayload | JsonRpcPayload[], results: JsonRpcResult[]): boolean {
-  const ids = (Array.isArray(payload) ? payload : [payload]).filter((p) => p.method === "eth_getTransactionReceipt").map((p) => p.id);
+/** History the node does not keep: publicnode's code 4444, "pruned history unavailable", or null for a receipt or for
+ * a block by number. */
+function missingHistory(payload: Payload, results: JsonRpcResult[]): boolean {
+  const pruned = results.some((r) => {
+    const error = (r as { error?: { code?: number; message?: string } }).error;
+    return error !== undefined && (error.code === 4444 || /pruned/i.test(error.message ?? ""));
+  });
+  if (pruned) return true;
+  const ids = listOf(payload)
+    .filter((p) => p.method === "eth_getTransactionReceipt" || (p.method === "eth_getBlockByNumber" && /^0x/.test(String((p.params as unknown[] | undefined)?.[0]))))
+    .map((p) => p.id);
   return results.some((r) => ids.includes(r.id) && (r as { result?: unknown }).result === null);
 }
 
-/** Keep public RPC bursts small, sharing one queue across dashboard and activity reads. With a fallback, a call the
- * main RPC cannot serve (rate limit, server error, timeout) is sent again to the fallback in the same slot. */
+/** Keep public RPC bursts small, sharing one queue across dashboard and activity reads. With a second RPC that keeps
+ * history, receipts go to it first and everything else to the first RPC. A call one RPC cannot serve (rate limit,
+ * server error, timeout, missing history) goes to the other in the same slot. */
 export class PacedReadProvider extends JsonRpcProvider {
   private pending: Promise<void> = Promise.resolve();
   private nextStart = 0;
   private readonly connections: FetchRequest[];
+  private readonly restsUntil = [0, 0];
   private active = 0;
-  private mainRestsUntil = 0;
 
-  constructor(request: string | FetchRequest, private readonly intervalMs = 1000, fallback?: string | FetchRequest) {
-    // With somewhere else to go, the main RPC is not retried on 429. The fallback is the retry.
-    const main = connectionOf(request, fallback === undefined ? 4 : 1);
-    super(main, undefined, { batchMaxCount: 4, cacheTimeout: -1 });
-    this.connections = [main];
-    if (fallback !== undefined) {
-      const second = connectionOf(fallback, 4);
-      if (second.url !== main.url) this.connections.push(second);
+  constructor(request: string | FetchRequest, private readonly intervalMs = 1000, history?: string | FetchRequest) {
+    // With somewhere else to go, an RPC is not retried on 429. The other RPC is the retry.
+    const state = connectionOf(request, history === undefined ? 4 : 1);
+    super(state, undefined, { batchMaxCount: 8, cacheTimeout: -1 });
+    this.connections = [state];
+    if (history !== undefined) {
+      const second = connectionOf(history, 1);
+      if (second.url !== state.url) this.connections.push(second);
     }
   }
 
@@ -62,56 +75,90 @@ export class PacedReadProvider extends JsonRpcProvider {
     return this.connections[this.active]!.clone();
   }
 
-  override _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcResult[]> {
-    const send = async () => {
+  override _send(payload: Payload): Promise<JsonRpcResult[]> {
+    return this.paced(() => this.sendAnywhere(payload)).then((outcome) => ("results" in outcome ? outcome.results : this.historyAgain(payload, outcome)));
+  }
+
+  /** Runs one task in the shared queue, starting at most one per interval. Pauses between retries happen outside it. */
+  private paced<T>(task: () => Promise<T>): Promise<T> {
+    const run = async () => {
       const wait = this.nextStart - Date.now();
       if (wait > 0) await new Promise<void>(resolve => setTimeout(resolve, wait));
       this.nextStart = Date.now() + this.intervalMs;
-      return this.sendAnywhere(payload);
+      return task();
     };
-    const result = this.pending.then(send);
+    const result = this.pending.then(run);
     this.pending = result.then(() => undefined, () => undefined);
     return result;
   }
 
-  /** Each RPC in turn while one cannot serve the call. The main one rests a minute after a rate limit or an outage.
-   * Missing history is not an outage: the call moves on, and the main RPC does not rest. */
-  private async sendAnywhere(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcResult[]> {
-    const order = this.connections.length > 1 && Date.now() < this.mainRestsUntil ? [1, 0] : this.connections.map((_, i) => i);
+  /** The preferred RPC for this call first, unless it is resting and the other one is not. */
+  private orderFor(payload: Payload): number[] {
+    if (this.connections.length === 1) return [0];
+    const first = listOf(payload).some((p) => HISTORY_METHODS.has(p.method)) ? 1 : 0;
+    const now = Date.now();
+    return now < this.restsUntil[first]! && now >= this.restsUntil[1 - first]! ? [1 - first, first] : [first, 1 - first];
+  }
+
+  /** One RPC through `active`, inside the queue. The history RPC gets small requests, one after another. */
+  private async sendTo(index: number, payload: Payload): Promise<JsonRpcResult[]> {
+    this.active = index;
     try {
-      for (const [n, index] of order.entries()) {
-        const last = n === order.length - 1;
-        this.active = index;
-        let busy = false;
-        try {
-          const results = await super._send(payload);
-          if (index !== 0 && (nullReceipt(payload, results) || prunedHistory(results))) return await this.historyFromMain(payload, results);
-          if (last || !(rateLimited(results) || prunedHistory(results))) return results;
-          busy = rateLimited(results);
-        } catch (error) {
-          if (last || !unavailable(error)) throw error;
-          busy = true;
-        }
-        if (index === 0 && busy) this.mainRestsUntil = Date.now() + MAIN_REST_MS;
+      if (index === 0 || !Array.isArray(payload) || payload.length <= HISTORY_BATCH) return await super._send(payload);
+      const results: JsonRpcResult[] = [];
+      for (let start = 0; start < payload.length; start += HISTORY_BATCH) {
+        results.push(...await super._send(payload.slice(start, start + HISTORY_BATCH)));
       }
-      throw new Error("no RPC to send to");
+      return results;
     } finally {
       this.active = 0;
     }
   }
 
-  /** The fallback has dropped this history. The main RPC keeps it, so it is asked again after each pause. */
-  private async historyFromMain(payload: JsonRpcPayload | JsonRpcPayload[], fromFallback: JsonRpcResult[]): Promise<JsonRpcResult[]> {
-    for (const pause of HISTORY_PAUSES_MS) {
-      await new Promise<void>((resolve) => setTimeout(resolve, pause));
-      this.active = 0;
+  /** Each RPC in turn while one cannot serve the call. The history RPC's own answer is final unless it is busy. */
+  private async sendAnywhere(payload: Payload): Promise<{ results: JsonRpcResult[] } | Retry> {
+    const history = this.connections.length > 1 ? 1 : -1;
+    let missing: JsonRpcResult[] | undefined;
+    let limited: JsonRpcResult[] | undefined;
+    let failure: unknown;
+    for (const index of this.orderFor(payload)) {
       try {
-        const results = await super._send(payload);
-        if (!rateLimited(results)) return results;
+        const results = await this.sendTo(index, payload);
+        if (rateLimited(results)) {
+          this.restsUntil[index] = Date.now() + REST_MS;
+          limited ??= results;
+        } else if (index !== history && history >= 0 && missingHistory(payload, results)) {
+          missing = results;
+        } else {
+          return { results };
+        }
       } catch (error) {
         if (!unavailable(error)) throw error;
+        this.restsUntil[index] = Date.now() + REST_MS;
+        failure = error;
       }
     }
-    return fromFallback;
+    if (history >= 0) return { best: missing ?? limited, failure };
+    if (limited) return { results: limited };
+    throw failure;
+  }
+
+  /** The history RPC was busy and the other one could not answer. Ask the history RPC again after each pause. The other
+   * calls keep their places in the queue meanwhile. */
+  private async historyAgain(payload: Payload, retry: Retry): Promise<JsonRpcResult[]> {
+    let { best, failure } = retry;
+    for (const pause of HISTORY_PAUSES_MS) {
+      await new Promise<void>((resolve) => setTimeout(resolve, pause));
+      try {
+        const results = await this.paced(() => this.sendTo(1, payload));
+        if (!rateLimited(results)) return results;
+        best ??= results;
+      } catch (error) {
+        if (!unavailable(error)) throw error;
+        failure = error;
+      }
+    }
+    if (best) return best;
+    throw failure;
   }
 }
