@@ -5,7 +5,7 @@ import {
 } from "ethers";
 import generatedAbi from "../generated/metric-abi.json";
 import generatedDeployments from "../generated/metric-deployments.json";
-import { PacedReadProvider, SEPOLIA_FALLBACK_RPC } from "./rpc-reader";
+import { LOG_BLOCK_SPAN, PacedReadProvider, SEPOLIA_FALLBACK_RPC } from "./rpc-reader";
 import {
   assertNumericMarketRulesMatchChain, type NumericRulesChainExpectation,
 } from "@shared/metric/numeric-rules";
@@ -342,8 +342,8 @@ export async function readDashboard(dep: MetricDeployment, reader: Provider, acc
       allowsTrace: definition.allowsTrace, rulesHash: definition.rulesHash };
   });
   const documents = new Map<number, { text: string; hash: string }>();
-  for (let from = dep.contracts.PredictionMarket.blockNumber; from <= block.number && documents.size < Number(marketCount); from += 5000) {
-    const events = await market.queryFilter(market.filters.MarketCreated(), from, Math.min(block.number, from + 4999));
+  for (let from = dep.contracts.PredictionMarket.blockNumber; from <= block.number && documents.size < Number(marketCount); from += LOG_BLOCK_SPAN) {
+    const events = await market.queryFilter(market.filters.MarketCreated(), from, Math.min(block.number, from + LOG_BLOCK_SPAN - 1));
     for (const event of events) {
       const id = Number(event.args.marketId);
       if (!Number.isSafeInteger(id) || id < 1 || id > Number(marketCount) || documents.has(id)) throw new Error("A MarketCreated log contains an invalid or duplicate market ID.");

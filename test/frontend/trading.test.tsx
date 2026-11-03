@@ -366,6 +366,23 @@ describe("markets page", () => {
     expect(screen.getAllByTestId("pool-card").map((r) => r.getAttribute("data-market"))).toEqual(["4"]);
   });
 
+  it("tags a market that ended in a refund as refunded, in both languages", async () => {
+    const base = view(1, "TOTAL_RAINFALL", { date: "20261103", yes: 2n * 10n ** 15n, no: 3n * 10n ** 15n, effective: 3n, reason: 3n });
+    useApp([{ ...base, state: { ...base.state, terminal: 3n, refundReason: 3n } } as MarketView]);
+    const { unmount } = render(<MarketsPage tab="markets" />);
+    const [row] = await screen.findAllByTestId("pool-card");
+    expect(row).toHaveAttribute("data-phase", "REFUND");
+    expect(within(row!).getByTestId("phase-badge")).toHaveTextContent(/^Refunded/);
+    unmount();
+    setActiveLocale("zh-CN");
+    try {
+      render(<MarketsPage tab="markets" />);
+      expect(within((await screen.findAllByTestId("pool-card"))[0]!).getByTestId("phase-badge")).toHaveTextContent(/^已退款/);
+    } finally {
+      setActiveLocale("en");
+    }
+  });
+
   it("never shows a sports demo on Sepolia", async () => {
     useApp([...markets, sportsView(4, 10n ** 15n, 10n ** 15n)], { ...local, environment: "SEPOLIA_UMA", chainId: 11155111 });
     render(<MarketsPage tab="markets" />);

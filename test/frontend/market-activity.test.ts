@@ -74,11 +74,12 @@ describe("market activity from chain records", () => {
   });
 
   it("pages the selected market's log range without overlapping boundaries", async () => {
-    latest = 10150;
-    setBets([{ account: A, side: 1, amount: 2n, block: 5099 }, { account: B, side: 2, amount: 3n, block: 5100 }, { account: A, side: 1, amount: 4n, block: 10100 }]);
+    latest = 100150;
+    setBets([{ account: A, side: 1, amount: 2n, block: 50099 }, { account: B, side: 2, amount: 3n, block: 50100 }, { account: A, side: 1, amount: 4n, block: 100100 }]);
     const result = await readMarketActivity(dep, provider, 7);
+    // Pages of 50,000 blocks, the most that publicnode answers in one query.
     expect(mocks.queryFilter.mock.calls).toEqual([
-      ["selected-market-filter", 100, 5099], ["selected-market-filter", 5100, 10099], ["selected-market-filter", 10100, 10150],
+      ["selected-market-filter", 100, 50099], ["selected-market-filter", 50100, 100099], ["selected-market-filter", 100100, 100150],
     ]);
     expect(result.trades.map(trade => trade.amount)).toEqual([4n, 3n, 2n]);
   });
@@ -102,7 +103,7 @@ describe("market activity from chain records", () => {
   });
 
   it("does not return a partial first page when a later RPC page fails", async () => {
-    latest = 5200;
+    latest = 50200;
     mocks.queryFilter.mockImplementation(async (_filter: string, from: number) => {
       if (from > 100) throw new Error("History unavailable");
       return logs;
@@ -169,7 +170,7 @@ describe("market activity from chain records", () => {
   });
 
   it("applies the event cap across separate RPC pages", async () => {
-    latest = 5200;
+    latest = 50200;
     mocks.queryFilter.mockImplementation(async (_filter: string, from: number) =>
       Array.from({ length: from === 100 ? 5001 : 5000 }, () => logs[0]!));
     await expect(readMarketActivity(dep, provider, 7)).rejects.toThrow(/No partial history/);
@@ -177,7 +178,7 @@ describe("market activity from chain records", () => {
   });
 
   it("loads independent pages concurrently with a bounded number of RPC calls", async () => {
-    latest = 90100;
+    latest = 900100;
     const original = mocks.queryFilter.getMockImplementation()!;
     let pending = 0, peak = 0;
     mocks.queryFilter.mockImplementation(async (filter: string, from: number, to: number) => {

@@ -10,7 +10,7 @@ and result as it is. Read them from the screen. Never prepare them in advance.
 - The MetaMask account needs a little Sepolia ETH. A bet is at least 0.001 ETH, plus gas.
 - The account must not be a market's proposer. The contract refuses bets from the proposer, and the bet panel says
   so.
-- Know the six markets and their schedule. All times are Hong Kong time.
+- Know the markets and their schedule. All times are Hong Kong time.
 
 | Market | Question | Betting closes | Result proposed | Settled |
 | --- | --- | --- | --- | --- |
@@ -20,6 +20,10 @@ and result as it is. Read them from the screen. Never prepare them in advance.
 | 4 | Maximum temperature ≥ 29.0 °C on 5 Nov | 4 Nov 23:59 | 6 Nov, after publication | about 2 h later |
 | 5 (custom) | Minimum temperature ≤ 25.0 °C on 5 Nov | 4 Nov 23:59 | 6 Nov, after publication | about 2 h later |
 | 6 (custom) | Mean relative humidity 65–75 % (inclusive) on 5 Nov | 4 Nov 23:59 | 6 Nov, after publication | about 2 h later |
+
+- From market 9 a new pair opens every three days until 1 December: rain ≥ 1.0 mm and a maximum temperature at
+  HKO's forecast, for 8, 11, 14, 17, 20, 23, 26 and 29 November and 2 December. Each pair opens five days ahead and
+  closes at 23:59 the day before. Its results are proposed after HKO publishes the day.
 
 - Pick the market to bet on: one whose betting is still open on the recording day.
 

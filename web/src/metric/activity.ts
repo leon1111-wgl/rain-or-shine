@@ -1,5 +1,6 @@
 import { getAddress, type Provider } from "ethers";
 import { marketOf, type MetricDeployment } from "./client";
+import { LOG_BLOCK_SPAN } from "./rpc-reader";
 
 export interface MarketHolder {
   account: string;
@@ -26,7 +27,6 @@ export interface MarketActivityData {
 }
 
 export const MAX_ACTIVITY_BETS = 10_000;
-const BLOCK_PAGE = 5000;
 const READ_CONCURRENCY = 6;
 const HASH = /^0x[0-9a-fA-F]{64}$/;
 
@@ -70,8 +70,8 @@ export async function readMarketActivity(dep: MetricDeployment, reader: Provider
   const seen = new Set<string>();
   const blockHashes = new Map<number, string>();
   const ranges: { from: number; to: number }[] = [];
-  for (let from = firstBlock; from <= block.number; from += BLOCK_PAGE) {
-    ranges.push({ from, to: Math.min(block.number, from + BLOCK_PAGE - 1) });
+  for (let from = firstBlock; from <= block.number; from += LOG_BLOCK_SPAN) {
+    ranges.push({ from, to: Math.min(block.number, from + LOG_BLOCK_SPAN - 1) });
   }
   let logCount = 0;
   const pages = await mapBounded(ranges, async ({ from, to }) => {

@@ -3,6 +3,8 @@ import { FetchRequest, JsonRpcProvider, isError, type JsonRpcPayload, type JsonR
 /** A public Sepolia RPC without a key. It is fast, so the reader asks it first for current state and logs. Some of its
  * servers drop old history: receipts go to the manifest's gateway first, and logs it has dropped move there too. */
 export const SEPOLIA_FALLBACK_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+/** The most blocks that one log query may span: publicnode refuses more than 50,000. The gateway takes more. */
+export const LOG_BLOCK_SPAN = 50_000;
 /** After an RPC fails or rate-limits, calls start on the other one for this long. */
 const REST_MS = 60_000;
 /** When the history RPC is busy and the other one has no history, the history RPC is asked again after these pauses. */
@@ -50,9 +52,10 @@ function missingHistory(payload: Payload, results: JsonRpcResult[]): boolean {
   return results.some((r) => ids.includes(r.id) && (r as { result?: unknown }).result === null);
 }
 
-/** Keep public RPC bursts small, sharing one queue across dashboard and activity reads. With a second RPC that keeps
- * history, receipts go to it first and everything else to the first RPC. A call one RPC cannot serve (rate limit,
- * server error, timeout, missing history) goes to the other in the same slot. */
+/** Keep public RPC bursts small, sharing one queue across dashboard and activity reads. One request is in flight at a
+ * time, so a dashboard read costs one round trip per batch; sixteen calls per batch keep that short as markets grow.
+ * With a second RPC that keeps history, receipts go to it first and everything else to the first RPC. A call one RPC
+ * cannot serve (rate limit, server error, timeout, missing history) goes to the other in the same slot. */
 export class PacedReadProvider extends JsonRpcProvider {
   private pending: Promise<void> = Promise.resolve();
   private nextStart = 0;
@@ -63,7 +66,7 @@ export class PacedReadProvider extends JsonRpcProvider {
   constructor(request: string | FetchRequest, private readonly intervalMs = 1000, history?: string | FetchRequest) {
     // With somewhere else to go, an RPC is not retried on 429. The other RPC is the retry.
     const state = connectionOf(request, history === undefined ? 4 : 1);
-    super(state, undefined, { batchMaxCount: 8, cacheTimeout: -1 });
+    super(state, undefined, { batchMaxCount: 16, cacheTimeout: -1 });
     this.connections = [state];
     if (history !== undefined) {
       const second = connectionOf(history, 1);

@@ -18,7 +18,7 @@ const dep = { contracts: { PredictionMarket: { address: MARKET, blockNumber: 1 }
 const document = (id: number) => JSON.stringify({ title: `Event ${id}` });
 const hash = (id: number) => keccak256(toUtf8Bytes(document(id)));
 const event = (id: number) => ({ args: { marketId: BigInt(id), rulesDocument: toUtf8Bytes(document(id)), rulesHash: hash(id) } });
-const block = { number: 20000, hash: HASH, timestamp: 1800000000 };
+const block = { number: 120000, hash: HASH, timestamp: 1800000000 };
 const reader = { getBlock: vi.fn() };
 
 beforeEach(() => {
@@ -42,14 +42,15 @@ describe("initial dashboard history loading", () => {
     mocks.logs.mockResolvedValue([event(1), event(2)]);
     const result = await readDashboard(dep, reader as unknown as Provider);
     expect(result.markets.map(market => market.title)).toEqual(["Event 1", "Event 2"]);
-    expect(mocks.logs.mock.calls).toEqual([["created", 1, 5000]]);
-    expect(reader.getBlock.mock.calls).toEqual([["latest"], [20000]]);
+    // One query covers 50,000 blocks, the most that publicnode answers.
+    expect(mocks.logs.mock.calls).toEqual([["created", 1, 50000]]);
+    expect(reader.getBlock.mock.calls).toEqual([["latest"], [120000]]);
   });
   it("continues to later pages when some market records have not been found", async () => {
     mocks.logs.mockResolvedValueOnce([event(1)]).mockResolvedValueOnce([event(2)]);
     await expect(readDashboard(dep, reader as unknown as Provider)).resolves.toMatchObject({ markets: [{ id: 1 }, { id: 2 }] });
     expect(mocks.logs).toHaveBeenCalledTimes(2);
-    expect(mocks.logs).toHaveBeenLastCalledWith("created", 5001, 10000);
+    expect(mocks.logs).toHaveBeenLastCalledWith("created", 50001, 100000);
   });
   it("rejects incomplete RPC history instead of displaying a partial list", async () => {
     mocks.logs.mockResolvedValue([event(1)]).mockResolvedValueOnce([]).mockResolvedValueOnce([]).mockResolvedValueOnce([]);
