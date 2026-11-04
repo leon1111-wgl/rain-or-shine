@@ -53,6 +53,10 @@ page differs from what we published.
   your bet elsewhere or move your funds: the contract addresses are built in, and your wallet signs and sends each
   transaction itself.
 - GitHub Pages cannot send security headers, so the web app sets its policy inside the page.
+- Some build and test tools have published advisories with no fixed release yet: Hardhat 3 through zod, and ESLint and
+  Mocha through their file-matching libraries. They run only on a developer's computer and in CI, on this
+  repository's own files. None of them ships in the app or in the desktop packages, which bundle only ethers, React
+  and their parts. Dependabot opens a fix when one exists.
 - We run no server of our own. GitHub's network takes the load of a traffic flood.
 
 ## Report a problem
