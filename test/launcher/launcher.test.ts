@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { once } from "node:events";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import http from "node:http";
 import { tmpdir } from "node:os";
 import { basename, join, resolve, sep } from "node:path";
@@ -55,6 +55,7 @@ beforeAll(async () => {
   await writeFile(join(folder, "www/assets/app.js"), "console.log('launcher-assets');");
   await writeFile(join(folder, "www/config.public.json"), JSON.stringify({ rpcOrigins: ["https://ethereum-sepolia-rpc.publicnode.com"] }));
   await writeFile(join(folder, "outside-private.txt"), "must not be served");
+  await symlink(join(folder, "outside-private.txt"), join(folder, "www/assets/linked.txt"));
   const probe = http.createServer();
   probe.listen(0, "127.0.0.1");
   await once(probe, "listening");
@@ -88,6 +89,8 @@ describe("desktop launcher", () => {
     expect((await request("/.env")).status).toBe(403);
     expect((await request("/node_modules/ethers/package.json")).status).toBe(403);
     expect((await request("/app/runtime/node.exe")).status).toBe(404);
+    const linked = await request("/assets/linked.txt");
+    expect([linked.status, linked.body]).toEqual([403, "symlink outside www"]);
   });
   it("rejects writes, untrusted Host headers and non-allowlisted HKO reads", async () => {
     expect((await request("/", "POST")).status).toBe(405);

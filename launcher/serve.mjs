@@ -4,7 +4,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, lstatSync, readFileSync, readlinkSync, symlinkSync, unlinkSync } from "node:fs";
-import { readFile, realpath, stat } from "node:fs/promises";
+import { open, readFile, realpath, stat } from "node:fs/promises";
 import http from "node:http";
 import os from "node:os";
 import { delimiter, dirname, extname, join, resolve, sep } from "node:path";
@@ -179,8 +179,14 @@ async function respond(req, res, port) {
     if ((await stat(file)).isDirectory()) file = resolve(file, "index.html");
     const actual = await realpath(file);
     if (!actual.startsWith(root + sep)) return send(res, 403, "symlink outside www", undefined, head);
-    if (!(await stat(actual)).isFile()) return send(res, 404, "not a file", undefined, head);
-    return send(res, 200, await readFile(actual), MIME[extname(actual).toLowerCase()] ?? "application/octet-stream", head);
+    // One handle for the check and the read, so the file cannot be swapped between them.
+    const handle = await open(actual, "r");
+    try {
+      if (!(await handle.stat()).isFile()) return send(res, 404, "not a file", undefined, head);
+      return send(res, 200, await handle.readFile(), MIME[extname(actual).toLowerCase()] ?? "application/octet-stream", head);
+    } finally {
+      await handle.close();
+    }
   } catch (error) {
     const missing = error?.code === "ENOENT" || error?.code === "ENOTDIR";
     if (missing && !extname(path) && (req.headers.accept ?? "").includes("text/html")) {
