@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NUMERIC_METRIC_PRESETS, buildHkoNumericRules, buildSportsNumericRules } from "../../src/metric/numeric-profiles";
 import { payoutIfWins } from "../../src/metric/payout";
 import { setActiveLocale } from "../../web/src/i18n";
-import { HKO_DAILY_EXTRACT_FIELDS, buildHkoFieldNumericRules } from "../../src/metric/custom-profile";
+import { HKO_DAILY_EXTRACT_FIELDS, buildCustomNumericRules, buildHkoFieldNumericRules, customMetricRulesDocument, identifierFromText } from "../../src/metric/custom-profile";
 import { hkDayMarketTimes, windowMarketTimes } from "../../src/metric/market-times";
 import { hkDayWindow } from "../../src/weather/profile";
 import type { Dashboard, MarketView } from "../../web/src/metric/client";
@@ -83,6 +83,26 @@ function sportsView(id: number, yes: bigint, no: bigint): MarketView {
   const rules = buildSportsNumericRules({ title: "t", sport: "BASKETBALL", matchId: "LAL_BOS_DEMO01", teamA: "LAL", teamB: "BOS" }, { config, metricId: id, metric });
   const base = view(id, "TOTAL_RAINFALL", { yes, no });
   return { ...base, config: { ...config, condition: toBig(config.condition), times: toBig({ ...times }) }, metric: { ...preset, id }, rulesDocument: rules, rulesHash: keccak256(toUtf8Bytes(rules)) } as unknown as MarketView;
+}
+
+/** A custom market on a pressure log, with the source link its creator typed. The rules accept any absolute URL. */
+function customSourceView(id: number, sourceUrl: string): MarketView {
+  const metric = customMetricRulesDocument({
+    code: "PRESSURE_CHANGE", unit: "hPa", minValue: -50_000, maxValue: 50_000, valueStep: 100, allowsTrace: false,
+    interpretation: "Change in mean sea-level pressure at HKO headquarters over the observation window, in hPa.",
+  });
+  const source = { sourceName: "Hourly pressure log", sourceUrl, procedure: "Subtract the first hourly pressure in the window from the last one." };
+  const day = hkDayWindow("20261103");
+  const times = windowMarketTimes({ openAt: Number(day.start) - 86_400, observationStart: Number(day.start), observationEnd: Number(day.end), plan: { proposalWindow: 3_600, assertionLiveness: 120, refundBuffer: 3_600 } });
+  const config = { proposer: PROPOSER, sourceId: encodeBytes32String(identifierFromText(source.sourceName, "CUSTOM_SOURCE")), subjectId: encodeBytes32String(metric.definition.code), condition: { metricId: id, comparison: 4, lower: 100, upper: 0 }, times };
+  const chainMetric = { ...metric.definition, code: encodeBytes32String(metric.definition.code), unit: encodeBytes32String(metric.definition.unit), rulesHash: metric.rulesHash };
+  const rulesDocument = buildCustomNumericRules({ title: "t", ...source, metricRulesDocument: metric.rulesDocument }, { config, metricId: id, metric: chainMetric });
+  const base = view(id, "TOTAL_RAINFALL", { yes: 10n ** 15n, no: 10n ** 15n });
+  return {
+    ...base, rulesDocument, rulesHash: keccak256(toUtf8Bytes(rulesDocument)),
+    config: { ...config, condition: toBig(config.condition), times: toBig({ ...times }) },
+    metric: { id, ...metric.definition, rulesHash: metric.rulesHash },
+  } as unknown as MarketView;
 }
 
 let app: MetricApi;
@@ -207,6 +227,20 @@ describe("rules", () => {
     ]);
     expect(screen.getByText("HKO publishes a day's data on the next working day, around 10:30. A dispute goes to UMA.")).toBeInTheDocument();
     expect(screen.getByText("Everyone is refunded")).toBeInTheDocument();
+  });
+
+  it("links a custom market's source only when it is a web address, and shows any other address as text", async () => {
+    for (const [url, link] of [["https://example.org/pressure.csv", true], ["javascript:alert(document.domain)", false], ["data:text/html,<b>x</b>", false]] as const) {
+      useApp([customSourceView(5, url)]);
+      const { unmount } = render(<MarketDetailPage id={5} />);
+      await userEvent.click(await screen.findByTestId("detail-tab-rules"));
+      const source = screen.getByTestId("custom-source-url");
+      expect(source).toHaveTextContent(url);
+      if (link) expect(source).toHaveAttribute("href", url);
+      else expect(source).not.toHaveAttribute("href");
+      expect(document.querySelector('a[href^="javascript:" i], a[href^="data:" i]')).toBeNull();
+      unmount();
+    }
   });
 
   it("names a sports demo's synthetic source, match, scope and window, with a demo note", async () => {

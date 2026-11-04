@@ -3,6 +3,11 @@ import { FetchRequest, JsonRpcProvider, isError, type JsonRpcPayload, type JsonR
 /** A public Sepolia RPC without a key. It is fast, so the reader asks it first for current state and logs. Some of its
  * servers drop old history: receipts go to the manifest's gateway first, and logs it has dropped move there too. */
 export const SEPOLIA_FALLBACK_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+/** Where the app reads the chain: on Sepolia the fast public RPC for current state and the deployment's gateway for
+ * history, elsewhere the deployment's own RPC. The built page's Content-Security-Policy allows exactly these. */
+export function readUrls(dep: { environment: string; publicRpcUrl: string }): { current: string; history?: string } {
+  return dep.environment === "SEPOLIA_UMA" ? { current: SEPOLIA_FALLBACK_RPC, history: dep.publicRpcUrl } : { current: dep.publicRpcUrl };
+}
 /** The most blocks that one log query may span: publicnode refuses more than 50,000. The gateway takes more. */
 export const LOG_BLOCK_SPAN = 50_000;
 /** After an RPC fails or rate-limits, calls start on the other one for this long. */

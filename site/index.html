@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>Rain or Shine</title>
 <meta name="description" content="Prediction markets on Hong Kong weather. Built on Ethereum Sepolia. Settled with UMA's optimistic oracle.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='12' r='8' fill='%23ffb547'/%3E%3Cpath d='M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Cpath d='M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z' fill='%234c9bff'/%3E%3C/svg%3E">
@@ -165,11 +166,11 @@ footer p { margin: 0 0 6px; }
   </div>
   <div class="stats">
     <div class="stat"><b>10</b><span>weather markets on Sepolia</span></div>
-    <div class="stat"><b>96</b><span>bets on Sepolia</span></div>
-    <div class="stat"><b>0.213 ETH</b><span>staked by 8 test wallets</span></div>
+    <div class="stat"><b>107</b><span>bets on Sepolia</span></div>
+    <div class="stat"><b>0.235 ETH</b><span>staked by 8 test wallets</span></div>
     <div class="stat"><b>0</b><span>platform fee</span></div>
   </div>
-  <p class="asof">Read from Sepolia on 3 November 2026, 23:12 (Hong Kong time).</p>
+  <p class="asof">Read from Sepolia on 4 November 2026, 16:23 (Hong Kong time).</p>
   <figure>
     <img src="fig/loop.webp" width="3200" height="1600" alt="A loop of seven steps: ask, bet, observe, propose, challenge, settle and claim. In the middle, a refund if there is no valid result.">
     <figcaption><b>Figure 1.</b> Every market is a closed loop. It starts with a question and ends with a payout. If no valid result arrives, the loop still closes: everyone gets their stake back.</figcaption>
@@ -197,7 +198,7 @@ footer p { margin: 0 0 6px; }
     <div class="cards">
       <div class="card"><h4>Smart contracts</h4><p>Markets, Yes and No pools, outcomes, refunds and claims. An adapter talks to UMA. Written in Solidity.</p></div>
       <div class="card"><h4>A web app</h4><p>Browse, bet, follow and claim. English and Chinese. MetaMask signs every transaction.</p></div>
-      <div class="card"><h4>Live markets</h4><p>Six weather markets on Sepolia for 3 to 5 November and two one-hour rehearsals. A new pair opens every three days until 1 December. 96 bets from our test wallets so far.</p></div>
+      <div class="card"><h4>Live markets</h4><p>Six weather markets on Sepolia for 3 to 5 November and two one-hour rehearsals. A new pair opens every three days until 1 December. 107 bets from our test wallets so far.</p></div>
       <div class="card"><h4>Custom markets</h4><p>Any HKO daily value, such as humidity or minimum temperature. Or any source the creator names. A local sports demo shows other topics work too.</p></div>
       <div class="card"><h4>An HKO tool</h4><p>It downloads HKO's file and reads the value, so the proposer submits the right number.</p></div>
       <div class="card"><h4>Desktop packages</h4><p>Zip files for macOS and Windows. Unzip, double-click, and the app opens. Nothing to install.</p></div>
@@ -441,18 +442,18 @@ footer p { margin: 0 0 6px; }
     <p>Six weather markets went live on 30 October 2026. They read HKO headquarters, and bets close the night before each day. Markets 7 and 8 are one-hour rehearsals on 31 October with HKO's hourly rain data. They ran the loop early, on the real oracle. From market 9 a new pair opens every three days until 1 December: rain of 1.0 mm or more, and a maximum temperature at HKO's forecast for the day. So some market is always open for bets. In every market the admin wallet is also the proposer, so it cannot bet in them.</p>
     <div class="table-wrap"><table>
       <tr><th>#</th><th>Question</th><th>Kind</th><th>Bets</th><th>Yes share</th><th>Status</th></tr>
-      <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>20</td><td>34.1 %</td><td>Waiting for the result</td></tr>
-      <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>21</td><td>53.7 %</td><td>Open until 3 Nov, 23:59</td></tr>
-      <tr><td>3</td><td>Rain of 1.0 mm or more on 5 Nov</td><td><span class="tag">Official</span></td><td>14</td><td>28.6 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>16</td><td>57.8 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>1</td><td>Rain of 1.0 mm or more on 3 Nov</td><td><span class="tag">Official</span></td><td>20</td><td>34.1 %</td><td>Settled: No</td></tr>
+      <tr><td>2</td><td>Maximum temperature of 28.0 °C or more on 4 Nov</td><td><span class="tag">Official</span></td><td>21</td><td>53.7 %</td><td>Waiting for the result</td></tr>
+      <tr><td>3</td><td>Rain of 1.0 mm or more on 5 Nov</td><td><span class="tag">Official</span></td><td>19</td><td>28.6 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>4</td><td>Maximum temperature of 29.0 °C or more on 5 Nov</td><td><span class="tag">Official</span></td><td>17</td><td>54.2 %</td><td>Open until 4 Nov, 23:59</td></tr>
       <tr><td>5</td><td>Minimum temperature of 25.0 °C or less on 5 Nov</td><td><span class="tag custom">Custom</span></td><td>12</td><td>43.5 %</td><td>Open until 4 Nov, 23:59</td></tr>
-      <tr><td>6</td><td>Mean humidity from 65 % to 75 % on 5 Nov, both included</td><td><span class="tag custom">Custom</span></td><td>9</td><td>44.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
+      <tr><td>6</td><td>Mean humidity from 65 % to 75 % on 5 Nov, both included</td><td><span class="tag custom">Custom</span></td><td>12</td><td>50.0 %</td><td>Open until 4 Nov, 23:59</td></tr>
       <tr><td>7</td><td>Rain at HKO headquarters from 19:15 to 20:15 on 31 Oct (one-hour rehearsal)</td><td><span class="tag custom">Custom</span></td><td>2</td><td>40.0 %</td><td>Refunded</td></tr>
       <tr><td>8</td><td>Rain at HKO headquarters from 22:30 to 23:30 on 31 Oct (one-hour rehearsal)</td><td><span class="tag custom">Custom</span></td><td>2</td><td>40.0 %</td><td>Settled: No</td></tr>
-      <tr><td>9</td><td>Rain of 1.0 mm or more on 8 Nov</td><td><span class="tag">Official</span></td><td>0</td><td>none yet</td><td>Open until 7 Nov, 23:59</td></tr>
-      <tr><td>10</td><td>Maximum temperature of 29.0 °C or more on 8 Nov</td><td><span class="tag">Official</span></td><td>0</td><td>none yet</td><td>Open until 7 Nov, 23:59</td></tr>
+      <tr><td>9</td><td>Rain of 1.0 mm or more on 8 Nov</td><td><span class="tag">Official</span></td><td>1</td><td>100.0 %</td><td>Open until 7 Nov, 23:59</td></tr>
+      <tr><td>10</td><td>Maximum temperature of 29.0 °C or more on 8 Nov</td><td><span class="tag">Official</span></td><td>1</td><td>100.0 %</td><td>Open until 7 Nov, 23:59</td></tr>
     </table></div>
-    <p class="asof">Read from Sepolia on 3 November 2026, 23:12 (Hong Kong time). The first results are due from 4 to 6 November and the last on 3 December.</p>
+    <p class="asof">Read from Sepolia on 4 November 2026, 16:23 (Hong Kong time). The first results are due from 4 to 6 November and the last on 3 December.</p>
     <h4 class="mini">The whole loop, live</h4>
     <p>On the night of 31 October two one-hour markets ran the last steps of the loop early, on the real UMA oracle. Both read HKO&#x27;s hourly rain at the Observatory. One ended in a refund and one in a payout, each as the rules say. The rehearsal also found a bug before the six main markets need the same steps.</p>
     <ol class="loop-list">
@@ -470,7 +471,7 @@ footer p { margin: 0 0 6px; }
     <figure><img src="img/rehearsal-refund.webp" loading="lazy" alt="Market 7 after its refund time, read from Sepolia." style="border-color:#2a2f37;background:#0b0d10"><figcaption>Market 7 after its refund time, read from Sepolia.</figcaption></figure>
     <figure><img src="img/rehearsal-challenge.webp" loading="lazy" alt="Market 8 during UMA&#x27;s challenge window." style="border-color:#2a2f37;background:#0b0d10"><figcaption>Market 8 during UMA&#x27;s challenge window.</figcaption></figure>
     <figure><img src="img/rehearsal-settled.webp" loading="lazy" alt="Market 8 after settlement: the accepted reading is 0.0 mm, so No wins." style="border-color:#2a2f37;background:#0b0d10"><figcaption>Market 8 after settlement: the accepted reading is 0.0 mm, so No wins.</figcaption></figure>
-    <p>Contracts on Etherscan: <a href="https://sepolia.etherscan.io/address/0x668643AF961C4032909C1c15A741b6d2d6216e92">PredictionMarket</a>, <a href="https://sepolia.etherscan.io/address/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc">oracle adapter</a>, <a href="https://sepolia.etherscan.io/address/0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944">UMA Optimistic Oracle V3</a>, <a href="https://sepolia.etherscan.io/address/0x3870419Ba2BBf0127060bCB37f69A1b1C090992B">bond token</a>.</p>
+    <p>Contracts on Etherscan: <a href="https://sepolia.etherscan.io/address/0x668643AF961C4032909C1c15A741b6d2d6216e92">PredictionMarket</a>, <a href="https://sepolia.etherscan.io/address/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc">oracle adapter</a>, <a href="https://sepolia.etherscan.io/address/0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944">UMA Optimistic Oracle V3</a>, <a href="https://sepolia.etherscan.io/address/0x3870419Ba2BBf0127060bCB37f69A1b1C090992B">bond token</a>. Source code verified on Sourcify as an exact match: <a href="https://repo.sourcify.dev/11155111/0x668643AF961C4032909C1c15A741b6d2d6216e92">PredictionMarket</a>, <a href="https://repo.sourcify.dev/11155111/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc">oracle adapter</a>.</p>
 
     <h3><span class="num">3.4</span>Try it</h3>
     <div class="try">
@@ -484,10 +485,19 @@ footer p { margin: 0 0 6px; }
       <tr><th>Suite</th><th>Tests</th><th>What it covers</th></tr>
       <tr><td>Contracts</td><td>80</td><td>Bets, limits, outcomes, refunds, claims, permissions and oracle answers</td></tr>
       <tr><td>Shared logic</td><td>632</td><td>Rules, conditions, payouts, deadlines and HKO parsing</td></tr>
-      <tr><td>Web app</td><td>224</td><td>Pages, forms and number formats in both languages</td></tr>
+      <tr><td>Web app</td><td>232</td><td>Pages, forms and number formats in both languages</td></tr>
       <tr><td>End to end</td><td>18</td><td>A real browser on a real local chain: create, bet, propose, settle, claim and refund</td></tr>
     </table></div>
-    <p class="asof">All passing on 3 November 2026. Lint, type checks and the production build also pass.</p>
+    <p class="asof">All passing on 4 November 2026. Lint, type checks and the production build also pass.</p>
+
+    <h3><span class="num">3.6</span>Security</h3>
+    <p>Nobody can change a bet, a result or a payout, us included. The defences sit in three places.</p>
+    <div class="cards">
+      <div class="card"><h4>On chain</h4><p>The contracts cannot be upgraded, paused or emptied. Only the named proposer can submit a result, and only UMA's answer settles it. Anyone can dispute within 2 hours. A disputed market refunds and never pays the wrong side.</p></div>
+      <div class="card"><h4>In the app</h4><p>There is no server and no key. Your wallet signs every transaction, only on Sepolia and only to our two contracts. A content security policy blocks outside scripts. The app will not run inside another site's frame.</p></div>
+      <div class="card"><h4>In the code and downloads</h4><p>Build steps are pinned to exact versions, and every build checks npm signatures. CodeQL and Dependabot watch the code. Nobody can rewrite the main branch. GitHub signs where each desktop package was built.</p></div>
+    </div>
+    <p>A check runs twice a day. It restarts a stopped job and reports if the live page or the code on GitHub changed without us. Details, limits and how to report a problem are in <a href="https://github.com/leon1111-wgl/rain-or-shine/blob/main/SECURITY.md">SECURITY.md</a>.</p>
   </div>
 </section>
 

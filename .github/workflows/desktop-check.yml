@@ -1,9 +1,16 @@
 # Builds the desktop packages, then starts each one on its own system: Windows and macOS.
-# Run it by hand from the Actions tab.
+# Run it by hand from the Actions tab. With "publish" ticked, GitHub also signs a build provenance for each package
+# (an artifact attestation) and, once both systems pass, puts the packages on the "desktop" release.
+# Anyone can then check a download: gh attestation verify <file>.zip --repo leon1111-wgl/rain-or-shine
 name: Desktop check
 
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Sign the packages and put them on the desktop release
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -12,17 +19,29 @@ jobs:
   build:
     runs-on: macos-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Every installed package must carry a valid npm registry signature.
+      - run: npm audit signatures
       # Shared runners hit the public RPCs' rate limits, so this job skips the read-only Sepolia check.
-      # A release build runs it: npm run package:desktop.
+      # A local build runs it: npm run package:desktop.
       - run: npx tsx scripts/package-desktop.ts
-      - uses: actions/upload-artifact@v4
+      - if: inputs.publish
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: release/*/*.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: desktop
           path: release/*/*.zip
@@ -32,7 +51,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: desktop
           path: zips
@@ -68,7 +87,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: desktop
           path: zips
@@ -85,3 +104,19 @@ jobs:
           echo "Page: ok"
           curl -s -o /dev/null -w 'HKO relay: %{http_code}\n' 'http://127.0.0.1:17641/hko-open-data/weatherAPI/opendata/weather.php?dataType=rhrread&lang=en' || true
           cat app.log
+
+  publish:
+    needs: [windows, macos]
+    if: inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: desktop
+          path: zips
+      - name: Put the signed packages on the desktop release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: find zips -name '*.zip' -print0 | xargs -0 gh release upload desktop --clobber --repo "$GITHUB_REPOSITORY"

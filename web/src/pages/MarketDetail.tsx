@@ -24,6 +24,7 @@ import { type MessageKey, activeLocale, t } from "../i18n";
 import type { ActivityItem } from "../lib/activity";
 import { formatEthFixed } from "../lib/amount";
 import { shortHex } from "../lib/chain";
+import { webHref } from "../lib/links";
 import { marketStats } from "../lib/market";
 import { type MarketData, conditionOf, conditionWithUnitOf, hkoFieldMarketOf, isLocalMock, marketTagOf, metricNameOf, phaseOf, questionOf, sourceOf, unitOf, windowOf } from "../lib/markets";
 import { href } from "../lib/routes";
@@ -53,6 +54,16 @@ function OriginalText({ text }: { text: string }) {
   );
 }
 
+/** A custom market's source as its creator typed it: a link for a web address, plain text for anything else. */
+function SourceLink({ url }: { url: string }) {
+  const link = webHref(url);
+  return link ? (
+    <a href={link} target="_blank" rel="noreferrer" className="break-all" data-testid="custom-source-url">{url}</a>
+  ) : (
+    <span className="break-all" data-testid="custom-source-url">{url}</span>
+  );
+}
+
 function RulesGrid({ market }: { market: MarketData }) {
   const { dep } = useApp();
   const tm = market.times;
@@ -69,7 +80,7 @@ function RulesGrid({ market }: { market: MarketData }) {
   const entries: Array<[string, ReactNode, ReactNode?]> = [
     [t("rule.question"), questionOf(market)],
     custom
-      ? [t("rule.sourceCustom"), field ? t("source.hko") : custom.sourceName, <a href={custom.sourceUrl} target="_blank" rel="noreferrer" className="break-all" data-testid="custom-source-url">{custom.sourceUrl}</a>]
+      ? [t("rule.sourceCustom"), field ? t("source.hko") : custom.sourceName, <SourceLink url={custom.sourceUrl} />]
       : sports
         ? [t("rule.sourceCustom"), sourceOf(market), t("rule.match", { a: sports.teamA, b: sports.teamB, match: sports.matchId })]
         : [t("rule.source"), sourceOf(market), t("rule.subjectHko")],

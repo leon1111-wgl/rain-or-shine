@@ -8,6 +8,7 @@ share all the stakes. There is no platform fee. The interface is in Chinese and 
 - Project page: https://leon1111-wgl.github.io/rain-or-shine/
 - Live app on Sepolia: https://leon1111-wgl.github.io/rain-or-shine/app/
 - Downloads for macOS and Windows: https://github.com/leon1111-wgl/rain-or-shine/releases
+- Security: [SECURITY.md](SECURITY.md)
 
 ![One market as a loop: ask, bet, observe, propose, challenge, settle and claim](docs/images/loop.png)
 

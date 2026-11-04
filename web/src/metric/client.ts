@@ -5,7 +5,7 @@ import {
 } from "ethers";
 import generatedAbi from "../generated/metric-abi.json";
 import generatedDeployments from "../generated/metric-deployments.json";
-import { LOG_BLOCK_SPAN, PacedReadProvider, SEPOLIA_FALLBACK_RPC } from "./rpc-reader";
+import { LOG_BLOCK_SPAN, PacedReadProvider, readUrls } from "./rpc-reader";
 import {
   assertNumericMarketRulesMatchChain, type NumericRulesChainExpectation,
 } from "@shared/metric/numeric-rules";
@@ -121,8 +121,9 @@ export function selectMetricDeployment(
 export function createReader(dep: MetricDeployment): JsonRpcProvider {
   // Never pin the network without checking it: a local RPC can be restarted or switched.
   // Current state from the fast public RPC, history from the manifest's gateway, which keeps it.
-  if (dep.environment === "SEPOLIA_UMA") return new PacedReadProvider(SEPOLIA_FALLBACK_RPC, 250, dep.publicRpcUrl);
-  return new JsonRpcProvider(dep.publicRpcUrl, undefined, { batchMaxCount: 20, cacheTimeout: -1 });
+  const { current, history } = readUrls(dep);
+  if (history) return new PacedReadProvider(current, 250, history);
+  return new JsonRpcProvider(current, undefined, { batchMaxCount: 20, cacheTimeout: -1 });
 }
 
 export const marketOf = (dep: MetricDeployment, runner: ContractRunner) =>

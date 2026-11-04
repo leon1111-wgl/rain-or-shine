@@ -1,6 +1,7 @@
 # Publishes the project page and the Sepolia app to GitHub Pages on every push to main.
 # The page is at the site root. The app is at /app/.
 # Turn it on once in Settings > Pages > Source: GitHub Actions.
+# Every action is pinned to a full commit, and only the deploy job may write to Pages.
 name: Pages
 
 on:
@@ -10,8 +11,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -21,12 +20,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Every installed package must carry a valid npm registry signature.
+      - run: npm audit signatures
       - run: npm run build:metric:sepolia
         env:
           EXPORT_NETWORKS: sepolia
@@ -35,17 +38,20 @@ jobs:
           mkdir -p _site/app
           cp -R site/. _site/
           cp -R web/dist/. _site/app/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: _site
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
