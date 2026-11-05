@@ -16,7 +16,6 @@ interface Evidence {
     excerpt: string;
 }
 
-// 这里只部署到 Hardhat 的独立测试网络，不连接运行中的 localhost 节点。
 async function marketFixture() {
     const [admin, proposer, yesUser, noUser, outsider, store] =
         await ethers.getSigners();
@@ -40,7 +39,6 @@ async function marketFixture() {
     await (await token.mint(proposer.address, BOND)).wait();
     await (await token.connect(proposer).approve(adapter, BOND)).wait();
 
-    // 测试自包含规则，不依赖尚未迁移的链下 parser，也不声称是真实 HKO 数据。
     const metricRules = JSON.stringify({
         schema: "TEST_NUMERIC_METRIC_V1",
         code: "DAILY_MAX_TEMPERATURE",
@@ -73,7 +71,6 @@ async function marketFixture() {
         observationEnd: now + 480,
         earliestAssertionAt: now + 540,
         proposalCutoff: now + 1140,
-        // 截止 + 挑战期之后至少 1 小时结算窗口。
         refundAt: now + 1140 + 60 + 3600,
         assertionLiveness: 60
     };
@@ -129,7 +126,6 @@ async function readyFixture() {
     const f = await marketFixture();
     await time.increaseTo(f.times.earliestAssertionAt);
 
-    // 先有市场与下注，观察结束后才生成本次结果。
     const observation = {
         synthetic: true,
         status: "FINAL",
@@ -214,7 +210,7 @@ describe("Generic numeric observation: evidence and claim boundaries", function 
             expect(fields).to.include(expected);
         }
         expect(fields.some((line) => line.startsWith("dataMode="))).to.equal(false);
-        await expectNoProposal(f); // 预览不锁定保证金、不写入断言。
+        await expectNoProposal(f);
 
         const tx = await f.adapter.connect(f.proposer).propose(
             f.marketId, f.reading, f.evidence, BOND
@@ -268,7 +264,6 @@ describe("Generic numeric observation: evidence and claim boundaries", function 
             .to.deep.equal(["value100=3260"]);
         expect(claim).not.to.include(sourceUrl);
         await expectNoProposal(f);
-        // 能预览只表示结构合法，不表示这个替换后的来源符合市场规则。
     });
 
     const invalidEvidence: Array<{
@@ -323,7 +318,6 @@ describe("Generic numeric observation: evidence and claim boundaries", function 
 
         await expect(f.adapter.checkEvidence(f.marketId, evidence))
             .to.be.revertedWithCustomError(f.adapter, "BadEvidence").withArgs("raw hash");
-        // propose 先调用主市场检查，所以这里使用主市场的错误类型。
         await expect(f.adapter.connect(f.proposer).propose(
             f.marketId, f.reading, evidence, BOND
         )).to.be.revertedWithCustomError(f.market, "InvalidEvidenceHash");
@@ -338,13 +332,11 @@ describe("Generic numeric observation: evidence and claim boundaries", function 
             excerpt: "0x" + "00".repeat(2048),
             capturedAt: f.times.observationEnd
         };
-        // 这是无返回值的 view 检查：若 revert，await 会直接使测试失败。
         await f.adapter.checkEvidence(f.marketId, evidence);
         await f.adapter.checkEvidence(f.marketId, {
             ...evidence, capturedAt: await time.latest()
         });
         await expectNoProposal(f);
-        // checkEvidence 不解析内容或证明来源。本例并非有效事实证据。
     });
 
     it("rejects a proposal from an account other than the configured proposer", async function () {

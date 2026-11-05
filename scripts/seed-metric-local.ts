@@ -1,10 +1,3 @@
-// Local markets and trading, on chain 31337 only. It creates official rainfall and maximum-temperature markets for
-// the coming Hong Kong days and four custom weather markets. The node's test accounts bet over two days of chain time,
-// so every view has history. Two short custom markets read the HKO 15:00 temperature from a report the proposer
-// pastes. The first is proposed and settled through the local Mock oracle. The second stays in its challenge period.
-// The seed writes that report itself. It is local test data, not an observation. Two sports demos follow the weather
-// markets. Their results are the synthetic files in fixtures/demo/sports. The basketball demo is settled. The
-// football demo stays open. Each account keeps one side per market, as the contract requires.
 // Usage: npm run node:local, npm run deploy:metric:local, then npm run seed:metric:local
 
 import { readFileSync } from "node:fs";
@@ -45,7 +38,6 @@ const pick = <T>(list: readonly T[]) => list[random(list.length)]!;
 const chainNow = async () => (await ethers.provider.getBlock("latest"))!.timestamp;
 const hkDate = (unix: number, days: number) => new Date((unix + 8 * HOUR + days * 86_400) * 1000).toISOString().slice(0, 10).replaceAll("-", "");
 
-/** A metric's id, registering a preset (by code) or a custom metric (with its rules document's hash) when it is new. */
 async function metricId(code: string, custom?: CustomMetric): Promise<number> {
   const count = Number(await market.metricCount());
   for (let id = 1; id <= count; id++) {
@@ -67,7 +59,6 @@ interface Seeded {
   id: number;
   openAt: number;
   closeAt: number;
-  /** Chance that a new account takes Yes. */
   yesBias: number;
   sides: Map<string, 1 | 2>;
 }
@@ -100,7 +91,6 @@ async function hkoMarket(code: "TOTAL_RAINFALL" | "DAILY_MAX_TEMPERATURE", date:
   return create(config, rules, yesBias);
 }
 
-/** A custom metric whose reading the proposer takes from an imported document. */
 const AFTERNOON_TEMPERATURE = customMetricRulesDocument({
   code: "HKO_3PM_TEMPERATURE", unit: "degC", minValue: -10_000, maxValue: 10_000, valueStep: 100, allowsTrace: false,
   interpretation: "Air temperature at the Hong Kong Observatory station at 15:00 HKT on the observation day, in whole degrees Celsius, as the HKO Current Weather Report gives it. NUMERIC is that value multiplied by 100.",
@@ -112,7 +102,6 @@ const CURRENT_WEATHER = {
 };
 const PLAN = { proposalWindow: 7 * 86_400, assertionLiveness: LIVENESS, refundBuffer: HOUR };
 
-/** A custom market: the creator's source and procedure, or an HKO Daily Extract field for one Hong Kong day. */
 async function customMarket(
   metric: CustomMetric, condition: { comparison: number; lower: string; upper: string }, timesFrom: (openAt: number) => MarketTimes,
   source: typeof CURRENT_WEATHER | { targetDate: string }, title: string, yesBias: number,
@@ -134,7 +123,6 @@ async function customMarket(
   return create(config, rules, yesBias);
 }
 
-/** A short custom market on the 15:00 temperature: betting for `bettingSeconds`, then a one-hour observation. */
 async function quickMarket(bettingSeconds: number): Promise<Seeded> {
   return customMarket(AFTERNOON_TEMPERATURE, { comparison: 4, lower: "26", upper: "0" },
     (openAt) => windowMarketTimes({ openAt, observationStart: openAt + Math.round(bettingSeconds), observationEnd: openAt + Math.round(bettingSeconds) + HOUR, plan: { ...PLAN, proposalWindow: HOUR } }),
@@ -146,7 +134,6 @@ const MATCHES = {
   FOOTBALL: { code: "GOAL_MARGIN", matchId: "ARS_CHE_DEMO01", teamA: "ARS", teamB: "CHE", file: "football-ars-che.json" },
 } as const;
 
-/** A sports demo: betting for `bettingSeconds`, then the match window. Yes if team A wins. */
 async function sportsDemo(sport: keyof typeof MATCHES, bettingSeconds: number, matchSeconds: number, yesBias: number): Promise<Seeded> {
   const match = MATCHES[sport];
   const id = await metricId(match.code);
@@ -164,10 +151,8 @@ async function sportsDemo(sport: keyof typeof MATCHES, bettingSeconds: number, m
   return create(config, rules, yesBias);
 }
 
-/** Unix seconds at a Hong Kong day (YYYYMMDD) and hour. */
 const hktAt = (date: string, hour: number) => Number(hkDayWindow(date).start) + hour * HOUR;
 
-/** One bet by a random member on a random open market. A member keeps the side of its first bet there. */
 async function trade(markets: Seeded[], at: number): Promise<boolean> {
   const open = markets.filter((m) => m.openAt <= at && at < m.closeAt - 60);
   if (open.length === 0) return false;
@@ -180,8 +165,6 @@ async function trade(markets: Seeded[], at: number): Promise<boolean> {
   return true;
 }
 
-/** One Yes and one No bet when a short market opens, so it is never one-sided at its close: a one-sided market only refunds
- * and takes no result. The proposer is never among the bettors (the contract refuses it). */
 async function bothSides(m: Seeded): Promise<void> {
   await ethers.provider.send("evm_setNextBlockTimestamp", [m.openAt]);
   for (const [member, side] of [[members[0]!, 1], [members[1]!, 2]] as const) {
@@ -190,7 +173,6 @@ async function bothSides(m: Seeded): Promise<void> {
   }
 }
 
-/** Proposes the evidence `build` makes from the market's checked rules, with the adapter's bond. Returns the assertion id. */
 async function propose(id: number, build: (context: NumericProposalContext) => NumericProposal): Promise<string> {
   const config = await market.getMarketConfig(id);
   if ((await chainNow()) < Number(config.times.earliestAssertionAt) + 5) {
@@ -211,13 +193,11 @@ async function propose(id: number, build: (context: NumericProposalContext) => N
   return (await market.getAssertion(id)).assertionId;
 }
 
-/** A seeded report as a short market's result. */
 function proposeReading(id: number, celsius: number): Promise<string> {
   const report = toUtf8Bytes(`Local seed report (test data, not an observation). Hong Kong Observatory temperature: ${celsius} C.`);
   return propose(id, (context) => buildCustomNumericProposal({ rawBytes: report, reading: String(celsius), capturedAt: context.chainTimestamp }, context));
 }
 
-/** A sports demo's synthetic result file as its result. */
 function proposeMatch(id: number, sport: keyof typeof MATCHES): Promise<string> {
   const file = new Uint8Array(readFileSync(new URL(`../fixtures/demo/sports/${MATCHES[sport].file}`, import.meta.url)));
   return propose(id, (context) => buildSportsNumericProposal(file, context.chainTimestamp, context));
@@ -249,10 +229,6 @@ await bothSides(basketball);
 const football = await sportsDemo("FOOTBALL", 60 * HOUR, 2 * HOUR, 0.45);
 markets.push(football);
 await bothSides(football);
-// Backlog: one bet every 15 to 75 minutes of chain time for about two days. The first short market closes after 20 h.
-// It is proposed and settled after its hour of observation. A second short market then opens. The backlog stops when
-// its observation ends, so its result goes in within the proposal window and stays in its challenge period. The
-// basketball demo is proposed and settled after its match. The football demo is still open at the end.
 let trades = 0;
 let late: Seeded | undefined;
 let matchSettled = false;

@@ -7,7 +7,6 @@ import { basename, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-// These tests start real processes (tsx, a local server). On a loaded machine one can take well over the default 5 s.
 vi.setConfig({ testTimeout: 60_000 });
 
 const launcher = fileURLToPath(new URL("../../launcher/serve.mjs", import.meta.url));
@@ -17,7 +16,7 @@ let child: ChildProcess;
 const releaseId = "launcher-test-" + process.pid;
 function start() {
   return spawn(process.execPath, [launcher, "--root", join(folder, "www"), "--port", String(port), "--no-open", "--release-id", releaseId, "--report", join(folder, "launch.log")], {
-    env: { ...process.env, RAINPOOL_NO_BROWSER: "1", RAINPOOL_NO_SHORTCUT: "1" }, windowsHide: true,
+    env: { ...process.env, RAIN_OR_SHINE_NO_BROWSER: "1", RAIN_OR_SHINE_NO_SHORTCUT: "1" }, windowsHide: true,
     stdio: ["ignore", "pipe", "pipe"],
   });
 }

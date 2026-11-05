@@ -1,7 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { t } from "../i18n";
 
-/** A page that fails to render says so and offers a reload, instead of leaving a blank screen. */
 export class ErrorBoundary extends Component<{ children: ReactNode; resetKey: string }, { error: Error | null; key: string }> {
   override state: { error: Error | null; key: string } = { error: null, key: "" };
 
@@ -10,7 +9,6 @@ export class ErrorBoundary extends Component<{ children: ReactNode; resetKey: st
   }
 
   static getDerivedStateFromProps(props: { resetKey: string }, state: { error: Error | null; key: string }) {
-    // Navigating to another page clears the fault.
     return props.resetKey === state.key ? null : { error: null, key: props.resetKey };
   }
 

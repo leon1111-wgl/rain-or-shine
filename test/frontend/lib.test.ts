@@ -1,6 +1,3 @@
-// @vitest-environment node
-// Pure interface helpers: strict ETH input and fixed-decimal figures, routes, Hong Kong time, market figures from
-// the bet history, filter counts, date search and starred events.
 import { describe, expect, it } from "vitest";
 import { setActiveLocale, t } from "../../web/src/i18n";
 import type { ActivityItem } from "../../web/src/lib/activity";
@@ -84,11 +81,10 @@ describe("market figures", () => {
   it("Yes share now, its change against 24 h ago, 24 h volume and the trend come from the bets", () => {
     const s = marketStats(market, items, now);
     expect(s.share).toBe(37.5);
-    expect(s.change).toBe(12.5); // 25 % after the bet 25 h ago -> 37.5 % now
+    expect(s.change).toBe(12.5);
     expect([s.volume, s.trades]).toEqual([E(40), 2]);
     expect(s.spark).toEqual([100, 25, 50, 37.5]);
     expect(marketStats({ ...market, yesTotal: 0n, noTotal: 0n, total: 0n }, [], now)).toMatchObject({ share: null, change: null, volume: 0n });
-    // Younger than a day: the change runs from the share after its first bet (100 % Yes) to the 37.5 % now.
     const young = items.slice(2).map((b, i) => (i === 0 ? { ...b, kind: "BET" as const, yesTotal: E(20), noTotal: 0n } : b));
     expect(marketStats(market, young, now).change).toBe(-62.5);
   });
@@ -189,7 +185,6 @@ describe("intro figures", () => {
   it("summarises each kind with its soonest close among open markets", () => {
     expect(kindSummary(markets, "rain", now)).toEqual({ markets: 2, open: 2, staked: E(14), nextClose: now + 100n });
     expect(kindSummary(markets, "heat", now)).toEqual({ markets: 1, open: 0, staked: 0n, nextClose: null });
-    // Custom markets have their own card, whatever weather type their metric has.
     const humidity = m(4, "DAILY_MEAN_HUMIDITY", now - 10n, now + 300n, 2);
     expect(kindSummary([...markets, humidity], "custom", now)).toEqual({ markets: 1, open: 1, staked: E(2), nextClose: now + 300n });
     expect(kindSummary([...markets, humidity], "rain", now).markets).toBe(2);

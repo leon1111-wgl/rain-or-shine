@@ -1,5 +1,3 @@
-// The mark: a sun and a raindrop, the two ways a weather market can go.
-
 import { useId } from "react";
 
 export const DROP = "M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z";

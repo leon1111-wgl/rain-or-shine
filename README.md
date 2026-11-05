@@ -1,18 +1,31 @@
 # Rain or Shine
 
-Rain or Shine is a prediction market for Hong Kong weather. It runs on the Ethereum Sepolia testnet. Each market asks
-one question about a reading, for example "Will HKO headquarters record ≥ 1.0 mm of rain on 3 Nov?". People take Yes
-or No with test ETH. The Hong Kong Observatory publishes the reading. UMA's Optimistic Oracle V3 confirms it. Winners
-share all the stakes. There is no platform fee. The interface is in Chinese and English.
+Rain or Shine is a prediction market for Hong Kong weather. It runs on the Ethereum Sepolia test network. Each market
+asks one question about a reading, for example "Will HKO headquarters record ≥ 1.0 mm of rain on 3 Nov?". People take
+Yes or No with test ETH. The Hong Kong Observatory publishes the reading. UMA's Optimistic Oracle V3 confirms it.
+Winners share all the stakes. There is no platform fee. The app is in Chinese and English.
 
 - Project page: https://leon1111-wgl.github.io/rain-or-shine/
-- Live app on Sepolia: https://leon1111-wgl.github.io/rain-or-shine/app/
-- Downloads for macOS and Windows: https://github.com/leon1111-wgl/rain-or-shine/releases
+- Live app: https://leon1111-wgl.github.io/rain-or-shine/app/
+- Download the source: https://github.com/leon1111-wgl/rain-or-shine/archive/refs/heads/main.zip
+- Desktop apps for macOS and Windows: https://github.com/leon1111-wgl/rain-or-shine/releases/latest
 - Security: [SECURITY.md](SECURITY.md)
 
 ![One market as a loop: ask, bet, observe, propose, challenge, settle and claim](docs/images/loop.png)
 
 ![The markets page on Sepolia](docs/images/markets.png)
+
+## Built with
+
+| Part | Tools |
+| --- | --- |
+| Smart contracts | Solidity 0.8, Hardhat 3, OpenZeppelin 5 |
+| Oracle | UMA Optimistic Oracle V3 |
+| Web app | React 19, TypeScript, Vite |
+| Chain access | ethers.js 6 |
+| Wallet | MetaMask |
+| Weather data | Hong Kong Observatory open data |
+| Tests | Mocha, Vitest, Playwright |
 
 ## How a market works
 
@@ -28,6 +41,15 @@ share all the stakes. There is no platform fee. The interface is in Chinese and 
 Official markets read daily rainfall and daily maximum temperature at HKO headquarters. Custom markets read another
 weather value. That can be any numeric column of the HKO Daily Extract, or another public source. On the local chain,
 two sports demos show that a market can follow any number. Their results are labelled synthetic files.
+
+## Contracts on Sepolia
+
+| Contract | Address |
+| --- | --- |
+| PredictionMarket | [0x668643AF961C4032909C1c15A741b6d2d6216e92](https://sepolia.etherscan.io/address/0x668643AF961C4032909C1c15A741b6d2d6216e92) |
+| UmaMetricOracleAdapter | [0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc](https://sepolia.etherscan.io/address/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc) |
+| UMA Optimistic Oracle V3 | [0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944](https://sepolia.etherscan.io/address/0xFd9e2642a170aDD10F53Ee14a93FcF2F31924944) |
+| 6TEST bond token | [0x3870419Ba2BBf0127060bCB37f69A1b1C090992B](https://sepolia.etherscan.io/address/0x3870419Ba2BBf0127060bCB37f69A1b1C090992B) |
 
 ## What you need
 
@@ -106,9 +128,9 @@ Then, in the app:
 A preset that is not registered yet, such as "Daily mean pressure", takes two wallet confirmations. The first
 registers the metric. The second creates the market.
 
-## Checks
+## Tests
 
-Run these before a commit. The E2E suite starts its own local chain and app, and it needs Google Chrome.
+The E2E suite starts its own local chain and app. It needs Google Chrome.
 
 ```sh
 npm run lint
@@ -116,7 +138,6 @@ npm run typecheck
 npm run test:contracts
 npm run test:shared
 npm run test:web
-npm run check:architecture
 npm run build:metric:sepolia
 npm run test:e2e
 ```
@@ -127,17 +148,9 @@ npm run test:e2e
 npm run package:desktop
 ```
 
-This builds three zips in `release/`: macOS for Apple silicon, macOS for Intel, and Windows x64. Ready-made copies
-are on the Releases page. The Desktop check workflow builds the zips and starts them on Windows and macOS. Each zip holds the
+This builds three zips in `release/`: macOS for Apple silicon, macOS for Intel, and Windows x64. Each zip holds the
 built Sepolia app, a small local server and a Node runtime. The other computer installs nothing. Unzip one and open
-`READ_FIRST.html`.
-
-## GitHub Pages
-
-`.github/workflows/pages.yml` publishes on every push to `main`. The project page in `site/` goes to the site root. The
-Sepolia app goes to `/app/`. Turn it on once in Settings > Pages > Source: GitHub Actions. The app reads the chain
-through public RPCs. The live weather panel reads HKO directly. The Daily Extract file does not allow that, so on Pages
-a proposer imports it as a file.
+`READ_FIRST.html`. Ready-made copies are on the Releases page.
 
 ## HKO evidence tool
 
@@ -166,6 +179,9 @@ Your copy has your own administrator. Nothing here reads a key from a file in th
 - `contracts/UmaMetricOracleAdapter.sol`: the only contract that talks to UMA.
 - `contracts/MetricRegistry.sol` and `contracts/ConditionLib.sol`: the metrics, and how a reading meets a condition.
 - `deployments/metric.sepolia.json`: the Sepolia addresses the app uses.
-- `web/`: the React app. `src/`: shared rules, payout and weather code. `scripts/`: deployment, seeding and evidence
-  tools.
-- `site/`: the project page. `docs/DEMO_SCRIPT.md`: the script for the demo video.
+- `web/`: the React app.
+- `src/`: shared rules, payout and weather code.
+- `scripts/`: deployment, seeding and evidence tools.
+- `launcher/`: the small server inside the desktop packages.
+- `test/`: contract, shared, web and browser tests.
+- `fixtures/`: saved HKO files and sample data for the tests.

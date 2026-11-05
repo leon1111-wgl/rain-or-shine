@@ -1,8 +1,3 @@
-// The intro at #/, a page of its own outside the app's frame: the pill navigation, the hero with a live market card,
-// the ticker, then market types, figures, the flow, fees and questions (the pills' order), and the way into the markets. Every figure
-// is read from the chain. Nothing is shown before it is read. The hero's entrance, the growing bars, the count-ups,
-// the ticker and the sliding pill are the page's motion, and all of it stops for reduced motion.
-
 import { formatUnits } from "ethers";
 import { useState, type ReactNode } from "react";
 import { HowItWorks } from "../components/HowItWorks";
@@ -24,7 +19,6 @@ import { type IntroKind, introFigures, kindSummary, readSkipIntro, writeSkipIntr
 import type { MarketData } from "../lib/markets";
 import { href } from "../lib/routes";
 
-/** "Go straight to the markets next time": remembered per browser. The intro stays reachable from the brand link. */
 function SkipIntro() {
   const [skip, setSkip] = useState(readSkipIntro);
   return (
@@ -96,7 +90,6 @@ function Hero({ markets, now }: { markets: MarketData[] | undefined; now: bigint
   );
 }
 
-/** A figure that counts up from zero once its section is seen. With reduced motion it simply shows the figure. */
 function Count({ seen, value, text, decimals = 0, unit }: { seen: boolean; value: number; text: string; decimals?: number; unit?: string }) {
   const shown = seen || prefersReducedMotion();
   return (
@@ -110,7 +103,6 @@ function Count({ seen, value, text, decimals = 0, unit }: { seen: boolean; value
 function Figures({ markets, items, now }: { markets: MarketData[] | undefined; items: ReturnType<typeof useActivity>; now: bigint }) {
   const [ref, seen] = useInView<HTMLDListElement>();
   if (!markets) {
-    // Nothing is shown as a number before the markets have been read.
     return (
       <dl className="intro-figures" ref={ref} data-testid="landing-figures" aria-busy="true">
         {(["open", "staked", "bets", "accounts"] as const).map((k) => (

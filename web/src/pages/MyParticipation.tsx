@@ -1,7 +1,3 @@
-// View 5: the connected account's participation: its positions and claimable amounts from the dashboard, its bets
-// from the verified bet history and its claims from the Claimed logs. Switching account or chain changes the read
-// identity, so the previous account's rows disappear immediately.
-
 import { LoadError, Msg, PageHeading, PhaseBadge, Skeleton, Stat, TxLink } from "../components/primitives";
 import { useApp } from "../hooks/useApp";
 import { useAsync } from "../hooks/useAsync";
@@ -93,7 +89,6 @@ export function MyParticipationPage() {
   );
 }
 
-/** One market: the locked side and stake, every bet with its transaction, the phase, and the claim receipt or next step. */
 function RecordRow({ market, bets, claim }: { market: MarketData; bets: ActivityItem[]; claim: ClaimRecord | null }) {
   const { now } = useApp();
   const phase = phaseOf(market, now);

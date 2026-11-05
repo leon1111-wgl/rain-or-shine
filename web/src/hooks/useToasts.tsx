@@ -1,7 +1,3 @@
-// Short notices that slide in at the corner and leave by themselves: "copied", a confirmed or failed transaction.
-// They repeat what the page already shows inline. Nothing depends on them. Without a provider (component tests)
-// `show` is a no-op.
-
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 
 export type ToastTone = "info" | "ok" | "bad";

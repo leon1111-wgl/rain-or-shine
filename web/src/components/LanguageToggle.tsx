@@ -2,7 +2,6 @@ import { LOCALES, t } from "../i18n";
 import { useI18n } from "../i18n/I18nProvider";
 import { Icon } from "./Icon";
 
-/** 中 / EN: one click switches every page. */
 export function LanguageToggle() {
   const { locale, setLocale } = useI18n();
   return (

@@ -1,5 +1,3 @@
-// The cards above the market table: busiest events, closing soon, latest trades, and the live HKO panel.
-
 import type { ReactNode } from "react";
 import { t } from "../i18n";
 import type { ActivityItem } from "../lib/activity";
@@ -82,7 +80,6 @@ function Latest({ markets, items, now }: { markets: MarketData[]; items: Activit
           return (
             <li key={`${b.txHash}:${b.logIndex}`}>
               <a href={market ? linkOf(market, now) : href.list}>
-                {/* Today's trades show the time, older ones the date. The full stamp is in the tooltip. */}
                 <span className="muted num" title={formatHktStamp(BigInt(b.timestamp), now)}>
                   {formatHktStamp(BigInt(b.timestamp), now).slice(0, 5)}
                 </span>
@@ -99,7 +96,6 @@ function Latest({ markets, items, now }: { markets: MarketData[]; items: Activit
   );
 }
 
-/** A failed or empty market read says so here. The HKO panel is independent of the chain. */
 export function MarketCards({ markets, stats, items, now, state }: { markets: MarketData[]; stats: Map<number, MarketStats>; items: ActivityItem[] | undefined; now: bigint; state: "loading" | "error" | "ready" }) {
   return (
     <div className="market-cards" data-testid="cards">

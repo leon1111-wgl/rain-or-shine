@@ -20,13 +20,11 @@ export interface NumericProposal {
 export interface NumericProposalContext {
   rulesDocument: string;
   expected: NumericRulesChainExpectation;
-  /** Independently read chain time, not the local computer clock. */
   chainTimestamp: number;
 }
 
 export const MAX_EXCERPT_BYTES = 2048;
 const MAX_SOURCE_URL_BYTES = 256;
-/** The largest source document a proposer imports. Only its hash and an excerpt go on-chain. */
 export const MAX_SOURCE_DOCUMENT_BYTES = 5_000_000;
 const SPORTS_FIELDS = [
   "schema", "synthetic", "matchId", "teamA", "teamB",
@@ -96,7 +94,6 @@ function proposal(
   };
 }
 
-/** Verify rule bindings and reparse HKO bytes. Hash consistency does not prove authenticity. */
 export function buildHkoNumericProposal(
   bundle: unknown, context: NumericProposalContext,
 ): NumericProposal {
@@ -118,14 +115,12 @@ export function buildHkoNumericProposal(
   const reading: NumericProposal["reading"] = observation.kind === "TRACE"
     ? { kind: 2, value: 0 }
     : { kind: 1, value: observation.value! };
-  // The hash covers the complete monthly response. The excerpt contains only the target row.
   return proposal(
     rules, context, reading, observation.rawSha256, capturedAt,
     observation.sourceURL, toUtf8Bytes(observation.excerpt),
   );
 }
 
-/** Accept post-observation synthetic results. Acquisition time does not prove match time. */
 export function buildSportsNumericProposal(
   rawBytes: Uint8Array, capturedAt: number, context: NumericProposalContext,
 ): NumericProposal {
@@ -160,9 +155,7 @@ export function buildSportsNumericProposal(
 
 /** A custom market's evidence: the exact imported bytes, the reading the proposer reads from them, and an excerpt. */
 export interface CustomProposalInput {
-  /** The complete source document as imported (JSON, CSV, text, HTML…). RawSha256 is its SHA-256. */
   rawBytes: Uint8Array;
-  /** The reading in the metric's unit, as decimal text with at most two decimals, or "TRACE" where the metric allows it. */
   reading: string;
   /** When the document was acquired, in Unix seconds: not before the observation ends, not after the chain time. */
   capturedAt: number;
@@ -170,7 +163,6 @@ export interface CustomProposalInput {
   excerpt?: Uint8Array;
 }
 
-/** Where `part` occurs as a contiguous run of bytes in `whole`. */
 function containsBytes(whole: Uint8Array, part: Uint8Array): boolean {
   outer: for (let start = 0; start + part.length <= whole.length; start++) {
     for (let i = 0; i < part.length; i++) if (whole[start + i] !== part[i]) continue outer;
@@ -208,7 +200,6 @@ export function buildCustomNumericProposal(input: CustomProposalInput, context: 
   return proposal(rules, context, reading, sha256(raw), input.capturedAt, profile.sourceUrl, excerpt);
 }
 
-/** The value of one Daily Extract field, multiplied by 100. */
 export function readHkoField(row: string[], field: HkoDailyExtractField): number {
   const token = row[field.column];
   if (field.format === "percent") return parseWholePercentToken(token, field.header).percent100;
@@ -216,7 +207,6 @@ export function readHkoField(row: string[], field: HkoDailyExtractField): number
   return parseOneDecimalToken(token, field.header, minValue, maxValue).value100;
 }
 
-/** Read the committed column of the target day's row from the monthly file. The row is the excerpt. */
 export function buildHkoFieldProposal(raw: RawEvidence, context: NumericProposalContext): NumericProposal {
   const rules = prepare(context);
   const profile = assertCustomNumericProfile(rules);

@@ -1,7 +1,3 @@
-// React side of the interface language: the provider keeps the choice, and the subtree is re-mounted
-// on change so every component renders in the new language. `tNodes` fills placeholders with elements
-// (links, emphasis) so translated sentences can keep their markup.
-
 import { Fragment, createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { type Locale, type MessageKey, activeLocale, setActiveLocale, storeLocale, t } from "./index";
 
@@ -15,7 +11,7 @@ const I18nContext = createContext<I18nApi | null>(null);
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(activeLocale);
   const setLocale = useCallback((next: Locale) => {
-    setActiveLocale(next); // before the re-render, so t() already answers in the new language
+    setActiveLocale(next);
     storeLocale(next);
     setLocaleState(next);
   }, []);
@@ -35,7 +31,6 @@ export function useI18n(): I18nApi {
   return useContext(I18nContext) ?? { locale: activeLocale(), setLocale: setActiveLocale };
 }
 
-/** Like t(), but {placeholders} may be React elements. Returns the pieces in order. */
 export function tNodes(key: MessageKey, nodes: Record<string, ReactNode>): ReactNode[] {
   const template = t(key);
   const out: ReactNode[] = [];

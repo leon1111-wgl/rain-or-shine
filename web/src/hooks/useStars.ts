@@ -1,6 +1,3 @@
-// The viewer's starred events for the markets page: read once, written on every change, keyed by this
-// deployment's market contract so another deployment's stars never apply.
-
 import { useCallback, useState } from "react";
 import { useMetricApp } from "../metric/context";
 import { isStarred, readStars, starKey, toggleStar, writeStars } from "../lib/stars";

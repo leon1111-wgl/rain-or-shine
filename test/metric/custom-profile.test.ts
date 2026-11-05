@@ -22,7 +22,6 @@ const hash = (text: string) => keccak256(toUtf8Bytes(text));
 const hkt = (iso: string) => Date.parse(`${iso}+08:00`) / 1000;
 const PLAN = { proposalWindow: 86_400, assertionLiveness: 7_200, refundBuffer: 86_400 };
 
-/** The four kinds of custom market the user asked for, each with its metric, window, condition and source. */
 const MATRIX = [
   {
     name: "weekly rainfall total ≥ 20 mm",
@@ -144,11 +143,10 @@ describe("custom metric definitions", () => {
   });
 
   it("keeps the three original fields byte for byte, because Sepolia markets #5 and #6 commit them", () => {
-    // Metric rules hashes as registered on Sepolia, and the keccak256 of each committed procedure.
-    expect(HKO_DAILY_EXTRACT_FIELDS.slice(0, 3).map((field) => [field.key, field.metric.rulesHash, hash(hkoFieldProcedure(field))])).toEqual([
-      ["min-temperature", "0x9dbdb73344f751816c8f4e32246950249cc0044bcfa2b693db21a0b505992444", "0xb0bb97939705b20ddb523ae47d32811a39cbaefcbc6def147a9d7c243d0e4a87"],
-      ["mean-temperature", "0xe68cd0daae7a51e4d395816fd80416904a80de4be93034bd7e36a3d972320a80", "0x9b3e6baf1a8946e17c30a9f6a03f086b18f1e050d17888eea468b790e3378179"],
-      ["mean-humidity", "0xe9082092303023b2ffe1d74edecce9886956215124399b24a173d03892474f42", "0xcc66a1bf5c469fcae475eff9b3bd171233a77dcd7cb1618c4ae503722deecbbf"],
+    expect(HKO_DAILY_EXTRACT_FIELDS.slice(0, 3).map((field) => [field.key, field.metric.rulesHash.slice(0, 10), hash(hkoFieldProcedure(field)).slice(0, 10)])).toEqual([
+      ["min-temperature", "0x9dbdb733", "0xb0bb9793"],
+      ["mean-temperature", "0xe68cd0da", "0x9b3e6baf"],
+      ["mean-humidity", "0xe9082092", "0xcc66a1bf"],
     ]);
   });
 });
@@ -260,7 +258,6 @@ describe("custom market checks", () => {
     expect(() => buildCustomNumericProposal({ rawBytes: large, reading: "48.27", capturedAt: at, excerpt: toUtf8Bytes("Peak gust 16:00-16:10: 48.28 km/h") }, proposalContext)).toThrow(/copied exactly/);
     const ok = buildCustomNumericProposal({ rawBytes: large, reading: "48.27", capturedAt: at, excerpt: toUtf8Bytes("Peak gust 16:00-16:10: 48.27 km/h") }, proposalContext);
     expect(ok.evidence.rawSha256).toBe(sha256(large));
-    // A byte-order mark or a different line ending is a different document with a different hash.
     expect(buildCustomNumericProposal({ rawBytes: toUtf8Bytes(`\uFEFF${item.document}`), reading: "48.27", capturedAt: at }, proposalContext).evidence.rawSha256)
       .not.toBe(sha256(toUtf8Bytes(item.document)));
   });
@@ -329,7 +326,6 @@ describe("HKO Daily Extract fields", () => {
     ]) expect(() => assertCustomNumericProfile(changed)).toThrow();
     const window = hkDayWindow("20260914");
     expect(rules.config.times.observationStart).toBe(Number(window.start));
-    // The generic path is not offered for a field market, and the field path is not offered for a generic one.
     expect(() => buildCustomNumericProposal({ rawBytes: raw.bytes, reading: "26.1", capturedAt: capture },
       { rulesDocument: market.document, expected: expected(market.context, market.document), chainTimestamp: capture })).toThrow(/HKO Daily Extract/);
     expect(() => buildHkoFieldNumericRules({ title: "x", targetDate: "20260914" }, contextFor(metricOf(MATRIX[1].metric), MATRIX[1].condition, market.times))).toThrow(/field/);

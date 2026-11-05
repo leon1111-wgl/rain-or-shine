@@ -1,7 +1,3 @@
-// Records the dashboard does not hold: the evidence a proposer published with a market's assertion, and the
-// connected account's claims. Logs are read in bounded block ranges from the contracts' deployment blocks, and every
-// record is checked against the market it belongs to before it is shown.
-
 import { toUtf8String, type Provider } from "ethers";
 import { adapterOf, marketOf, type MetricDeployment } from "../metric/client";
 import { LOG_BLOCK_SPAN } from "../metric/rpc-reader";
@@ -28,13 +24,11 @@ function excerptText(bytes: string): string {
   try {
     return toUtf8String(bytes);
   } catch (err) {
-    // Not UTF-8: the bytes are shown as hex, exactly as published.
     if (err instanceof Error) return bytes;
     throw err;
   }
 }
 
-/** The AssertionProposed and EvidencePublished logs of the market's assertion, newest blocks first. */
 export async function loadEvidence(dep: MetricDeployment, reader: Provider, m: MarketData): Promise<EvidenceRecord | null> {
   const a = m.assertion;
   if (!a) return null;
@@ -57,7 +51,6 @@ export async function loadEvidence(dep: MetricDeployment, reader: Provider, m: M
   return null;
 }
 
-/** The account's Claimed logs, by market. */
 export async function loadClaims(dep: MetricDeployment, reader: Provider, account: string): Promise<Map<number, ClaimRecord>> {
   const market = marketOf(dep, reader);
   const first = dep.contracts.PredictionMarket.blockNumber;

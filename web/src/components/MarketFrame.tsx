@@ -7,7 +7,6 @@ import { href } from "../lib/routes";
 import { useMetricApp } from "../metric/context";
 import { LoadError, Skeleton } from "./primitives";
 
-/** Loads one market for the three market views. An ID this deployment does not show is never rendered. */
 export function MarketFrame({ id, children }: { id: number; children: (market: MarketData) => ReactNode }) {
   const api = useMetricApp();
   const { market, error, loading } = useMarket(id);

@@ -10,8 +10,6 @@ export const SEPOLIA_CHAIN_ID = 11155111;
 export const SEPOLIA_PUBLIC_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 // Sepolia activated Glamsterdam on 2026-10-06. EIP-8037 reprices code
 // deposit/state creation. Pre-upgrade 5M/4M caps cannot deploy these artifacts.
-// PublicNode read-only estimates on 2026-10-21: main 23,417,145. Adapter
-// 19,883,748 (ephemeral market-code override). Keep the independent ETH cap.
 export const SEPOLIA_DEPLOY_GAS_LIMITS = Object.freeze({
   PredictionMarket: 30_000_000n, UmaMetricOracleAdapter: 25_000_000n, binding: 300_000n,
 });

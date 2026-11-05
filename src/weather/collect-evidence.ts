@@ -7,7 +7,6 @@ import { WeatherDataError } from "./strict.js";
 
 export type WeatherSelection = "rainfall" | "max-temperature" | "both";
 
-/** One official response supplies one or two complete, independently importable bundles. */
 export async function collectWeatherEvidence(date: string, selection: WeatherSelection = "both", policy: Partial<FetchPolicy> = {}) {
   const compact = toCompactDate(date);
   if (selection !== "rainfall" && selection !== "max-temperature" && selection !== "both") {

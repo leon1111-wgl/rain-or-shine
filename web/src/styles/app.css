@@ -63,13 +63,11 @@ svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColo
 .yes-text { color: var(--yes); }
 .no-text { color: var(--no); }
 .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.92em; overflow-wrap: anywhere; }
-/* every figure that reads as a price or a quantity uses the numeral face */
 .price, .figure, .summary-strip dd, .countdown, .cell-share, .event-stats dd, .money-tile strong, .estimate-box strong, .amount-field input, .book-mid strong, .mini-list .num, .rank-list .num, .stat strong, .market-list .num { font-family: var(--font-num); }
 
 .icon-base { fill: currentColor; stroke: none; opacity: 0.2; }
 .icon-solid { fill: currentColor; stroke: none; }
 
-/* each function's accent: the shell carries the page's, every menu entry its own */
 [data-section="waiting"] { --accent: var(--c-waiting); }
 [data-section="settlement"] { --accent: var(--c-settlement); }
 [data-section="mine"] { --accent: var(--c-mine); }
@@ -253,7 +251,6 @@ label.field-label { display: block; margin-bottom: 6px; font-size: 12px; color: 
 .page-tabs .tab { padding: 12px 0 14px; font-size: 16px; text-decoration: none; }
 .market-top .small-button { margin-bottom: 8px; }
 
-/* the event in focus: its question, the main figures and the rain gauge filled to the Yes share */
 .focus { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 40px; margin-bottom: 14px; padding: 28px 40px 28px 32px; overflow: hidden; border-radius: 14px; border: 1px solid #142a4d; background: linear-gradient(120deg, #0d2140 0%, #081428 42%, #0a0a0a 100%); }
 .focus::before { content: ""; position: absolute; inset: -60% 0 0 35%; z-index: -1; transform: skewX(-14deg); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='160'%3E%3Cg stroke='%234c9bff' stroke-linecap='round' stroke-width='1.4'%3E%3Cline x1='10' y1='10' x2='10' y2='40' stroke-opacity='.4'/%3E%3Cline x1='70' y1='60' x2='70' y2='86' stroke-opacity='.28'/%3E%3Cline x1='105' y1='18' x2='105' y2='50' stroke-opacity='.34'/%3E%3Cline x1='40' y1='108' x2='40' y2='134' stroke-opacity='.24'/%3E%3C/g%3E%3C/svg%3E"); background-size: 120px 160px; opacity: 0.55; }
 .focus h2 { margin: 12px 0 20px; font-size: 30px; font-weight: 700; line-height: 1.25; letter-spacing: -0.5px; }
@@ -298,7 +295,6 @@ label.field-label { display: block; margin-bottom: 6px; font-size: 12px; color: 
 .hko-live .hko-error, .hko-live .hko-warning { font-size: 12px; }
 .hko-live .hko-warning { padding: 5px 9px; border-radius: 6px; font-weight: 600; color: var(--amber); background: var(--amber-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* the summary strip: three mini cards and the HKO panel, divided by hairlines inside one frame */
 .market-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-bottom: 24px; overflow: hidden; border-radius: 12px; border: 1px solid var(--line); background: var(--line); }
 .market-cards > .skeleton, .cards-state { grid-column: span 3; }
 .cards-state { display: grid; place-items: center; min-height: 168px; margin: 0; color: var(--muted); }
@@ -381,7 +377,6 @@ th .info-tip { margin-left: 4px; }
 .rule-chips li { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text-2); font-size: 12px; }
 .rule-chips svg { width: 14px; height: 14px; color: var(--yes); stroke-width: 2.2; }
 
-/* rankings */
 .rank-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 28px; }
 .rank-card .card-label { margin-bottom: 8px; }
 .rank-list { margin: 0; padding: 0; list-style: none; }
@@ -397,7 +392,6 @@ th .info-tip { margin-left: 4px; }
 .rank-list .num { text-align: right; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .rank-list .pool-bar { height: 4px; }
 
-/* trading data */
 .data-view { margin-bottom: 28px; }
 .data-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .data-grid h2 { display: flex; align-items: center; gap: 4px; font-size: 14px; }
@@ -442,7 +436,6 @@ th .info-tip { margin-left: 4px; }
 .event-stats .countdown { font-size: 14px; }
 .tick { margin: 0 -3px; padding: 0 3px; border-radius: 3px; }
 
-/* the trading terminal: one frame with hairline divisions; market list, chart, positions, order panel, tabs */
 .detail-page { display: grid; gap: 1px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--line); }
 .detail-page .event-bar { margin: 0; border: 0; border-radius: 0; }
 .trade-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr) 280px 330px; grid-template-rows: auto 1fr; grid-template-areas: "list chart book order" "list tabs tabs order"; gap: 1px; }
@@ -688,7 +681,6 @@ th .info-tip { margin-left: 4px; }
   .main-nav .nav-item { padding: 0 9px; }
 }
 
-/* phones and small tablets: the menu becomes a tab bar at the bottom, the terminal stacks */
 @media (max-width: 950px) {
   .trade-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "chart" "order" "book" "tabs"; }
   .rank-grid, .data-grid { grid-template-columns: minmax(0, 1fr); }
@@ -703,7 +695,6 @@ th .info-tip { margin-left: 4px; }
   .focus .gauge { display: none; }
 }
 
-/* five dated steps need about 770 px side by side */
 @media (max-width: 800px) {
   .timeline { grid-template-columns: 1fr; gap: 0; margin-left: 6px; }
   .step { padding: 0 0 20px 22px; border-top: 0; border-left: 2px solid var(--line-2); }
@@ -718,7 +709,6 @@ th .info-tip { margin-left: 4px; }
   .topbar { gap: 8px; padding: 0 12px; }
   .top-actions { gap: 6px; }
   .top-actions > .tag { display: none; }
-  /* The read-only pill gives way on the narrowest phones; its title still says why. */
   .top-actions > .tag.wallet-none { display: inline-block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .top-actions { min-width: 0; }
   .top-actions .primary { min-height: 32px; padding: 5px 12px; }
@@ -807,7 +797,6 @@ th .info-tip { margin-left: 4px; }
 .star.on .icon-base { opacity: 1; }
 @media (max-width: 730px) {
   .section-heading .search { flex-basis: 100%; min-width: 0; }
-  /* Longer type names, such as "Temperature", scroll inside the control instead of widening the page. */
   .section-heading .segmented { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
   .section-heading .segmented::-webkit-scrollbar { display: none; }
   .section-heading .segmented button { flex: none; white-space: nowrap; }
@@ -853,7 +842,6 @@ th .info-tip { margin-left: 4px; }
 .metric-mark.small .icon { width: 15px; height: 15px; }
 .metric-cell { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
 a.metric-cell:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
-/* The market's tag next to its phase and in the registry: an official metric, a custom market or a synthetic demo. */
 .badge-tag { margin-left: 6px; padding: 0 5px; border-radius: 4px; background: var(--panel-3); color: var(--muted); font-size: 10.5px; font-weight: 600; white-space: nowrap; }
 .badge-official { background: var(--yes-soft); color: var(--yes); }
 .badge-custom { background: var(--blue-soft); color: var(--link); }
@@ -922,7 +910,6 @@ a.metric-cell:hover { color: var(--text); text-decoration: underline; text-under
 .mock-box { padding: 12px 14px; border: 1px dashed var(--line-2); border-radius: var(--radius); }
 .ops-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
 .ops-grid > :last-child { display: grid; gap: 16px; }
-/* The administrator's main task leads, across the whole width. */
 .ops-grid > .new-market { grid-column: 1 / -1; order: -1; }
 .ops-section { display: grid; gap: 12px; }
 .ops-section h2 { margin: 0; font-size: 16px; }
@@ -990,12 +977,10 @@ a.metric-cell:hover { color: var(--text); text-decoration: underline; text-under
   .main-nav .nav-long { display: none; }
   .main-nav .nav-short { display: inline; }
 }
-/* the English menu is too long for the top bar below 1320 px */
 @media (max-width: 1320px) {
   html:lang(en) .main-nav .nav-long { display: none; }
   html:lang(en) .main-nav .nav-short { display: inline; }
 }
-
 
 @media (max-width: 1100px) {
 }
@@ -1009,7 +994,6 @@ a.metric-cell:hover { color: var(--text); text-decoration: underline; text-under
 .ops-empty { padding: 4px 12px 12px; }
 .data-table tr.selected td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .data-table tr.selected td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
-
 
 /* In Chinese the Chinese face comes first, so full-width punctuation (？，：) keeps its width. */
 /* Full-width question and exclamation marks drawn centred, as in Hong Kong and Japanese type. The mainland style sets

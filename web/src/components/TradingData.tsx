@@ -1,6 +1,3 @@
-// Trading data across every market: the last 24 h, daily volume, total stake over time, the Yes share of all stakes
-// over time, and daily active addresses. Plotted in ETH fractions. Every label is the exact integer amount.
-
 import type { ReactNode } from "react";
 import { t } from "../i18n";
 import type { ActivityItem } from "../lib/activity";
@@ -14,7 +11,6 @@ import { MetricMark } from "./MetricMark";
 import { Eth, InfoTip, ShareBar } from "./primitives";
 import { type Bar, BarChart, type ChartPoint, TimeChart } from "./charts";
 
-/** Days shown: from the first bet (at least a week, at most 30 days). */
 const MIN_DAYS = 7;
 const MAX_DAYS = 30;
 const eth = (wei: bigint) => Number(wei / 10n ** 12n) / 1e6;
@@ -86,7 +82,6 @@ interface MetricRow {
   volume: bigint;
 }
 
-/** Every metric's markets, open markets, stakes, Yes/No split and last 24 h volume. */
 function metricRows(markets: MarketData[], items: ActivityItem[], now: bigint): MetricRow[] {
   const rows = new Map<string, MetricRow>();
   const codeOf = new Map(markets.map((m) => [m.id, m.metric.code]));

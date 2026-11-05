@@ -1,6 +1,3 @@
-// Every account's bets and top-ups in one market, newest first, re-read when the market's totals change. Several
-// members trading at once stay visible. The connected account's own rows are marked.
-
 import type { AsyncState } from "../hooks/useAsync";
 import { useWallet } from "../hooks/useWallet";
 import { type MessageKey, t } from "../i18n";

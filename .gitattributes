@@ -3,3 +3,6 @@ fixtures/official/** -text -diff -merge
 fixtures/demo/** -text -diff -merge
 *.command text eol=lf
 *.sh text eol=lf
+.github export-ignore
+site export-ignore
+.gitattributes export-ignore

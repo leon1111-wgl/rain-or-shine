@@ -1,7 +1,3 @@
-// The hero's floating market card, from chain reads only: the busiest open market's question and Yes share, the Yes
-// share after each of its bets (the detail chart's series) once there are two bets, the Yes and No stakes, the number
-// of bets and a ticking countdown. With fewer than two bets there is no line to draw, and the card says so.
-
 import { useMarketBook } from "../../hooks/useMarkets";
 import { t } from "../../i18n";
 import type { ActivityItem } from "../../lib/activity";
@@ -16,7 +12,6 @@ import { stepLine } from "../StakeChart";
 
 const W = 300;
 const H = 96;
-/** The line keeps clear of the top and bottom edges; 50 % is the dashed guide. */
 const plotY = (share: number) => H * 0.92 - (share / 100) * H * 0.84;
 
 function ShareSteps({ bets }: { bets: ActivityItem[] }) {

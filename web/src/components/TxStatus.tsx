@@ -3,7 +3,6 @@ import { t } from "../i18n";
 import { useMetricApp } from "../metric/context";
 import { TxLink } from "./primitives";
 
-/** Live region for the action this panel started. Success appears only after a successful receipt. */
 export function TxStatus({ state }: { state: TxState | null }) {
   const api = useMetricApp();
   if (!state) return null;

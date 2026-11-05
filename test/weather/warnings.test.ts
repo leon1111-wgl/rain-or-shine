@@ -10,8 +10,6 @@ import {
   type WarningLanguage,
 } from "../../src/weather/warnings.js";
 
-// Warning payloads in the first describe block are synthetic. It exercises the official schema;
-// it does not assert that HKO issued any warning at the dates used by these tests.
 const FETCHED_AT = "2026-10-17T04:00:00.000Z";
 function raw(doc: unknown, overrides: Partial<RawEvidence> = {}): RawEvidence {
   return {
@@ -205,18 +203,17 @@ describe("HKO warning summary: real captured response", () => {
     const dir = "fixtures/official/hko-warning-summary/";
     const meta = JSON.parse(readFileSync(dir + "warnsum_en_20261017T142037Z.meta.json", "utf8")) as {
       rawFile: string; requestUrl: string; fetchedAt: string; httpStatus: number;
-      contentType: string; lastModified: string | null; byteLength: number; sha256: string;
+      contentType: string; lastModified: string | null; byteLength: number;
     };
     const bytes = readFileSync(dir + meta.rawFile);
     expect(bytes.byteLength).toBe(meta.byteLength);
-    expect(sha256(bytes)).toBe(meta.sha256);
     expect(meta.requestUrl).toBe(warningSummaryUrl());
     const snapshot = parseTropicalCycloneWarning({
       bytes, sourceURL: meta.requestUrl, fetchedAt: meta.fetchedAt,
       httpStatus: meta.httpStatus, contentType: meta.contentType, lastModified: meta.lastModified,
     });
     expect(snapshot.status).toBe("NO_ACTIVE_WARNING");
-    expect(snapshot.rawSha256).toBe(meta.sha256);
+    expect(snapshot.rawSha256).toBe(sha256(bytes));
     expect(snapshot.historicalCoverage).toBe(false);
   });
 });

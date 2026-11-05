@@ -1,6 +1,3 @@
-// The icon set, on a 24px grid, in two tones: a translucent body, a line drawing and solid details. The solid
-// details take the section colour where the CSS gives one (the active menu entry, the current step).
-
 interface Glyph {
   base?: string;
   line?: string;

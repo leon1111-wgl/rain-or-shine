@@ -1,5 +1,3 @@
-// A rain gauge: a tube filled to the Yes share, with a moving water surface and marks at 25, 50 and 75 %.
-
 import { useId } from "react";
 import { t } from "../i18n";
 

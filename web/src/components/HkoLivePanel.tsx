@@ -1,8 +1,3 @@
-// "天文台实时数据": official HKO readings at the Observatory headquarters, each with the time HKO published
-// it and the time this page read it, re-read every minute. Only what the API returned is shown: a feed that is
-// missing, under maintenance or failing says so instead of showing a number. Display only: no pool outcome
-// depends on it (outcomes come from the Daily Extract through UMA).
-
 import { currentWeatherPageUrl, type Reading } from "@shared/weather/live";
 import { useAsync } from "../hooks/useAsync";
 import { activeLocale, t } from "../i18n";
@@ -11,7 +6,6 @@ import { formatHktClock, formatHktStamp, formatLocalDate } from "../lib/time";
 import { InfoTip, Skeleton } from "./primitives";
 
 const POLL_MS = 60_000;
-/** The current weather report is hourly. A report older than this is called out as not updated. */
 const STALE_AFTER_S = 3 * 3_600;
 const UNITS: Record<string, string> = { C: "°C", percent: "%" };
 
@@ -26,7 +20,6 @@ function Tile({ label, testId, shown }: { label: string; testId: string; shown: 
     <div className="hko-tile" data-testid={testId} title={shown.title}>
       <dt>{label}</dt>
       <dd>
-        {/* Keyed by value: a new reading replays the arrival animation. */}
         <strong key={shown.value}>{shown.value}</strong>
         <small>{shown.note}</small>
       </dd>

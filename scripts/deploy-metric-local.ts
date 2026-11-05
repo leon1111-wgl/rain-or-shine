@@ -11,7 +11,6 @@ import {
 const connection = await hre.network.create();
 try {
   const { ethers } = connection;
-  // 必须连持久运行的 localhost 节点，避免误用一次性模拟网络。
   if (connection.networkName !== "localhost" || connection.networkConfig.type !== "http") {
     throw new Error("Use: hardhat run --network localhost scripts/deploy-metric-local.ts");
   }
@@ -25,7 +24,6 @@ try {
   const policyBond = parseUnits("10", bondDecimals);
   const minimumBond = parseUnits("1", bondDecimals);
 
-  // 1. 本地预言机环境。没有接入真实 UMA/DVM。
   const bond = await ethers.deployContract("TestBondToken", ["Local metric test bond", "tBOND", bondDecimals]);
   await bond.waitForDeployment();
   const oracle = await ethers.deployContract("MockOptimisticOracleV3", [adminAddress]);
@@ -35,7 +33,6 @@ try {
   const whitelist = await (await oracle.setCurrency(bondAddress, true, minimumBond)).wait();
   assert.equal(whitelist?.status, 1);
 
-  // 2. 主合约先部署，再把其地址传给适配器。
   const market = await ethers.deployContract("PredictionMarket", [adminAddress]);
   await market.waitForDeployment();
   const marketAddress = await market.getAddress();
@@ -45,12 +42,10 @@ try {
   await adapter.waitForDeployment();
   const adapterAddress = await adapter.getAddress();
 
-  // 3. 适配器反向绑定主合约。主合约只允许绑定一次。
   const binding = await (await market.setOracleAdapter(adapterAddress)).wait();
   assert.equal(binding?.status, 1);
   assert.ok(binding);
 
-  // 写文件前回读链上状态，排除地址接错或初始化遗漏。
   assert.equal(await market.metricAdmin(), adminAddress);
   assert.equal(await market.oracleAdapter(), adapterAddress);
   assert.equal(await adapter.market(), marketAddress);
@@ -132,4 +127,3 @@ try {
 } finally {
   await connection.close();
 }
-

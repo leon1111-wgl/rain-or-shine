@@ -10,8 +10,6 @@ import { buildCustomNumericProposal, buildHkoFieldProposal, type NumericProposal
 import type { NumericRulesChainExpectation } from "../../src/metric/numeric-rules.js";
 import { dailyExtractMonthUrl } from "../../src/weather/profile.js";
 
-// Custom markets on the real contracts and the local Mock oracle (an isolated in-process network): the registry, the
-// market, bets on both sides, a proposal built from an imported document, settlement and the winners' claims.
 const connection = await network.create();
 const { ethers, networkHelpers } = connection;
 const { time } = networkHelpers;
@@ -152,7 +150,6 @@ describe("Custom markets on the contracts", function () {
     await (await f.market.connect(f.bob).bet(created.id, 2, { value: MIN })).wait();
     await time.increaseTo(times.observationEnd + 3_600);
     const dd = date.slice(6, 8);
-    // A snapshot in the official monthly format. Only the target day's row is read.
     const monthly = JSON.stringify({ stn: { data: [{ month: Number(date.slice(4, 6)), dayData: [[dd, "1016.0", "24.1", "21.9", "20.3", "15.2", "78", "40", "  0.0"]] }] } });
     const fetchedAt = new Date((await time.latest()) * 1000).toISOString();
     await time.increase(5);

@@ -1,6 +1,5 @@
 // Builds the Sepolia desktop packages: macOS for Apple silicon and Intel, and Windows x64.
 // Each zip holds the built app, a small local server and an official Node runtime.
-// The receiving computer installs nothing. Nothing is signed or deployed.
 //   npm run package:desktop
 
 import { execFileSync, spawn } from "node:child_process";
@@ -74,7 +73,6 @@ async function download(name: string, maximum: number) {
   return Buffer.concat(chunks);
 }
 
-// Official Node runtimes, checked against the SHA-256 list that nodejs.org publishes.
 await mkdir(runtimeCache, { recursive: true });
 const sums = (await download("SHASUMS256.txt", 100_000)).toString("utf8");
 const runtimes = new Map<Target, { directory: string; archiveSha256: string; sourceURL: string }>();
@@ -102,7 +100,6 @@ if (Object.keys(exported.deployments).join(",") !== "11155111") throw new Error(
 const dist = resolve(root, "web/dist");
 const weatherTools = resolve(root, "cache/portable-weather");
 const bundled = new Set<string>();
-// A path inside node_modules, nested copies included: "ethers/node_modules/@noble/hashes".
 const packageOf = (path: string) => /node_modules\/((?:(?:@[^/]+\/)?[^/]+\/node_modules\/)*(?:@[^/]+\/)?[^/]+)\//.exec(path)?.[1];
 for (const file of (await files(dist)).filter((name) => name.endsWith(".js.map"))) {
   for (const source of (JSON.parse(await readFile(file, "utf8")) as { sources: string[] }).sources) {
@@ -205,7 +202,6 @@ for (const target of TARGETS) {
     RELEASE: releaseId, ADMIN: dep.admin, MARKET: dep.contracts.PredictionMarket.address,
     ADAPTER: dep.contracts.UmaMetricOracleAdapter.address, BOND: dep.oracle.bondCurrency,
   };
-  // The template marks macOS-only and Windows-only parts; each package keeps its own.
   const page = template
     .replace(/<!--@@(MAC|WINDOWS)-->([\s\S]*?)<!--@@END-->/g, (_match: string, os: string, body: string) => ((os === "MAC") === mac ? body : ""))
     .replace(/@@([A-Z]+)@@/g, (_match: string, key: string) => {

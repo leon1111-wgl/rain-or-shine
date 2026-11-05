@@ -1,6 +1,3 @@
-// @vitest-environment node
-// The market's bets for the charts and the book come from the client's verified history. A market is read again only
-// when its on-chain totals change.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ readMarketActivity: vi.fn() }));

@@ -1,11 +1,9 @@
 {
-  "captureTool": "scripts/weather.ts live-capture",
   "purpose": "test input for the live HKO panel (display data; never pool evidence)",
   "requestUrl": "https://data.weather.gov.hk/weatherAPI/opendata/hourlyRainfall.php?lang=en",
   "fetchedAt": "2026-10-04T00:15:57.921Z",
   "httpStatus": 200,
   "contentType": "application/json",
   "byteLength": 6431,
-  "sha256": "0x208bdb9abee28cf2d741be009cb27cc4e9824325daabdb17051f0d30e0804ee1",
   "rawFile": "hourlyRainfall_en_20261004T001557Z.json"
 }

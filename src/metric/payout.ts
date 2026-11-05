@@ -7,11 +7,8 @@ export type PayoutSide = "YES" | "NO";
 export interface PayoutInput {
   yesTotal: bigint;
   noTotal: bigint;
-  /** The position's side, the one that wins in this estimate. */
   side: PayoutSide;
-  /** The account's existing stake on that side. It is already part of that side's total. */
   stake: bigint;
-  /** A new bet on that side, added to the stake and to the totals; 0n for the position as it stands. */
   add: bigint;
 }
 

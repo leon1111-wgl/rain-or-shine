@@ -1,5 +1,3 @@
-// Layout, language and the intro on a real local chain: no page scrolls sideways at desktop, laptop or phone width,
-// the 中文 / EN switch changes every page, and the intro leads into the markets and can be skipped next time.
 import { expect, test } from "@playwright/test";
 import { E, chain, createFieldMarket, createOfficialMarket, createQuickMarket, createRainMarket, directBet, installWallet } from "./helpers.js";
 
@@ -8,7 +6,6 @@ let rain = 0;
 test.beforeAll(async () => {
   rain = (await createRainMarket(3)).id;
   await createQuickMarket(60);
-  // Every weather type, so the type chips are as wide as on Sepolia: rain, temperature, humidity and other (pressure).
   await createOfficialMarket("DAILY_MAX_TEMPERATURE", 3, "28.0");
   await createFieldMarket("mean-humidity", 3, "65", "75");
   await createFieldMarket("mean-pressure", 3, "1005", "1015");
@@ -16,18 +13,17 @@ test.beforeAll(async () => {
   await directBet(4, rain, "NO", E(5));
 });
 
-// Without a wallet the top bar shows the read-only pill, and the English menu is the longest: laptop and tablet widths.
 for (const [width, locale, wallet] of [
   [1440, "zh-CN", true], [1024, "zh-CN", true], [390, "zh-CN", true], [360, "zh-CN", true], [1440, "en", true], [390, "en", true], [360, "en", true],
   [1280, "en", false], [1024, "en", false], [780, "en", false],
 ] as const) {
   test(`no horizontal overflow at ${width}px in ${locale}${wallet ? "" : " without a wallet"}`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.addInitScript((l) => localStorage.setItem("rainmark.locale", l), locale);
+    await page.addInitScript((l) => localStorage.setItem("rain-or-shine.locale", l), locale);
     if (wallet) await installWallet(page, 3);
     for (const hash of ["#/", "#/markets", "#/markets/ranks", "#/markets/data", `#/market/${rain}`, `#/market/${rain}/waiting`, `#/market/${rain}/settlement`, "#/mine", "#/ops"]) {
       await page.goto(`/${hash}`);
-      await expect(page.locator(".topbar, .intro-nav").first()).toBeVisible(); // the intro has its own navigation
+      await expect(page.locator(".topbar, .intro-nav").first()).toBeVisible();
       await expect(page.getByTestId("render-fault")).toHaveCount(0);
       await page.waitForTimeout(1_500);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -39,8 +35,7 @@ for (const [width, locale, wallet] of [
 test("the weather-type chips scroll inside their own row on a phone, in both languages", async ({ page }) => {
   for (const [width, locale] of [[360, "en"], [390, "en"], [360, "zh-CN"], [390, "zh-CN"]] as const) {
     await page.setViewportSize({ width, height: 844 });
-    await page.addInitScript((l) => localStorage.setItem("rainmark.locale", l), locale);
-    // The intro first, as a visitor arrives. The markets page then has its final width.
+    await page.addInitScript((l) => localStorage.setItem("rain-or-shine.locale", l), locale);
     await page.goto("/#/");
     await page.goto("/#/markets");
     const chips = page.getByTestId("metric-filter");
@@ -68,7 +63,6 @@ test("the language switch changes the whole interface and is remembered", async 
 test("the intro shows live figures from the chain, leads into the markets and can be skipped next time", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("landing")).toBeVisible();
-  // The staked total is the chain's, read here independently of the page.
   const { market } = await chain(0);
   let staked = 0n;
   for (let id = 1; id <= Number(await market.getFunction("marketCount")()); id++) {
@@ -76,11 +70,9 @@ test("the intro shows live figures from the chain, leads into the markets and ca
     staked += (state.yesTotal as bigint) + (state.noTotal as bigint);
   }
   expect(staked).toBeGreaterThan(0n);
-  // The figures count up once their section is seen.
   await page.getByTestId("landing-figures").scrollIntoViewIfNeeded();
   await expect(page.getByTestId("landing-figures")).toContainText(`${(Number(staked / 10n ** 15n) / 1000).toFixed(3)} ETH`);
   await expect(page.getByTestId("live-card")).toContainText(/天文台总部|HKO headquarters/);
-  // The pill navigation follows the scroll.
   await page.getByTestId("intro-pill-faq").click();
   await expect(page.getByTestId("intro-pill-faq")).toHaveAttribute("aria-current", "true");
   await page.getByTestId("intro-pill-home").click();
@@ -91,7 +83,6 @@ test("the intro shows live figures from the chain, leads into the markets and ca
   await page.getByTestId("skip-intro").check();
   await page.goto("/");
   await expect(page).toHaveURL(/#\/markets$/);
-  // The intro stays one click away.
   await page.getByRole("link", { name: "Rain or Shine" }).click();
   await expect(page.getByTestId("landing")).toBeVisible();
   await expect(page.getByTestId("skip-intro")).toBeChecked();

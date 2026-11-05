@@ -1,7 +1,3 @@
-// View 2: event details and betting, laid out like a trading screen: the event bar with the Yes share as its
-// price, the chart, the positions and latest trades, the bet panel, and below them the trades, rules and rules
-// document. All dates are the market's fixed on-chain times.
-
 import { type ReactNode, useState } from "react";
 import { dailyExtractMonthUrl } from "@shared/weather/profile";
 import { ActivityFeed } from "../components/ActivityFeed";
@@ -31,7 +27,6 @@ import { href } from "../lib/routes";
 import { formatDuration, formatHktMinute, formatHktMinuteBare, formatLocalDate } from "../lib/time";
 import { downloadText } from "../metric/context";
 
-/** "Column 6 of the day-5 row in HKO's Daily Extract for November (…)", in the reader's language. */
 function hkoFieldProcedureText(field: HkoDailyExtractField, market: MarketData): string {
   const date = market.targetDate;
   const month = Number(date.slice(4, 6));
@@ -44,7 +39,6 @@ function hkoFieldProcedureText(field: HkoDailyExtractField, market: MarketData):
   });
 }
 
-/** The rules document's own wording, kept one click away: it is the canonical text. */
 function OriginalText({ text }: { text: string }) {
   return (
     <details className="original-text" data-testid="custom-procedure">
@@ -54,7 +48,6 @@ function OriginalText({ text }: { text: string }) {
   );
 }
 
-/** A custom market's source as its creator typed it: a link for a web address, plain text for anything else. */
 function SourceLink({ url }: { url: string }) {
   const link = webHref(url);
   return link ? (
@@ -73,10 +66,7 @@ function RulesGrid({ market }: { market: MarketData }) {
   const field = hkoFieldMarketOf(market);
   const waitHours = (tm.refundAt - tm.observationEnd) / 3_600n;
   const window = <Msg k="rule.dateWindow" params={{ from: formatHktMinuteBare(tm.observationStart), to: formatHktMinute(tm.observationEnd) }} />;
-  // [label, value, optional second line]: long notes go on their own line instead of wrapping mid-phrase.
   const hko = s.kind === "HKO" || !!field;
-  // The spec first, in the order a reader checks it: question, source, condition, close, observation, results,
-  // deadline and what happens otherwise. Details follow.
   const entries: Array<[string, ReactNode, ReactNode?]> = [
     [t("rule.question"), questionOf(market)],
     custom
@@ -126,13 +116,11 @@ function RulesGrid({ market }: { market: MarketData }) {
   );
 }
 
-/** The rules document from the creation log. The client has already checked it against the market's hash. */
 function RulesDocument({ market }: { market: MarketData }) {
   let pretty = market.view.rulesDocument;
   try {
     pretty = JSON.stringify(JSON.parse(market.view.rulesDocument), null, 2);
   } catch (err) {
-    // A plain UTF-8 document is valid. It is shown as written.
     if (!(err instanceof SyntaxError)) throw err;
   }
   return (
@@ -176,7 +164,6 @@ function Rules({ market }: { market: MarketData }) {
   );
 }
 
-/** The event, its Yes share as the price with the 24 h change, and the live figures. A changed total flashes. */
 function EventBar({ market, bets }: { market: MarketData; bets: ActivityItem[] }) {
   const { now, isAdmin } = useApp();
   const s = marketStats(market, bets, Number(now));
@@ -210,7 +197,6 @@ function EventBar({ market, bets }: { market: MarketData; bets: ActivityItem[] }
         </div>
       </div>
       <div className="event-price">
-        {/* The share stays neutral: green and red mean Yes and No everywhere, so only the change badge is coloured. */}
         <strong className="price">
           {s.share === null ? (
             <Share value={null} />

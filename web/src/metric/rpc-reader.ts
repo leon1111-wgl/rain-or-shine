@@ -3,14 +3,11 @@ import { FetchRequest, JsonRpcProvider, isError, type JsonRpcPayload, type JsonR
 /** A public Sepolia RPC without a key. It is fast, so the reader asks it first for current state and logs. Some of its
  * servers drop old history: receipts go to the manifest's gateway first, and logs it has dropped move there too. */
 export const SEPOLIA_FALLBACK_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-/** Where the app reads the chain: on Sepolia the fast public RPC for current state and the deployment's gateway for
- * history, elsewhere the deployment's own RPC. The built page's Content-Security-Policy allows exactly these. */
 export function readUrls(dep: { environment: string; publicRpcUrl: string }): { current: string; history?: string } {
   return dep.environment === "SEPOLIA_UMA" ? { current: SEPOLIA_FALLBACK_RPC, history: dep.publicRpcUrl } : { current: dep.publicRpcUrl };
 }
 /** The most blocks that one log query may span: publicnode refuses more than 50,000. The gateway takes more. */
 export const LOG_BLOCK_SPAN = 50_000;
-/** After an RPC fails or rate-limits, calls start on the other one for this long. */
 const REST_MS = 60_000;
 /** When the history RPC is busy and the other one has no history, the history RPC is asked again after these pauses. */
 const HISTORY_PAUSES_MS = [1500, 3000, 6000, 12000];
@@ -21,7 +18,6 @@ const HISTORY_BATCH = 4;
 const HISTORY_METHODS = new Set(["eth_getTransactionReceipt", "eth_getTransactionByHash"]);
 
 type Payload = JsonRpcPayload | JsonRpcPayload[];
-/** Nothing final yet: the best answer so far, or the last failure. */
 type Retry = { best: JsonRpcResult[] | undefined; failure: unknown };
 const listOf = (payload: Payload) => (Array.isArray(payload) ? payload : [payload]);
 
@@ -32,7 +28,6 @@ function connectionOf(request: string | FetchRequest, maxAttempts: number): Fetc
   return connection;
 }
 
-/** 429, a 5xx, a timeout or no answer: worth the same call on another RPC. A JSON-RPC error is an answer. */
 function unavailable(error: unknown): boolean {
   if (isError(error, "TIMEOUT")) return true;
   const status = (error as { response?: { statusCode?: number } } | null)?.response?.statusCode;
@@ -87,7 +82,6 @@ export class PacedReadProvider extends JsonRpcProvider {
     return this.paced(() => this.sendAnywhere(payload)).then((outcome) => ("results" in outcome ? outcome.results : this.historyAgain(payload, outcome)));
   }
 
-  /** Runs one task in the shared queue, starting at most one per interval. Pauses between retries happen outside it. */
   private paced<T>(task: () => Promise<T>): Promise<T> {
     const run = async () => {
       const wait = this.nextStart - Date.now();
@@ -100,7 +94,6 @@ export class PacedReadProvider extends JsonRpcProvider {
     return result;
   }
 
-  /** The preferred RPC for this call first, unless it is resting and the other one is not. */
   private orderFor(payload: Payload): number[] {
     if (this.connections.length === 1) return [0];
     const first = listOf(payload).some((p) => HISTORY_METHODS.has(p.method)) ? 1 : 0;
@@ -108,7 +101,6 @@ export class PacedReadProvider extends JsonRpcProvider {
     return now < this.restsUntil[first]! && now >= this.restsUntil[1 - first]! ? [1 - first, first] : [first, 1 - first];
   }
 
-  /** One RPC through `active`, inside the queue. The history RPC gets small requests, one after another. */
   private async sendTo(index: number, payload: Payload): Promise<JsonRpcResult[]> {
     this.active = index;
     try {
@@ -123,7 +115,6 @@ export class PacedReadProvider extends JsonRpcProvider {
     }
   }
 
-  /** Each RPC in turn while one cannot serve the call. The history RPC's own answer is final unless it is busy. */
   private async sendAnywhere(payload: Payload): Promise<{ results: JsonRpcResult[] } | Retry> {
     const history = this.connections.length > 1 ? 1 : -1;
     let missing: JsonRpcResult[] | undefined;
@@ -151,8 +142,6 @@ export class PacedReadProvider extends JsonRpcProvider {
     throw failure;
   }
 
-  /** The history RPC was busy and the other one could not answer. Ask the history RPC again after each pause. The other
-   * calls keep their places in the queue meanwhile. */
   private async historyAgain(payload: Payload, retry: Retry): Promise<JsonRpcResult[]> {
     let { best, failure } = retry;
     for (const pause of HISTORY_PAUSES_MS) {

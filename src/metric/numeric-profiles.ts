@@ -55,7 +55,6 @@ function preset(
   });
 }
 
-/** Source and observation scope are committed in each market's rules. */
 export const NUMERIC_METRIC_PRESETS: readonly NumericMetricPreset[] = Object.freeze([
   preset("rainfall", "TOTAL_RAINFALL", "mm", 0, 999990, 10, true,
     "Total rainfall over the market observation window, in mm. NUMERIC is the exact amount multiplied by 100, without rounding. TRACE means 0 < rainfall < 0.05 mm; kind=2,value=0 is only a placeholder, never exact zero."),
@@ -174,7 +173,6 @@ function sportsDescription(profile: SportsNumericProfile): string {
   return `Ordered matchup: ${profile.teamA} vs ${profile.teamB}; ${profile.scoreScope}.`;
 }
 
-/** Profile validation supplements independent binding to chain state. */
 export function assertHkoNumericProfile(rules: NumericMarketRules): HkoNumericProfile {
   const checked = parseNumericMarketRules(JSON.stringify(rules));
   if (checked.synthetic || checked.config.sourceId !== "HKO_DAILY_EXTRACT" || checked.config.subjectId !== "HKO") {
@@ -196,7 +194,6 @@ export function assertHkoNumericProfile(rules: NumericMarketRules): HkoNumericPr
   return { targetDate: date, weatherMetric };
 }
 
-/** Commit the question and collection procedure before the result exists. */
 export function buildHkoNumericRules(input: HkoNumericRulesInput, context: NumericRulesContext): string {
   const fields = exact(input, ["title", "targetDate"], "HKO creation input");
   const date = targetDate(fields.targetDate);
@@ -216,7 +213,6 @@ export function buildHkoNumericRules(input: HkoNumericRulesInput, context: Numer
   return document;
 }
 
-/** Check the synthetic procedure and team order, not result authenticity. */
 export function assertSportsNumericProfile(rules: NumericMarketRules): SportsNumericProfile {
   const checked = parseNumericMarketRules(JSON.stringify(rules));
   const parameters = exact(
@@ -234,7 +230,6 @@ export function assertSportsNumericProfile(rules: NumericMarketRules): SportsNum
   return profile;
 }
 
-/** Commit match identity and scoring scope; result bytes arrive after observation. */
 export function buildSportsNumericRules(input: SportsNumericRulesInput, context: NumericRulesContext): string {
   const fields = exact(input, ["title", "matchId", "sport", "teamA", "teamB"], "sports creation input");
   const profile = sportsFields(fields, true);

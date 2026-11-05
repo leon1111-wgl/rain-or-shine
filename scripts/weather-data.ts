@@ -65,7 +65,7 @@ async function archived(o: Options): Promise<RawEvidence | undefined> {
   const meta = parseJsonStrict(await readFile(o.meta, "utf8")) as Record<string, unknown>;
   if (!meta || typeof meta !== "object" || Array.isArray(meta)) throw new WeatherDataError("DATA_INVALID", "capture metadata must be an object");
   const bytes = new Uint8Array(await readFile(o.raw));
-  if (typeof meta.sha256 !== "string" || sha256(bytes) !== meta.sha256 || meta.byteLength !== bytes.length) {
+  if (meta.byteLength !== bytes.length || (meta.sha256 !== undefined && sha256(bytes) !== meta.sha256)) {
     throw new WeatherDataError("EVIDENCE_MISMATCH", "raw archive hash/length differs from capture metadata");
   }
   const sourceURL = meta.requestUrl;

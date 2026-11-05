@@ -126,7 +126,6 @@ function publishedText(token: unknown, field: string): string {
   return text;
 }
 
-/** HKO publishes one decimal place. Integer arithmetic preserves the exact value. */
 export function parseTemperatureToken(token: unknown, field: string): TemperatureValue {
   const text = publishedText(token, field);
   const match = /^(-?)(0|[1-9]\d{0,2})\.(\d)$/.exec(text);
@@ -154,7 +153,6 @@ export function parseWholePercentToken(token: unknown, field: string): PercentVa
   return { kind: "NUMERIC", percent100: Number(text) * 100, text };
 }
 
-/** A value with one decimal place, such as a pressure of "1012.7", multiplied by 100 and kept within a range. */
 export function parseOneDecimalToken(token: unknown, field: string, min100: number, max100: number): { value100: number; text: string } {
   const text = publishedText(token, field);
   const match = /^(-?)(0|[1-9]\d{0,4})\.(\d)$/.exec(text);

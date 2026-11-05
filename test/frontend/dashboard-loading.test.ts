@@ -42,7 +42,6 @@ describe("initial dashboard history loading", () => {
     mocks.logs.mockResolvedValue([event(1), event(2)]);
     const result = await readDashboard(dep, reader as unknown as Provider);
     expect(result.markets.map(market => market.title)).toEqual(["Event 1", "Event 2"]);
-    // One query covers 50,000 blocks, the most that publicnode answers.
     expect(mocks.logs.mock.calls).toEqual([["created", 1, 50000]]);
     expect(reader.getBlock.mock.calls).toEqual([["latest"], [120000]]);
   });

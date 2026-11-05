@@ -15,7 +15,6 @@ const mocks = vi.hoisted(() => {
   const times = "(uint64 openAt,uint64 closeAt,uint64 observationStart,uint64 observationEnd,uint64 earliestAssertionAt,uint64 proposalCutoff,uint64 refundAt,uint64 assertionLiveness)";
   const config = `(uint8 dataMode,address proposer,bytes32 sourceId,bytes32 subjectId,${condition} condition,${times} times)`;
   return {
-    // 独立保存旧接口：重新部署、导出新版 ABI 后，这项回归测试仍然有效。
     oldAbi: [
       `function createMarket(${config} config,bytes rulesDocument) returns (uint256 marketId)`,
       `function getMarketConfig(uint256 marketId) view returns (${config} config)`,
@@ -50,7 +49,6 @@ const hash = (text: string) => keccak256(toUtf8Bytes(text));
 const HASH = `0x${"11".repeat(32)}`;
 const OTHER_HASH = `0x${"22".repeat(32)}`;
 const ACCOUNT = "0x1111111111111111111111111111111111111111";
-// The rainfall market observes 3 Nov 2026 in Hong Kong. The block below is two minutes after that day ends.
 const DAY = hkDayWindow("20261103");
 const START = Number(DAY.end);
 const address = (value: number) => `0x${String(value).padStart(40, "0")}`;
@@ -97,7 +95,6 @@ const base: NumericRulesContext = {
 const rulesDocument = buildHkoNumericRules({ title: "11月3日天文台总部降雨量至少 1.0 毫米？", targetDate: "20261103" }, base);
 const rulesHash = hash(rulesDocument);
 const iface = new Interface(PredictionMarket__factory.abi);
-// 真正执行 ABI 解码，使 named Result tuple 与 bigint 的兼容性也得到验证。
 const configTuple = iface.decodeFunctionResult(
   "getMarketConfig", iface.encodeFunctionResult("getMarketConfig", [base.config]),
 )[0] as MarketView["config"];

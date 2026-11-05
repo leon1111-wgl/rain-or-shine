@@ -1,6 +1,3 @@
-// View 4: result, payout and refund. Amounts are the contract's claimable and the account's Claimed log. The claim
-// button exists only for a positive amount the connected account can claim now. A claim links its real receipt.
-
 import { Callout, InfoTip, Msg, PageHeading, PhaseBadge, TxLink } from "../components/primitives";
 import { Icon } from "../components/Icon";
 import { MarketFrame } from "../components/MarketFrame";
@@ -21,7 +18,6 @@ import { marketOf } from "../metric/client";
 
 const FINAL: DisplayPhase[] = ["RESOLVED_YES", "RESOLVED_NO", "REFUND", "REFUND_ELIGIBLE"];
 
-/** Headline and basis of the result: which side won and on which reading, or why stakes are refunded. */
 function outcomeText(market: MarketData, phase: DisplayPhase) {
   const final = FINAL.includes(phase);
   const isRefund = phase === "REFUND" || phase === "REFUND_ELIGIBLE";
@@ -114,7 +110,6 @@ function Settlement({ market }: { market: MarketData }) {
   );
 }
 
-/** Stake, amount due (or already claimed) and net result of the connected account, all from the chain. */
 function MoneyTiles({ market, claim, connected, final, isRefund }: { market: MarketData; claim: ClaimRecord | null; connected: boolean; final: boolean; isRefund: boolean }) {
   const stake = market.position.stake;
   const due = market.position.claimed ? (claim?.amount ?? null) : market.claimable;

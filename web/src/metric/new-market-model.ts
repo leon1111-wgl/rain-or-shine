@@ -1,7 +1,3 @@
-// The new-market flow without the page: which metrics it offers, a sensible condition for each, the next day a market
-// can open, and a template taken from an existing market. The form and its tests share these functions. The sports
-// demos are offered on the local chain only, because their results are synthetic files.
-
 import { formatFixed100, parseFixed100 } from "@shared/metric/fixed100";
 import { HKO_DAILY_EXTRACT_FIELDS, hkoFieldOf, type HkoDailyExtractField } from "@shared/metric/custom-profile";
 import {
@@ -16,13 +12,11 @@ const HKT = 8 * 3_600;
 
 export type Sport = "BASKETBALL" | "FOOTBALL";
 
-/** One card in the metric step. The key survives a data refresh, so a pending request keeps its inputs. */
 export type MetricChoice =
   | { kind: "official"; key: string; preset: NumericMetricPreset }
   | { kind: "field"; key: string; field: HkoDailyExtractField }
   | { kind: "registered"; key: string; metric: MetricView }
   | { kind: "new"; key: "new" }
-  /** A sports demo: an ordered matchup with a synthetic result file. */
   | { kind: "sports"; key: string; preset: NumericMetricPreset; sport: Sport };
 
 export interface MatchInput {
@@ -31,7 +25,6 @@ export interface MatchInput {
   teamB: string;
 }
 
-/** Each sport's first match: the one its result file in fixtures/demo/sports names. */
 export const DEMO_MATCHES: Record<Sport, MatchInput> = {
   BASKETBALL: { matchId: "LAL_BOS_DEMO01", teamA: "LAL", teamB: "BOS" },
   FOOTBALL: { matchId: "ARS_CHE_DEMO01", teamA: "ARS", teamB: "CHE" },
@@ -40,10 +33,6 @@ const SPORTS: Record<string, Sport> = { SCORE_MARGIN: "BASKETBALL", GOAL_MARGIN:
 
 const isOfficialCode = (code: string) => (OFFICIAL_METRIC_CODES as readonly string[]).includes(code);
 
-/**
- * The official two, every Daily Extract field by column, the registry's other custom metrics and a new metric. With
- * `demos`, the sports demos follow.
- */
 export function metricChoices(registered: readonly MetricView[], demos = false): MetricChoice[] {
   const official: MetricChoice[] = NUMERIC_METRIC_PRESETS.filter((preset) => isOfficialCode(preset.code))
     .map((preset) => ({ kind: "official", key: `official:${preset.code}`, preset }));
@@ -61,7 +50,6 @@ export function metricChoices(registered: readonly MetricView[], demos = false):
 
 type Definition = Pick<NumericMetricDefinition, "code" | "unit" | "minValue" | "maxValue" | "valueStep" | "allowsTrace">;
 
-/** The fixed definition behind a card. A new metric has none until its fields parse. */
 export function definitionOf(choice: MetricChoice): Definition | undefined {
   if (choice.kind === "official" || choice.kind === "sports") return choice.preset;
   if (choice.kind === "field") return choice.field.metric.definition;
@@ -69,7 +57,6 @@ export function definitionOf(choice: MetricChoice): Definition | undefined {
   return undefined;
 }
 
-/** The rules hash a card registers, when it is fixed. */
 export function rulesHashOf(choice: MetricChoice): string | undefined {
   if (choice.kind === "official" || choice.kind === "sports") return choice.preset.rulesHash;
   if (choice.kind === "field") return choice.field.metric.rulesHash;
@@ -80,13 +67,8 @@ export function rulesHashOf(choice: MetricChoice): string | undefined {
 export type Registration =
   | { state: "registered"; metric: MetricView }
   | { state: "missing" }
-  /** The code is taken by a metric with other rules. The contract refuses a second one. */
   | { state: "conflict"; metric: MetricView };
 
-/**
- * Whether the card's metric is already in the registry, still to register, or blocked by its code. A new metric is
- * described by the code and rules hash its fields give, when they parse.
- */
 export function registrationOf(choice: MetricChoice, registered: readonly MetricView[], fresh?: { code: string; rulesHash?: string }): Registration {
   const code = choice.kind === "new" ? fresh?.code.trim() ?? "" : definitionOf(choice)!.code;
   const existing = code ? registered.find((metric) => metric.code === code) : undefined;
@@ -96,7 +78,6 @@ export function registrationOf(choice: MetricChoice, registered: readonly Metric
 }
 
 export interface ConditionInput {
-  /** 1 <, 2 ≤, 3 >, 4 ≥, 5 inclusive range, as the contract numbers them. */
   comparison: string;
   lower: string;
   upper: string;
@@ -132,7 +113,6 @@ function fits(condition: ConditionInput, definition: Definition): boolean {
   }
 }
 
-/** A condition a person would ask about: the metric's own default, then one for its unit, then the middle of its range. */
 export function defaultCondition(definition: Definition | undefined): ConditionInput {
   if (!definition) return { comparison: "4", lower: "", upper: "" };
   for (const candidate of [PRESET_CONDITIONS[definition.code], UNIT_CONDITIONS[definition.unit]]) {
@@ -143,15 +123,9 @@ export function defaultCondition(definition: Definition | undefined): ConditionI
   return { comparison: "4", lower: formatFixed100(Math.min(Math.max(middle, minValue), maxValue)), upper: "" };
 }
 
-/** "2026-11-05" for the Hong Kong day of a Unix time. */
 const hkDate = (unix: number) => new Date((unix + HKT) * 1000).toISOString().slice(0, 10);
-/** Unix seconds at the start of a Hong Kong day given as "2026-11-05". */
 const hkDayStart = (date: string) => Date.parse(`${date}T00:00:00+08:00`) / 1000;
 
-/**
- * The first Hong Kong day after today whose market can still open. Betting closes a minute before the day starts,
- * so a market that opens `openDelay` seconds from now needs that much room.
- */
 export function nextOpenDay(now: number, openDelay: number): string {
   let date = hkDate(now + DAY);
   while (hkDayStart(date) - 60 <= now + openDelay) date = hkDate(hkDayStart(date) + DAY);
@@ -173,10 +147,6 @@ export interface Template {
   timing: TimingInput;
 }
 
-/**
- * A new market like `m`: the same metric, condition, source or match, and timing, moved to the next day it can open.
- * A window keeps its time of day and length.
- */
 export function templateOf(m: MarketData, now: number, openDelay: number): Template {
   const metric = m.view.metric;
   const field = hkoFieldOf(metric);

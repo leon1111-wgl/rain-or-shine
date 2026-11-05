@@ -16,31 +16,22 @@ import { formatHktClock } from "./time";
 export type Side = "YES" | "NO";
 export type ReadingKind = "NUMERIC" | "TRACE";
 
-/** The real-world subject named by the market's rules. */
 export type MarketSubject =
   | { kind: "HKO"; targetDate: string }
-  /** A sports demo: an ordered matchup whose result is a labelled synthetic file. The local chain only. */
   | { kind: "SYNTHETIC"; sport: "BASKETBALL" | "FOOTBALL"; matchId: string; teamA: string; teamB: string }
-  /** A custom market: the source, its link and the reading procedure its creator committed. A day for an HKO field. */
   | { kind: "CUSTOM"; sourceName: string; sourceUrl: string; procedure: string; targetDate: string | null }
   | { kind: "UNRECOGNIZED" };
 
-/** The official Observatory metrics a public network shows next to custom markets. */
 export const PUBLIC_METRICS = ["TOTAL_RAINFALL", "DAILY_MAX_TEMPERATURE"] as const;
 
 export interface MarketData {
   id: number;
-  /** The client's record, for the result, dispute and settlement panels. */
   view: MarketView;
-  /** valueStep is the registered reading step, fixed-point ×100 (100 means whole units). */
   metric: { id: number; code: string; unit: string; valueStep: number; allowsTrace: boolean };
   subject: MarketSubject;
-  /** One of the long-term official metrics (rainfall, maximum temperature) under the official HKO rules. */
   official: boolean;
-  /** Comparison 1 <, 2 ≤, 3 >, 4 ≥, 5 inclusive range. Bounds are fixed-point ×100 integers. */
   condition: { comparison: number; lower: bigint; upper: bigint };
   proposer: string;
-  /** Hong Kong day (YYYYMMDD) the observation covers: the rules' target date for HKO markets. */
   targetDate: string;
   times: PhaseTimes;
   yesTotal: bigint;
@@ -68,7 +59,6 @@ export interface MarketData {
     disputer: string | null;
     bond: bigint;
     asserter: string;
-    /** Settlement readiness: by time on the local Mock without a dispute, else the client's check. */
     byTime: boolean;
     ready: boolean;
   } | null;
@@ -164,11 +154,6 @@ export function toMarketData(dep: MetricDeployment, view: MarketView): MarketDat
   };
 }
 
-/**
- * The markets this deployment shows: official metrics first, then the other weather markets, then the sports demos
- * and unrecognized rules, each newest first. A public network shows only official and custom markets. Sports demos
- * and unrecognized rules appear on the local chain only.
- */
 export function marketsFrom(dep: MetricDeployment, dashboard: Dashboard): MarketData[] {
   const all = dashboard.markets.map((view) => toMarketData(dep, view));
   const shown = isLocalMock(dep)
@@ -179,7 +164,6 @@ export function marketsFrom(dep: MetricDeployment, dashboard: Dashboard): Market
   return [...newest.filter((m) => m.official), ...newest.filter((m) => !m.official && !last(m)), ...newest.filter(last)];
 }
 
-/** Busier first: more staked, then more accounts, then the sooner close. */
 export function byActivity(a: MarketData, b: MarketData): number {
   if (a.total !== b.total) return a.total > b.total ? -1 : 1;
   const accounts = b.yesAccounts + b.noAccounts - (a.yesAccounts + a.noAccounts);
@@ -218,16 +202,11 @@ const METRIC_KEYS: Record<string, MessageKey> = {
   SCORE_MARGIN: "metric.SCORE_MARGIN",
   GOAL_MARGIN: "metric.GOAL_MARGIN",
 };
-/** A known metric's name in the interface language. Any other registered code as written, with spaces. */
 export function metricNameOf(code: string): string {
   const key = METRIC_KEYS[code];
   return key ? t(key) : code.replaceAll("_", " ");
 }
 
-/**
- * A fixed-point ×100 reading. A metric registered in whole units (a step that is a multiple of 1.00, such as points,
- * goals or whole percent) shows whole values without decimals. Any other metric shows at least one decimal.
- */
 export function formatReading(value: bigint | number, metric: { valueStep: number }): string {
   const v = BigInt(value);
   if (metric.valueStep % 100 === 0 && v % 100n === 0n) return (v / 100n).toString();
@@ -236,12 +215,10 @@ export function formatReading(value: bigint | number, metric: { valueStep: numbe
 
 const SYMBOLS = ["", "<", "≤", ">", "≥"];
 
-/** "≥ 1.0", or the inclusive range "介于 1.0 与 5.0 之间（含两端）" / "between 1.0 and 5.0 (inclusive)", without the unit. */
 export function conditionOf(m: Pick<MarketData, "condition" | "metric">): string {
   return conditionText(m, "");
 }
 
-/** The condition with its unit, as questions and rules show it: "≥ 1.0 mm", "between 70 and 85 % (inclusive)". */
 export function conditionWithUnitOf(m: Pick<MarketData, "condition" | "metric">): string {
   return conditionText(m, unitOf(m.metric.unit));
 }
@@ -255,7 +232,6 @@ function conditionText(m: Pick<MarketData, "condition" | "metric">, unit: string
   return withUnit(`${SYMBOLS[comparison] ?? "?"} ${low}`);
 }
 
-/** "11月3日" / "3 Nov" for a YYYYMMDD day. */
 export function dayOf(yyyymmdd: string): string {
   const month = Number(yyyymmdd.slice(4, 6));
   const day = Number(yyyymmdd.slice(6, 8));
@@ -264,7 +240,6 @@ export function dayOf(yyyymmdd: string): string {
   return `${day} ${name}`;
 }
 
-/** The observation window in Hong Kong time: "11月5日", "11月2日至11月8日" or "11月5日 14:00–17:00" / "5 Nov 14:00–17:00". */
 export function windowOf(m: Pick<MarketData, "times">): string {
   const { observationStart: start, observationEnd: end } = m.times;
   const day = hkDay;
@@ -277,10 +252,8 @@ export function windowOf(m: Pick<MarketData, "times">): string {
   return t("window.span", { from: `${dayOf(day(start))} ${formatHktClock(start)}`, to: `${dayOf(day(end))} ${formatHktClock(end)}` });
 }
 
-/** What a question needs. The new-market preview builds one before the market exists. */
 export type QuestionInput = Pick<MarketData, "subject" | "metric" | "condition" | "times">;
 
-/** The market's question, from chain data and checked rules. */
 export function questionOf(m: QuestionInput): string {
   const cond = conditionWithUnitOf(m);
   const s = m.subject;
@@ -289,20 +262,16 @@ export function questionOf(m: QuestionInput): string {
   if (s.kind === "SYNTHETIC") return t(m.metric.code === "GOAL_MARGIN" ? "q.goal" : "q.score", { a: s.teamA, b: s.teamB, cond });
   if (s.kind === "CUSTOM") {
     const metric = metricNameOf(m.metric.code);
-    // "日平均相对湿度介于…" runs on. A Latin name keeps a space before the Chinese: "INDEX 介于…".
     const gap = /[\u3400-\u9fff]$/.test(metric) ? "" : " ";
     return t(m.condition.comparison === 5 ? "q.customRange" : "q.custom", { metric, gap, cond, window: windowOf(m) });
   }
   return t("q.metric", { metric: metricNameOf(m.metric.code), cond });
 }
 
-/** A custom market on one of HKO's Daily Extract fields: its known definition, so the interface can say it in the
- * reader's language. Other custom markets show their creator's text as written. */
 export function hkoFieldMarketOf(m: MarketData): HkoDailyExtractField | undefined {
   return m.subject.kind === "CUSTOM" && m.subject.targetDate ? hkoFieldOf(m.view.metric) : undefined;
 }
 
-/** Where the result comes from, as shown next to the question. */
 export function sourceOf(m: MarketData): string {
   if (m.subject.kind === "HKO" || hkoFieldMarketOf(m)) return t("source.hko");
   if (m.subject.kind === "CUSTOM") return m.subject.sourceName;
@@ -310,7 +279,6 @@ export function sourceOf(m: MarketData): string {
   return t("source.unrecognized");
 }
 
-/** The label next to a market's phase: official metric, custom market or sports demo. */
 export type MarketTag = "official" | "custom" | "demo";
 export function marketTagOf(m: MarketData): MarketTag | null {
   if (m.official) return "official";
@@ -318,7 +286,6 @@ export function marketTagOf(m: MarketData): MarketTag | null {
   return m.subject.kind === "CUSTOM" ? "custom" : null;
 }
 
-/** A sports demo on synthetic results. Weather markets come before it wherever one market is picked. */
 export const isDemo = (m: Pick<MarketData, "subject">) => m.subject.kind === "SYNTHETIC";
 
 const SHORT_KEYS: Record<string, MessageKey> = {
@@ -334,19 +301,15 @@ const SHORT_KEYS: Record<string, MessageKey> = {
   GOAL_MARGIN: "metricShort.GOAL_MARGIN",
 };
 
-/** The metric's short name: 雨量 / Rain. Another registered code as written, with spaces. */
 export function metricShortOf(code: string): string {
   const key = SHORT_KEYS[code];
   return key ? t(key) : code.replaceAll("_", " ");
 }
 
-/** "11月3日 雨量 ≥ 1.0": the compact name in dense lists and cards. A window shorter than a day shows its hours, so
- * two markets on the same day stay apart: "10月31日 22:30–23:30 HOURLY RAINFALL ≥ 0.1". */
 export function shortLabelOf(m: MarketData): string {
   return `${windowOf(m)} ${metricShortOf(m.metric.code)} ${conditionOf(m)}`;
 }
 
-/** A metric's type: one icon, one accent colour (CSS `data-metric`) and one filter chip each. Sports come last. */
 export type MetricKind = "rain" | "heat" | "humidity" | "custom" | "sport";
 
 const KINDS: Record<string, MetricKind> = {
@@ -360,7 +323,6 @@ const KINDS: Record<string, MetricKind> = {
   GOAL_MARGIN: "sport",
 };
 
-/** A custom metric goes under the weather word in its code. Anything else goes under "other". */
 const KIND_WORDS: [RegExp, MetricKind][] = [[/RAIN/, "rain"], [/TEMP/, "heat"], [/HUMID|DEW/, "humidity"]];
 
 export function metricKindOf(code: string): MetricKind {

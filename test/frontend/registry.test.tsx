@@ -1,4 +1,3 @@
-// The metric registry table. Metrics are registered by the new-market flow (create-market.test.tsx).
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { customMetricRulesDocument } from "../../src/metric/custom-profile";

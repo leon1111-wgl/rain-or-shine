@@ -1,5 +1,3 @@
-// Proposing on a custom market: import or paste the source document, type the reading its procedure gives, and see
-// the hash, the on-chain excerpt and the contract's outcome before the bond goes to the oracle.
 import { readFileSync } from "node:fs";
 import { URL as NodeURL } from "node:url";
 import { render, screen, waitFor } from "@testing-library/react";
@@ -61,7 +59,6 @@ let app: MetricApi;
 let market: MarketView;
 let failures: string[];
 
-// jsdom and node:crypto use different Uint8Array realms.
 beforeAll(() => { sha256.register((data) => Uint8Array.from(sha256._(data))); });
 afterAll(() => { sha256.register(sha256._); });
 
@@ -72,7 +69,6 @@ function documentFile(bytes: Uint8Array, name: string, type: string): File {
 }
 const toBig = (o: object) => Object.fromEntries(Object.entries(o).map(([key, value]) => [key, BigInt(value as number)]));
 
-/** A market on `metric` whose observation has ended, with rules from `build`. */
 function customMarket(metric: CustomMetric, condition: { comparison: number; lower: number; upper: number }, window: { start: number; end: number }, ids: [string, string], build: (context: NumericRulesContext) => string): MarketView {
   const metricId = 7;
   const config = {

@@ -1,5 +1,3 @@
-// The new-market flow: metric cards, a sensible default condition, the day or a window, a live preview, and one
-// button that registers a missing metric first. Every rule shows its problem next to its own field.
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
@@ -39,7 +37,6 @@ vi.mock("../../web/src/metric/client", () => ({ marketOf: mocks.marketOf }));
 
 const ACCOUNT = "0x00000000000000000000000000000000000000a1";
 const MARKET = "0x0000000000000000000000000000000000000011";
-/** 2027-01-15 16:00 Hong Kong time. */
 const NOW = 1_800_000_000;
 const TOMORROW = "2027-01-16";
 const hkt = (iso: string) => Math.floor(Date.parse(`${iso}+08:00`) / 1_000);
@@ -163,7 +160,6 @@ describe("the new-market flow", () => {
     const loaded = app;
     app = { ...app, data: undefined } as unknown as MetricApi;
     const view = render(<NewMarket />);
-    // Before the read, the wall clock gives a day. The chain may run ahead of it, as a local chain does after time travel.
     app = loaded;
     view.rerender(<NewMarket />);
     expect(screen.getByLabelText("Observation date (Hong Kong)")).toHaveValue(TOMORROW);
@@ -296,7 +292,6 @@ describe("the new-market flow", () => {
     set(screen.getByTestId("custom-start"), "2027-01-15T18:00");
     set(screen.getByTestId("custom-end"), "2027-01-15T21:00");
     expect(screen.queryAllByRole("alert")).toEqual([]);
-    // Any time can be set by hand. The contract's order and minimums still apply.
     await openAdvanced();
     set(screen.getByTestId("custom-time-refundAt"), "2027-01-16T21:30");
     expect(screen.getByTestId("timing-error")).toHaveTextContent("The refund deadline must come at least 1 hour after the last submission time plus the challenge period.");
@@ -349,7 +344,6 @@ describe("the new-market flow", () => {
     expect([screen.getByTestId("match-id"), screen.getByTestId("match-team-a"), screen.getByTestId("match-team-b")].map((input) => (input as HTMLInputElement).value))
       .toEqual(["LAL_BOS_DEMO01", "LAL", "BOS"]);
     expect(screen.getByTestId("match-note")).toHaveTextContent("The reading is team A minus team B. Overtime counts.");
-    // A match has a start and an end. It names no source of its own.
     expect(screen.queryByLabelText("Observation window")).not.toBeInTheDocument();
     expect(screen.queryByTestId("custom-source-name")).not.toBeInTheDocument();
     set(screen.getByTestId("custom-start"), "2027-01-15T19:30");
@@ -486,7 +480,6 @@ describe("templates", () => {
     });
     const template = templateOf(old, NOW, 60);
     expect(template).toMatchObject({ choiceKey: "metric:6", condition: { comparison: "4", lower: "40.0", upper: "" }, source: { name: SOURCE.name } });
-    // 16:00 is past 14:00 today, so the window moves to tomorrow 14:00–17:00.
     expect(template.window).toEqual({ mode: "window", start: hkt("2027-01-16T14:00:00"), end: hkt("2027-01-16T17:00:00") });
     expect(nextOpenDay(hkt("2027-01-15T23:57:00"), 300)).toBe("2027-01-17");
   });

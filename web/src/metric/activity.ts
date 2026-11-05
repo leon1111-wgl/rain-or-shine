@@ -22,7 +22,6 @@ export interface MarketActivityData {
   blockNumber: number;
   blockHash: string;
   holders: MarketHolder[];
-  /** Newest first. Each row is a bet, rather than an account's cumulative stake. */
   trades: MarketTrade[];
 }
 

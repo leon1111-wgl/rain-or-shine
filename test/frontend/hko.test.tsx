@@ -1,7 +1,3 @@
-// The live HKO panel shows official readings with HKO's own times and the page's read time. It is display only.
-// Reads go through the page's own server. A static host has no relay, so the page then reads HKO directly.
-// A failing, missing or maintenance value is shown as such, never as a number.
-// A stubbed fetch serves the real captures in fixtures/official/hko-open-data (2026-10-04 08:15 HKT).
 import { render, screen } from "@testing-library/react";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -28,7 +24,6 @@ const PATHS = (lang: "sc" | "en") => ({
   yesterday: viaPageServer(ryesUrl("20261003", lang)),
 });
 
-/** Answers the page's relay paths with the real captures; `override` replaces the answer for one path. */
 function hkoFetch(lang: "sc" | "en" = "sc", override: Record<string, () => Promise<Response>> = {}) {
   const p = PATHS(lang);
   const routes: Record<string, string> = { [p.current]: captured("rhrread", lang), [p.hourly]: captured("hourlyRainfall", lang), [p.yesterday]: captured("RYES-20261003", lang) };
@@ -49,7 +44,7 @@ function edited(feed: string, change: (doc: Record<string, unknown>) => void): (
 
 beforeEach(() => {
   clearHkoCache();
-  setActiveLocale("zh-CN"); // the captures below are mostly the Chinese feeds
+  setActiveLocale("zh-CN");
   vi.useFakeTimers({ now: CAPTURED_AT, toFake: ["Date"] });
 });
 afterEach(() => {
@@ -80,7 +75,6 @@ describe("live HKO reads (web/src/lib/hko.ts)", () => {
     const partial = await loadHkoLive("sc", fetchImpl, () => CAPTURED_AT);
     expect(partial.hourly).toEqual({ ok: false, error: "HTTP 502" });
     expect(partial.current.ok && partial.yesterday.ok).toBe(true);
-    // The relay answered, so its error stands. The page does not go around it.
     expect(fetchImpl.mock.calls.map((c) => String(c[0])).filter((url) => url.startsWith("https://"))).toEqual([]);
     clearHkoCache();
     const down = vi.fn(async () => Promise.reject(new TypeError("Failed to fetch")));
@@ -93,7 +87,6 @@ describe("live HKO reads (web/src/lib/hko.ts)", () => {
     const routes: Record<string, string> = {
       [direct.current]: captured("rhrread", "sc"), [direct.hourly]: captured("hourlyRainfall", "sc"), [direct.yesterday]: captured("RYES-20261003", "sc"),
     };
-    // GitHub Pages answers a missing path with 404. Other hosts may serve the app page with 200.
     const fetchImpl = vi.fn<typeof fetch>(async (input) => {
       const url = String(input);
       if (url === p.current) return new Response("<!doctype html><title>Rain or Shine</title>", { status: 200, headers: { "content-type": "text/html" } });

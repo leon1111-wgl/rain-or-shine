@@ -10,14 +10,14 @@ export default defineConfig({
   timeout: 180_000,
   expect: { timeout: 30_000 },
   fullyParallel: false,
-  workers: 1, // one shared chain
+  workers: 1,
   retries: 0,
   reporter: [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
   globalSetup: "./test/e2e/global-setup.ts",
   globalTeardown: "./test/e2e/global-teardown.ts",
   use: {
     baseURL: `http://127.0.0.1:${E2E_PORT}`,
-    channel: process.env.PW_CHANNEL ?? "chrome", // installed Chrome with a throwaway profile; `chromium` also works
+    channel: process.env.PW_CHANNEL ?? "chrome",
     headless: true,
     launchOptions: { timeout: 600_000 }, // a loaded machine can take minutes to start Chrome
     viewport: { width: 1280, height: 800 },

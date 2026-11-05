@@ -1,9 +1,5 @@
-// Reads for the live HKO panel. The URLs are HKO's official open-data feeds (src/weather/live.ts).
 // The page's own server relays them byte for byte (launcher/hko-relay.mjs). Some system proxies break a direct connection to HKO.
 // A static host has no relay. There the page reads data.weather.gov.hk directly. That host allows cross-origin reads.
-// Each feed is reported on its own. One failing feed never blanks or fakes the others.
-// Yesterday's report does not change once published, so it is read once per date and language.
-// Every read bypasses the HTTP cache.
 
 import {
   type CurrentWeather,
@@ -25,7 +21,6 @@ import type { Locale } from "../i18n";
 export type Part<T> = { ok: true; value: T } | { ok: false; error: string };
 
 export interface HkoLive {
-  /** When this page read the feeds (viewer's clock, unix seconds); HKO's own times are on each value. */
   readAt: number;
   current: Part<CurrentWeather>;
   hourly: Part<HourlyRain | null>;
@@ -41,7 +36,6 @@ export function clearHkoCache(): void {
 
 export const hkoLangOf = (locale: Locale): HkoLang => (locale === "en" ? "en" : "sc");
 
-/** An official HKO URL as the same-origin path the page's server relays. */
 export function viaPageServer(official: string): string {
   const url = new URL(official);
   return `${HKO_RELAY_PREFIX}${url.pathname}${url.search}`;

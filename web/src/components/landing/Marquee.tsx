@@ -1,7 +1,3 @@
-// The full-width ticker under the hero: the open markets with their Yes share and stake, the latest trades and the
-// Observatory's live reading. It loops while nothing is hovered and stands still for reduced motion. The repeated
-// copy that closes the loop is inert.
-
 import type { ReactNode } from "react";
 import { useAsync } from "../../hooks/useAsync";
 import { t } from "../../i18n";

@@ -42,7 +42,6 @@ function pagePolicyPlugin(): Plugin {
     transformIndexHtml: (html) => {
       const { deployments } = JSON.parse(readFileSync(generatedDeployments, "utf8")) as { deployments: Record<string, unknown> };
       const selected = deployments[target ?? "31337"];
-      // Without its deployment the app reads no chain and says what is missing. The page then reads HKO only.
       const rpc = selected ? Object.values(readUrls(validateMetricManifest(selected))) : [];
       return withPagePolicy(html, pagePolicy(readOrigins([...rpc, HKO_OPEN_DATA_ORIGIN])));
     },

@@ -1,6 +1,3 @@
-// Accessible modal: focus moves into the dialog, Tab stays inside, Escape or the backdrop closes it, and focus
-// returns to the element that opened it.
-
 import { useEffect, useRef, type ReactNode } from "react";
 import { t } from "../i18n";
 

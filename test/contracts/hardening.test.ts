@@ -2,15 +2,13 @@ import { readFileSync } from "node:fs";
 import { expect } from "chai";
 import { network } from "hardhat";
 
-// Regression tests for the contract review fixes. Every connection below is an
-// isolated in-process network, never the user's localhost or a public chain.
 const connection = await network.create();
 const { ethers, networkHelpers } = connection;
 const { time } = networkHelpers;
 const BOND = ethers.parseUnits("10", 6);
 const MIN = ethers.parseEther("0.001");
-const SETTLE_WINDOW = 3600; // PredictionMarket.MIN_SETTLE_WINDOW
-const SEPOLIA_SLOT = 12; // seconds between Sepolia blocks
+const SETTLE_WINDOW = 3600;
+const SEPOLIA_SLOT = 12;
 const HASH = ethers.keccak256(ethers.toUtf8Bytes("hardening test"));
 const RULES = ethers.toUtf8Bytes(JSON.stringify({ synthetic: true, protocol: "NUMERIC_OBSERVATION_V1" }));
 const OUTCOME = { ACCEPTED: 0, REJECTED: 1, IGNORED_LATE: 2, IGNORED_DUPLICATE: 3 } as const;
@@ -20,8 +18,8 @@ const metric = (code: string, unit: string, minValue: number, maxValue: number, 
   code: ethers.encodeBytes32String(code), unit: ethers.encodeBytes32String(unit),
   minValue, maxValue, valueStep, allowsTrace, rulesHash: HASH,
 });
-const POINTS = metric("POINTS_TEST", "points", -1000, 1000, 10, false); // metric 1
-const RAIN = metric("RAIN_TEST", "mm", 0, 999990, 10, true); // metric 2
+const POINTS = metric("POINTS_TEST", "points", -1000, 1000, 10, false);
+const RAIN = metric("RAIN_TEST", "mm", 0, 999990, 10, true);
 const numeric = (value: number) => ({ kind: 1, value });
 type Condition = { metricId: number; comparison: number; lower: number; upper: number };
 const GT_ZERO: Condition = { metricId: 1, comparison: 3, lower: 0, upper: 0 };
@@ -102,7 +100,6 @@ describe("Contract review fixes", function () {
           .to.be.revertedWithCustomError(f.market, "ProposerCannotBet");
       }
       await (await f.market.connect(f.alice).bet(m.id, 1, { value: MIN })).wait();
-      // The restriction is per market: this proposer may bet where carol proposes.
       await (await f.market.connect(f.proposer).bet(other.id, 2, { value: MIN })).wait();
       await expect(f.market.connect(f.carol).bet(other.id, 1, { value: MIN }))
         .to.be.revertedWithCustomError(f.market, "ProposerCannotBet");
@@ -117,7 +114,6 @@ describe("Contract review fixes", function () {
   describe("F2: liveness floor and settle window", function () {
     it("lets a 12 s slot chain settle an assertion made in the last second before the cutoff", async function () {
       const f = await networkHelpers.loadFixture(fixture);
-      // 7201 s is not a multiple of the slot time. RefundAt is the smallest allowed value.
       const m = await create(f, { liveness: 7201 });
       expect(m.times.refundAt).to.equal(m.times.proposalCutoff + 7201 + SETTLE_WINDOW);
       await bothSides(f, m);
@@ -132,8 +128,6 @@ describe("Contract review fixes", function () {
         .to.emit(f.adapter, "OracleResult").withArgs(m.id, id, OUTCOME.ACCEPTED, true);
       expect((await f.market.getMarketState(m.id)).terminal).to.equal(TERMINAL.YES);
     });
-    // The refundAt - 1 / refundAt boundary seconds are in numeric-lifecycle.test.ts
-    // ("settle first at the refund boundary").
   });
 
   describe("F3: a rejected assertion refunds at once", function () {
@@ -143,7 +137,6 @@ describe("Contract review fixes", function () {
       await bothSides(f, m);
       const id = await proposeAt(f, m.id, m.times.earliestAssertionAt);
       await dispute(f, id);
-      // A pending dispute alone does not refund early.
       expect(Array.from(await f.market.getEffectiveState(m.id))).to.deep.equal([TERMINAL.UNRESOLVED, 0n]);
       await (await f.oracle.simulateDvmResolution(id, false)).wait();
       await expect(f.adapter.settle(id))
@@ -213,8 +206,8 @@ describe("Contract review fixes", function () {
 
     it("rejects conditions Trace cannot decide, only on trace-enabled metrics", async function () {
       const f = await networkHelpers.loadFixture(fixture);
-      await (await f.market.registerMetric(metric("RAIN_FINE", "mm", 0, 100000, 1, true))).wait(); // metric 3
-      await (await f.market.registerMetric(metric("POINTS_FINE", "points", 0, 100000, 1, false))).wait(); // metric 4
+      await (await f.market.registerMetric(metric("RAIN_FINE", "mm", 0, 100000, 1, true))).wait();
+      await (await f.market.registerMetric(metric("POINTS_FINE", "points", 0, 100000, 1, false))).wait();
       const undecidable = [
         { metricId: 3, comparison: 3, lower: 2, upper: 0 }, { metricId: 3, comparison: 2, lower: 4, upper: 0 },
         { metricId: 3, comparison: 5, lower: 0, upper: 4 }, { metricId: 3, comparison: 5, lower: 1, upper: 5 },
@@ -259,8 +252,6 @@ describe("Contract review fixes", function () {
     });
 
     it("pins the canonical OOV3 and the 6TEST bond token on chain 11155111", async function () {
-      // A separate in-process network with Sepolia's chain id, not a fork. setCode places
-      // local test doubles at the pinned addresses. This checks the constructor only.
       const uma = JSON.parse(readFileSync("config/uma-sepolia.json", "utf8")) as {
         optimisticOracleV3: string; selectedBondCurrency: string;
       };
@@ -309,7 +300,7 @@ describe("Contract review fixes", function () {
       const id = await proposeAt(f, m.id, other.times.earliestAssertionAt);
       const otherId = await proposeAt(f, other.id, other.times.earliestAssertionAt + 1);
       await time.increaseTo((await f.oracle.getAssertion(otherId)).expirationTime);
-      await (await f.adapter.settle(id)).wait(); // market m resolves YES; the attacker is owed 2 * MIN
+      await (await f.adapter.settle(id)).wait();
       const MODE = { NONE: 0, CLAIM_AGAIN: 1, SETTLE_OTHER: 2, CLAIM_AGAIN_CAUGHT: 3 };
       await expect(attacker.attack(MODE.CLAIM_AGAIN, ethers.ZeroHash))
         .to.be.revertedWithCustomError(f.market, "TransferFailed");

@@ -17,7 +17,6 @@ export interface TropicalCycloneWarningSnapshot {
   historicalCoverage: false;
   status: "ACTIVE" | "CANCELLED" | "NO_ACTIVE_WARNING";
   signalCode: TropicalCycloneSignalCode | null;
-  /** The active level/direction. Cancellation keeps the reported signalCode but has no active level. */
   level: TropicalCycloneLevel | null;
   direction: TropicalCycloneDirection | null;
   actionCode: "ISSUE" | "CANCEL" | null;

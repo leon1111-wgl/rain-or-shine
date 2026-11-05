@@ -42,7 +42,6 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-// Dashboard rendering here consumes only position.stake. Keep RPC decoding in client tests.
 function dashboard(stake: bigint): Dashboard {
   const market = { id: 1, position: { side: 1n, claimed: false, stake } } as unknown as MarketView;
   return { now: 1800000000, blockNumber: 123, metrics: [], markets: [market], bondBalance: stake, bondAmount: 10000000n };
@@ -77,7 +76,6 @@ function tree(send: Send) { return <MetricProvider dep={dep}><Probe send={send} 
 
 beforeEach(() => {
   vi.resetAllMocks();
-  // Construction alone performs no RPC. All verification and dashboard reads are mocked.
   reader = new JsonRpcProvider(DEAD_RPC);
   walletProvider = new JsonRpcProvider(DEAD_RPC);
   currentWallet = wallet(A, 1);
@@ -217,7 +215,6 @@ describe("metric controller account and provider boundaries", () => {
 
     currentWallet = wallet(B, 2);
     view.rerender(tree(send));
-    // Hide A's existing position synchronously, before B's asynchronous read finishes.
     expect(screen.getByTestId("position")).toHaveTextContent("loading");
     await waitFor(() => expect(screen.getByTestId("position")).toHaveTextContent("222"));
     mocks.readDashboard.mockClear();

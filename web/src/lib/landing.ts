@@ -1,11 +1,7 @@
-// The intro's figures from chain reads, and the returning visitor's choice to open the markets instead of the intro,
-// kept per browser. Storage can be missing or blocked (private mode, a sandboxed frame). The intro is then shown, and
-// the choice lasts for the session only.
-
 import type { ActivityItem } from "./activity";
 import { type MarketData, byActivity, isDemo, marketTagOf, metricKindOf, phaseOf } from "./markets";
 
-const KEY = "rainmark.skipIntro";
+const KEY = "rain-or-shine.skipIntro";
 
 export function readSkipIntro(storage: Pick<Storage, "getItem"> | undefined = globalThis.localStorage): boolean {
   try {
@@ -31,7 +27,6 @@ export interface IntroFigures {
   accounts: number;
 }
 
-/** The intro's figures: open markets, all stakes, bets and participating addresses, from chain reads only. */
 export function introFigures(markets: MarketData[], items: ActivityItem[], now: bigint): IntroFigures {
   return {
     open: markets.filter((m) => phaseOf(m, now) === "OPEN").length,
@@ -41,10 +36,6 @@ export function introFigures(markets: MarketData[], items: ActivityItem[], now: 
   };
 }
 
-/**
- * The market the hero card shows: the busiest open one (byActivity), else the next to open, else none. A weather
- * market comes before any sports demo.
- */
 export function heroMarket(markets: MarketData[], now: bigint): MarketData | undefined {
   for (const list of [markets.filter((m) => !isDemo(m)), markets.filter(isDemo)]) {
     const open = list.filter((m) => phaseOf(m, now) === "OPEN");
@@ -59,12 +50,10 @@ export interface KindSummary {
   markets: number;
   open: number;
   staked: bigint;
-  /** The soonest close among the open markets of this kind. */
   nextClose: bigint | null;
 }
 
 export type IntroKind = "rain" | "heat" | "custom";
-/** Counts, stakes and the next close of the official rain or heat markets, or of the custom ones. */
 export function kindSummary(markets: MarketData[], kind: IntroKind, now: bigint): KindSummary {
   const mine = markets.filter((m) => (kind === "custom" ? marketTagOf(m) === "custom" : marketTagOf(m) === "official" && metricKindOf(m.metric.code) === kind));
   const open = mine.filter((m) => phaseOf(m, now) === "OPEN");

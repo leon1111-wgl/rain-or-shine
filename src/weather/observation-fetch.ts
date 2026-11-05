@@ -6,7 +6,6 @@ import type { RawEvidence } from "./parse.js";
 
 export const DAILY_METRICS: readonly WeatherMetric[] = ["TOTAL_RAINFALL_MM", "DAILY_MAX_TEMPERATURE_C"];
 
-/** One raw snapshot supplies all requested metrics. Thresholds belong to the pool. */
 export async function fetchDailyObservations(
   date: string,
   metrics: readonly WeatherMetric[] = DAILY_METRICS,

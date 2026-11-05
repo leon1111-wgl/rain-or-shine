@@ -1,5 +1,3 @@
-// Rankings: events by total stake, by 24 h volume and by number of addresses, and the largest single bets.
-
 import { t } from "../i18n";
 import type { ActivityItem } from "../lib/activity";
 import { formatEthFixed } from "../lib/amount";

@@ -1,5 +1,4 @@
 // 简体中文（默认语言）。键集合是所有语言的类型来源：其它语言缺键会编译失败。
-// 链上数据、地址、哈希和链上规则文档不翻译。
 
 export const zhCN = {
   "brand.name": "Rain or Shine",
@@ -772,7 +771,6 @@ export const zhCN = {
   "intro.cta.title": "去看看明天的天气市场",
   "intro.cta.sub": "开放中的市场、实时投入和每一笔成交都在里面。",
   "intro.footer.note": "测试网项目。不涉及真实资金。",
-  // Hashes, named for what they let anyone check.
   "fingerprint.rules": "规则指纹 (keccak256)",
   "fingerprint.rulesTip": "规则全文记录在创建市场的链上日志里。任何人都可以用 keccak256 计算它的指纹，确认开放下注之后规则没有改动。",
   "fingerprint.data": "数据指纹 (SHA-256)",

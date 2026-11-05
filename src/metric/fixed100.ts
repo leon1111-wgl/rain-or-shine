@@ -9,7 +9,6 @@ export function parseFixed100(input: string): number {
   return Number(value);
 }
 
-/** Format scaled integers without floating-point rounding. */
 export function formatFixed100(input: number | bigint): string {
   if (typeof input === "number" && !Number.isSafeInteger(input)) throw new Error("scaled value must be an integer");
   const value = BigInt(input);

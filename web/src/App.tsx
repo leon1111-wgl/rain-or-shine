@@ -45,10 +45,8 @@ function activeKey(route: Route): string {
   return route.page;
 }
 
-/** Whether the page was opened on the intro (no route, or #/), before any navigation. */
 const parseInitialIsLanding = () => ["", "#", "#/"].includes(window.location.hash);
 
-/** Each function has its own accent colour (CSS `data-section`). The markets colour is the brand's. */
 const sectionOf = (key: string) => (key === "list" || key === "landing" || key === "not-found" ? "markets" : key);
 
 export function WalletButton() {
@@ -87,7 +85,6 @@ export function WalletButton() {
   );
 }
 
-/** Navigation to a market view without a market in context: open the most relevant market, else explain. */
 function PickMarket({ view }: { view: View }) {
   const now = useNow();
   const markets = useMarkets();
@@ -106,7 +103,6 @@ function PickMarket({ view }: { view: View }) {
   return <div className="empty">{markets.error ? localizeChainMessage(markets.error) : t("market.loading")}</div>;
 }
 
-/** The five views (relative to the market in view, if any): a menu in the top bar, a tab bar at the bottom on phones. */
 function MainNav({ route, active }: { route: Route; active: string }) {
   return (
     <nav className="main-nav" aria-label={t("nav.label")}>
@@ -121,7 +117,6 @@ function MainNav({ route, active }: { route: Route; active: string }) {
   );
 }
 
-/** Chain reads and the page clock (which follows chain time when the local chain runs ahead). */
 function ChainState() {
   const api = useMetricApp();
   const now = useNow();
@@ -135,10 +130,9 @@ function ChainState() {
   );
 }
 
-/** Network notice and the top bar: brand, chain and oracle, language, wallet. */
 function TopBar({ route, active }: { route: Route; active: string }) {
   const { dep } = useMetricApp();
-  useI18n(); // re-render the bar when the language changes
+  useI18n();
   const local = isLocalMock(dep);
   const notice = local ? t("notice.local") : t("notice.sepolia");
   return (
@@ -175,7 +169,6 @@ function TopBar({ route, active }: { route: Route; active: string }) {
   );
 }
 
-/** A deployment or read failure, with what to check next. The last good read stays on screen. */
 function FaultBanner() {
   const api = useMetricApp();
   if (!api.fault) return null;
@@ -192,11 +185,9 @@ function Shell() {
   const wallet = useWallet();
   const active = activeKey(route);
   useEffect(() => {
-    // A returning visitor who asked for it opens the markets. The intro stays one click away (the brand link).
     if (parseInitialIsLanding() && readSkipIntro()) window.location.replace(href.list);
   }, []);
   if (route.page === "landing") {
-    // The intro is a page of its own, with its own navigation, outside the app's frame.
     return (
       <ErrorBoundary resetKey={window.location.hash}>
         <LandingPage />
@@ -242,7 +233,6 @@ function Shell() {
   );
 }
 
-/** The provider tree: wallet, verified chain reads, clock, language, toasts. */
 export function Root({ dep }: { dep: MetricDeployment }) {
   const identity = [dep.chainId, dep.publicRpcUrl, dep.contracts.PredictionMarket.address, dep.bindingTransactionHash].join(":");
   return (

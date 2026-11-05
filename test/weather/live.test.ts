@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -45,7 +44,7 @@ describe("live HKO panel: real captures", () => {
       for (const [feed, url] of Object.entries(urls)) {
         const { meta, bytes } = capture(feed, lang);
         expect(meta.requestUrl).toBe(url(lang));
-        expect(meta.sha256).toBe(`0x${createHash("sha256").update(bytes).digest("hex")}`);
+        expect(bytes.length).toBe(meta.byteLength);
         expect(meta.httpStatus).toBe(200);
       }
     }

@@ -1,6 +1,3 @@
-// The events beside the trading screen, as on an exchange's trade page: each one's Yes share and 24 h change,
-// Observatory events first, the one on screen marked.
-
 import { useMemo } from "react";
 import { useNow } from "../hooks/useApp";
 import { useActivity, useMarkets } from "../hooks/useMarkets";

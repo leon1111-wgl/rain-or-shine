@@ -10,7 +10,6 @@ const B = "0x00000000000000000000000000000000000000b2";
 const network: WalletNetwork = { chainId: 31337, publicRpcUrl: "http://127.0.0.1:9" };
 type Request = Parameters<Eip1193Provider["request"]>[0];
 
-// This provider implements only wallet RPC methods in memory. No network is used.
 class FakeWallet implements Eip1193Provider {
   accounts: string[] = [];
   chainId = "0x7a69";
@@ -186,7 +185,6 @@ describe("numeric app wallet connection", () => {
     window.ethereum = wallet;
     render(tree());
     await waitFor(() => expect(screen.getByTestId("account")).toHaveTextContent(A));
-    // Simulate a provider change before its chainChanged notification arrives.
     wallet.chainId = "0x1";
     await userEvent.click(screen.getByRole("button", { name: "Read signer" }));
     await waitFor(() => expect(screen.getByTestId("signer")).toHaveTextContent("Switch to chain 31337 first"));

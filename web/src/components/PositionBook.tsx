@@ -1,6 +1,3 @@
-// The market's positions laid out like an order book: No stakes above, Yes stakes below, largest next to the Yes
-// share in the middle, each with a depth bar. Next to it, the latest trades. Both come from the verified bet history.
-
 import { useState } from "react";
 import { useWallet } from "../hooks/useWallet";
 import { t } from "../i18n";

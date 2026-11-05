@@ -1,8 +1,3 @@
-// Bet panel of the detail view. The side lock, minimum and window are enforced by the contract. The panel explains
-// them first: the opposite side of a locked position is disabled with its reason, and nothing is shown as done before
-// a successful receipt. The bet goes through the numeric client's runner, which re-verifies the deployment and the
-// account before signing.
-
 import type { JsonRpcSigner } from "ethers";
 import { type CSSProperties, useState } from "react";
 import { useApp } from "../hooks/useApp";
@@ -33,11 +28,9 @@ interface Review {
 }
 
 type Action = { label: string; run?: () => void; disabled?: boolean };
-/** A confirmed bet. */
 type Done = { side: Side; amount: bigint };
 const METAMASK_URL = "https://metamask.io/download/";
 
-/** What the main button does now: open, wallet, network, proposer, side and amount checks in that order. */
 function actionOf(o: { isOpen: boolean; notYetOpen: boolean; openAt: bigint; walletMissing: boolean; account: string | null; correctChain: boolean; chain: string | number; isProposer: boolean; side: Side | null; locked: boolean; ready: boolean; connect: () => void; switchChain: () => void; prepare: () => void }): Action {
   if (!o.isOpen) return { label: o.notYetOpen ? t("bet.notOpen", { time: formatHktMinute(o.openAt) }) : t("bet.closed"), disabled: true };
   if (o.walletMissing) return { label: t("wallet.none"), disabled: true };
@@ -58,7 +51,6 @@ export function BetPanel({ market }: { market: MarketData }) {
   const [done, setDone] = useState<Done | null>(null);
   const [prepError, setPrepError] = useState<string | null>(null);
   const account = wallet.account;
-  // The dashboard reads the connected account's position. Without an account there is none to show.
   const known = Boolean(account && api.data);
   const locked = known ? market.position.side : null;
   const side = locked ?? picked;
@@ -157,7 +149,6 @@ export function BetPanel({ market }: { market: MarketData }) {
   );
 }
 
-/** The position right after a confirmed bet, as the contract now reports it. Then the next step. */
 function BetDone({ done, market, onAgain }: { done: Done; market: MarketData; onAgain: () => void }) {
   return (
     <div className="bet-done" role="status" data-testid="bet-done">
@@ -183,7 +174,6 @@ function BetDone({ done, market, onAgain }: { done: Done; market: MarketData; on
   );
 }
 
-/** Yes/No choice. Once a side is locked on-chain the other button is disabled and says why. */
 function SideChoice({ side, locked, isOpen, onPick }: { side: Side | null; locked: Side | null; isOpen: boolean; onPick: (s: Side) => void }) {
   return (
     <>
@@ -220,8 +210,6 @@ function SideChoice({ side, locked, isOpen, onPick }: { side: Side | null; locke
 
 const MARKS = [0, 25, 50, 75, 100];
 
-/** Decimal ETH text in, exact wei out (parseBetAmount). Invalid input explains itself and blocks submit. With a
- *  known balance, a slider sets the amount as a share of it (rounded down to 0.000001 ETH). */
 function AmountField({ text, onChange, amount, locked, balance }: { text: string; onChange: (v: string) => void; amount: ReturnType<typeof parseBetAmount>; locked: boolean; balance: bigint | null }) {
   const percent = balance && amount.ok ? Math.min(100, Number((amount.value * 100n) / balance)) : 0;
   const setPercent = (p: number) => {
@@ -258,13 +246,9 @@ function AmountField({ text, onChange, amount, locked, balance }: { text: string
   );
 }
 
-/** Current stake on each side and the stake after this amount; `stake` is null until a connected account's
- *  position has been read: unknown is shown as "—", never as 0. */
 const SIDE_LABEL: Record<Side, string> = { YES: "Yes", NO: "No" };
 type Estimate = { refund: true; other: Side } | { refund: false; wei: bigint };
 
-/** What a side would pay: the contract's own formula (src/metric/payout) on the current totals plus this bet, or the
- * refund rule while nobody is on the other side. */
 function estimateOf(market: MarketData, side: Side, stake: bigint, add: bigint): Estimate {
   const other: Side = side === "YES" ? "NO" : "YES";
   if ((other === "YES" ? market.yesTotal : market.noTotal) === 0n) return { refund: true, other };
@@ -317,7 +301,6 @@ function StakeSummary({ market, side, locked, stake, add }: { market: MarketData
   );
 }
 
-/** Everything the wallet will be asked to sign, in exact wei, before it is asked. */
 function BetReview({ review, market, chainId, onClose, onConfirm }: { review: Review; market: MarketData; chainId: number; onClose: () => void; onConfirm: () => void }) {
   const estimate = estimateOf(market, review.side, market.position.side === review.side ? market.position.stake : 0n, review.value);
   return (

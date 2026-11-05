@@ -773,7 +773,6 @@ export const en: Catalog = {
   "intro.cta.title": "See tomorrow's weather markets",
   "intro.cta.sub": "The open markets, their stakes and every trade are inside.",
   "intro.footer.note": "A testnet project. No real money is involved.",
-  // Hashes, named for what they let anyone check.
   "fingerprint.rules": "Rules fingerprint",
   "fingerprint.rulesTip": "The full rules text is in the market's creation log. Anyone can hash it with keccak256 and check that nothing changed after betting opened.",
   "fingerprint.data": "Data fingerprint",

@@ -138,7 +138,6 @@ describe("numeric creation rules", () => {
     context.config.sourceId = encodeBytes32String("STATION_GUST_SOURCE");
     context.config.subjectId = encodeBytes32String("REMOTE01");
     context.config.condition.lower = 2000;
-    // This tests extensible rules, not authentication of a live data source.
     expect(checkBuilt(input, context).parsed.source.resultSchema).toBe("STATION_GUST_V1");
   });
 
@@ -164,7 +163,6 @@ describe("numeric creation rules", () => {
     checkBuilt(input, context);
   });
 
-  // createMarket (ConditionLib.validateForMetric) rejects these, so the rules must too.
   it.each([
     ["between observation steps", { lower: 3201 }],
     ["above the metric range", { lower: 10010 }],
@@ -257,7 +255,6 @@ describe("independent chain binding", () => {
     const replacement = changeDocument(input.metricRulesDocument, ["interpretation"], "Use the daily minimum instead.");
     const forged = changeDocument(changeDocument(document, ["metric", "rulesDocument"], replacement), ["metric", "rulesHash"], hash(replacement));
     expect(() => parseNumericMarketRules(forged)).not.toThrow();
-    // The forged outer hash is consistent, but the registry hash is independent.
     expect(() => assertNumericMarketRulesMatchChain(forged, expected(context, forged))).toThrow();
   });
 
@@ -472,7 +469,6 @@ describe("byte and numeric boundaries", () => {
     expect(() => buildNumericMarketRules(input, context)).toThrow();
   });
 
-  // Each threshold is one value the metric can report.
   it.each([
     ["full int32 range", { minValue: -2147483648, maxValue: 2147483647, valueStep: 1 }, 3200],
     ["uint32 maximum step with zero in range", { minValue: -10, maxValue: 10, valueStep: 4294967295 }, 0],

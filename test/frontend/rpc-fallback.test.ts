@@ -1,5 +1,3 @@
-// The Sepolia reader: current state from the first RPC, history from the second. A call one RPC cannot serve goes to
-// the other, in the same paced queue.
 import { FetchRequest, toUtf8Bytes, toUtf8String, type GetUrlResponse, type JsonRpcPayload } from "ethers";
 import { afterEach, describe, expect, it } from "vitest";
 import { PacedReadProvider } from "../../web/src/metric/rpc-reader";
@@ -9,7 +7,6 @@ const answer = (statusCode: number, body: unknown): GetUrlResponse => ({
   statusCode, statusMessage: String(statusCode), headers: { "content-type": "application/json" }, body: toUtf8Bytes(JSON.stringify(body)),
 });
 
-/** A fake RPC that knows the chain and returns `block` for eth_blockNumber, unless `trouble` answers first. */
 function rpc(name: string, block: string, trouble?: (method: string, id: number) => GetUrlResponse | undefined) {
   const methods: string[] = [];
   const request = new FetchRequest(`https://${name}.invalid/`);

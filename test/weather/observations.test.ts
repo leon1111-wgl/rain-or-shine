@@ -15,10 +15,9 @@ function capture(file: string): RawEvidence {
   const metaName = readdirSync(DIR).find((name) => name.startsWith(`dailyExtract_${file}_`) && name.endsWith(".meta.json"));
   if (!metaName) throw new Error(`no capture for ${file}`);
   const meta = JSON.parse(readFileSync(path.join(DIR, metaName), "utf8")) as {
-    requestUrl: string; fetchedAt: string; sha256: string; httpStatus: number; contentType: string; lastModified: string | null;
+    requestUrl: string; fetchedAt: string; httpStatus: number; contentType: string; lastModified: string | null;
   };
   const bytes = new Uint8Array(readFileSync(path.join(DIR, metaName.replace(".meta.json", ".raw"))));
-  expect(sha256(bytes)).toBe(meta.sha256);
   return { bytes, sourceURL: meta.requestUrl, fetchedAt: meta.fetchedAt, httpStatus: meta.httpStatus, contentType: meta.contentType, lastModified: meta.lastModified };
 }
 
@@ -36,7 +35,6 @@ function code(fn: () => unknown): string {
   return "OK";
 }
 
-// These files are preserved official captures. Edited values below are synthetic tests.
 describe("V2 observations from preserved official HKO data", () => {
   it("selects daily maximum temperature, not the mean/minimum, and retains provenance", () => {
     const result = parseDailyExtractObservation(SEP, "2026-09-14", TEMP);

@@ -1,7 +1,3 @@
-// View 1: the markets, with three tabs: the market table, rankings and trading data. Every number comes from the
-// verified dashboard and the markets' bet history at read time. An RPC error is shown as an error, never as an empty
-// list. Official markets lead the table. Sports demos (local chain only) come last.
-
 import { useMemo, useState } from "react";
 import { Callout, Change, LoadError, PhaseBadge, Share, Skeleton } from "../components/primitives";
 import { Gauge } from "../components/Gauge";
@@ -29,7 +25,6 @@ type ListState = "loading" | "error" | "ready";
 const TABS: ListTab[] = ["markets", "ranks", "data"];
 const FILTERS: Filter[] = ["all", "detail", "waiting", "settlement", "stars"];
 const KIND_ORDER: MetricKind[] = ["rain", "heat", "humidity", "custom", "sport"];
-/** A code that draws each type's icon. */
 const KIND_ICON: Record<MetricKind, string> = { rain: "TOTAL_RAINFALL", heat: "DAILY_MAX_TEMPERATURE", humidity: "DAILY_MEAN_HUMIDITY", custom: "CUSTOM", sport: "SCORE_MARGIN" };
 
 export function MarketsPage({ tab }: { tab: ListTab }) {
@@ -47,7 +42,6 @@ export function MarketsPage({ tab }: { tab: ListTab }) {
   const kindCounts = new Map(KIND_ORDER.map((k) => [k, all.filter((m) => metricKindOf(m.metric.code) === k).length]));
   const kinds = KIND_ORDER.filter((k) => (kindCounts.get(k) ?? 0) > 0);
   const state: ListState = markets.data ? "ready" : markets.error ? "error" : "loading";
-  // Weather markets take the focus and the cards. A sports demo does only when nothing else exists.
   const weather = all.filter((m) => !isDemo(m));
   const featured = weather.length > 0 ? weather : all;
   const busiest = (list: MarketData[]) => [...list].sort(byActivity)[0];
@@ -116,7 +110,6 @@ export function MarketsPage({ tab }: { tab: ListTab }) {
   );
 }
 
-/** The event in focus: its question, the Yes share in a rain gauge, the main figures and the way in. */
 function Focus({ market, stats, now }: { market: MarketData; stats: MarketStats; now: bigint }) {
   const phase = phaseOf(market, now);
   return (
@@ -163,7 +156,6 @@ function Focus({ market, stats, now }: { market: MarketData; stats: MarketStats;
   );
 }
 
-/** The market table. Loading, empty and no-match states say which applies. */
 function EventLists({ state, markets, matches, emptyText, stats, now, starred, onStar }: { state: ListState; markets: MarketData[]; matches: (m: MarketData) => boolean; emptyText: string; stats: Map<number, MarketStats>; now: bigint; starred: (id: number) => boolean; onStar: (id: number) => void }) {
   const visible = markets.filter(matches);
   return (

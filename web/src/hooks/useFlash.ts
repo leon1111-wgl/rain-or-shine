@@ -1,4 +1,3 @@
-// One flash per change of a pool's totals: the tone says which side grew more, the nonce restarts the animation.
 // The previous totals live in state, adjusted while rendering (React's documented pattern), so no ref is read during render.
 
 import { useState } from "react";

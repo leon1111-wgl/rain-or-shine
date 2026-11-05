@@ -97,7 +97,6 @@ export interface DailyExtractDay {
   rows: string[][];
 }
 
-/** Read an official day once. Metric-specific checks belong to the metric parser. */
 export function readDailyExtractDay(raw: RawEvidence, requestedDate: string): DailyExtractDay {
   const compact = toCompactDate(requestedDate);
   const { year, month } = parseCompactDate(compact);

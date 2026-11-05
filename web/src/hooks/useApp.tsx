@@ -1,7 +1,3 @@
-// The page clock and the app context. The numeric client (web/src/metric/context.tsx) owns the deployment, the
-// verified chain reads and the transaction runner. This adds a clock that ticks every second from the last read
-// block's time, so countdowns move between reads and follow a local chain that runs ahead of the wall clock.
-
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useMetricApp } from "../metric/context";
 
@@ -29,14 +25,12 @@ export function ClockProvider({ children }: { children: ReactNode }) {
   return <ClockContext.Provider value={BigInt(now)}>{children}</ClockContext.Provider>;
 }
 
-/** Estimated time of the next block: max(wall clock, last read block time + time since that read). */
 export function useNow(): bigint {
   const now = useContext(ClockContext);
   if (now === null) throw new Error("useNow must be used inside <ClockProvider>");
   return now;
 }
 
-/** The numeric client's API plus the page clock. */
 export function useApp() {
   const api = useMetricApp();
   const now = useNow();

@@ -1,6 +1,3 @@
-// @vitest-environment node
-// The interface's view of the numeric client's markets: subject and question from the checked rules (never from the
-// free-text title), the public network's scope, phases and the newest-first order.
 import { ZeroHash, encodeBytes32String, keccak256, toUtf8Bytes } from "ethers";
 import { describe, expect, it } from "vitest";
 import {
@@ -84,7 +81,6 @@ const pressure = customMetricRulesDocument({
 });
 const SOURCE = { sourceName: "Hourly pressure log", sourceUrl: "https://example.org/pressure/hourly.csv", procedure: "Subtract the first hourly pressure in the window from the last one." };
 
-/** A custom market: the generic profile with the creator's source, or an HKO Daily Extract field for one Hong Kong day. */
 function customView(id: number, metric: CustomMetric, condition: { comparison: number; lower: number; upper?: number }, times: MarketTimes, source: typeof SOURCE | { targetDate: string }): MarketView {
   const metricId = 10 + id;
   const field = "targetDate" in source;
@@ -110,7 +106,6 @@ function customView(id: number, metric: CustomMetric, condition: { comparison: n
   } as unknown as MarketView;
 }
 
-/** A sports demo: an ordered matchup whose result is a synthetic file. */
 function sportsView(id: number, sport: "BASKETBALL" | "FOOTBALL", lower = 0): MarketView {
   const preset = NUMERIC_METRIC_PRESETS.find((p) => p.code === (sport === "BASKETBALL" ? "SCORE_MARGIN" : "GOAL_MARGIN"))!;
   const match = sport === "BASKETBALL" ? { matchId: "LAL_BOS_DEMO01", teamA: "LAL", teamB: "BOS" } : { matchId: "ARS_CHE_DEMO01", teamA: "ARS", teamB: "CHE" };
@@ -164,9 +159,7 @@ describe("market view model", () => {
     expect(marketsFrom(local, dashboard(markets)).map((m) => m.id)).toEqual([3, 1]);
     expect(["TOTAL_RAINFALL", "DAILY_MAX_TEMPERATURE", "WEEKLY_RAINFALL", "DAILY_MIN_TEMPERATURE", "DAILY_MEAN_HUMIDITY"].map(metricKindOf))
       .toEqual(["rain", "heat", "rain", "heat", "humidity"]);
-    // A custom metric goes under the weather word in its code.
     expect(["HOURLY_RAINFALL", "AFTERNOON_TEMPERATURE", "MSL_PRESSURE"].map(metricKindOf)).toEqual(["rain", "heat", "custom"]);
-    // Dew point measures moisture. Pressure and cloud go under "other".
     const added = ["DAILY_MEAN_PRESSURE", "DAILY_MEAN_DEW_POINT", "DAILY_MEAN_CLOUD"];
     expect(added.map(metricKindOf)).toEqual(["custom", "humidity", "custom"]);
     expect(added.map(metricShortOf)).toEqual(["Pressure", "Dew point", "Cloud"]);
@@ -195,7 +188,6 @@ describe("market view model", () => {
     expect(questionOf(fall)).toBe("PRESSURE CHANGE, 7 Nov 08:30–11:30: will it be < -5 hPa?");
     expect(conditionWithUnitOf(band)).toBe("between 70% and 85% (inclusive)");
     expect(shortLabelOf(band)).toBe("5 Nov Humidity between 70 and 85 (inclusive)");
-    // Markets on the same day are told apart by their hours, and a longer window shows its days.
     expect([shortLabelOf(fall), shortLabelOf(week)]).toEqual(["7 Nov 08:30–11:30 PRESSURE CHANGE < -5", "2 Nov to 8 Nov WEEKLY RAINFALL ≥ 20.0"]);
   });
 

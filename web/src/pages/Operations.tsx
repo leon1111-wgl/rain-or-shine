@@ -1,7 +1,3 @@
-// Operations, outside the five member views. It shows the deployment and bond token, the administrator's new-market
-// flow and metric registry, and the proposer's result steps. The contracts enforce every permission. This page only
-// shows each action to the account that can use it.
-
 import { formatUnits, parseUnits } from "ethers";
 import { ClientStatus } from "../components/ClientStatus";
 import { CopyButton, PageHeading, PhaseBadge } from "../components/primitives";
@@ -86,7 +82,6 @@ function AdminArea({ template }: { template: MarketData | undefined }) {
   if (api.isAdmin) {
     return (
       <>
-        {/* A fresh form for each template, so its inputs start from that market. */}
         <NewMarket key={template?.id ?? "blank"} {...(template ? { template } : {})} />
         <Registry />
       </>
@@ -103,7 +98,6 @@ function AdminArea({ template }: { template: MarketData | undefined }) {
   );
 }
 
-/** Every market with its phase and proposer, and the selected one's submission, dispute and settlement steps. */
 function ResultArea({ markets, id }: { markets: MarketData[]; id: number | undefined }) {
   const api = useApp();
   const pending = markets.filter((m) => ["AWAITING_PROPOSAL", "PROPOSED", "DISPUTED", "SETTLEABLE", "WAITING_DATA", "WAITING_OBSERVATION", "OPEN"].includes(phaseOf(m, api.now)));

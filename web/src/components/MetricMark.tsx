@@ -4,7 +4,6 @@ import { Icon, type IconName } from "./Icon";
 const ICONS: Record<MetricKind, IconName> = { rain: "rain", heat: "thermo", humidity: "humidity", custom: "layers", sport: "ball" };
 const CODE_ICONS: Record<string, IconName> = { DAILY_MEAN_PRESSURE: "gauge", DAILY_MEAN_CLOUD: "cloud" };
 
-/** The metric's mark: its icon on a tile in the metric's accent. */
 export function MetricMark({ code, small }: { code: string; small?: boolean }) {
   const kind = metricKindOf(code);
   return (

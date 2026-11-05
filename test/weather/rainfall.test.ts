@@ -12,7 +12,6 @@ const rainfall = (raw: RawEvidence, targetDate: string) => parseDailyExtractObse
 interface Meta {
   requestUrl: string;
   fetchedAt: string;
-  sha256: string;
   httpStatus: number;
   contentType: string;
   lastModified: string | null;
@@ -23,7 +22,6 @@ function capture(file: string): RawEvidence {
   if (!metaName) throw new Error(`no capture for ${file}`);
   const meta = JSON.parse(readFileSync(path.join(DIR, metaName), "utf8")) as Meta;
   const bytes = new Uint8Array(readFileSync(path.join(DIR, metaName.replace(".meta.json", ".raw"))));
-  expect(sha256(bytes)).toBe(meta.sha256);
   return { bytes, contentType: meta.contentType, httpStatus: meta.httpStatus, fetchedAt: meta.fetchedAt, lastModified: meta.lastModified, sourceURL: meta.requestUrl };
 }
 

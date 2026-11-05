@@ -1,6 +1,3 @@
-// Hash routing for the landing page, the five views and the operations page. Works on any static host, including
-// the team package's loopback server, without server rewrites.
-
 import { useEffect, useState } from "react";
 
 export type MarketView = "detail" | "waiting" | "settlement";
@@ -10,7 +7,7 @@ export type Route =
   | { page: "landing" }
   | { page: "list"; tab: ListTab }
   | { page: "market"; view: MarketView; id: number }
-  | { page: "pick"; view: MarketView } // a market view chosen in the navigation before any market was selected
+  | { page: "pick"; view: MarketView }
   | { page: "mine" }
   | { page: "ops"; id?: number; template?: number }
   | { page: "not-found"; path: string };
@@ -44,7 +41,6 @@ export const href = {
   pick: (view: MarketView) => `#/${view}`,
   mine: "#/mine",
   ops: (id?: number) => (id ? `#/ops/${id}` : "#/ops"),
-  /** The new-market form, filled from market `id`. */
   template: (id: number) => `#/ops/new/${id}`,
 };
 

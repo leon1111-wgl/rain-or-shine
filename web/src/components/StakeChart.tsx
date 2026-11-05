@@ -1,7 +1,3 @@
-// The market's chart in bet order: the Yes share after each bet (from the totals replayed up to it), or both sides'
-// cumulative stakes. Hovering shows the figures after a bet. Amounts stay integer wei. Only the drawing scale is a
-// fraction.
-
 import { useId, useState, type MouseEvent } from "react";
 import { t } from "../i18n";
 import type { ActivityItem } from "../lib/activity";
@@ -26,7 +22,6 @@ function pointsOf(bets: ActivityItem[]): Point[] {
   return bets.map((b) => ({ yes: b.yesTotal, no: b.noTotal, share: shareAfter(b), at: b.timestamp }));
 }
 
-/** Bet i (1-based) holds its value from x = (i-1)/n to i/n of the width. */
 export function stepLine(ys: number[], width = W): string {
   const n = ys.length;
   let d = `M0 ${ys[0]}`;
@@ -36,7 +31,6 @@ export function stepLine(ys: number[], width = W): string {
   return d;
 }
 
-/** The plot sits between 6 % and 94 % of the height, so no line touches an axis label. */
 const plotY = (fraction: number) => H * 0.94 - fraction * H * 0.88;
 const SHARE_TICKS = [0, 25, 50, 75, 100];
 
@@ -80,7 +74,6 @@ function Plot({ id, points, mode }: { id: string; points: Point[]; mode: Mode })
   );
 }
 
-/** The y labels at the gridlines: 0–100 % for the share, 0 to the largest side for the stakes. */
 function Axis({ points, mode }: { points: Point[]; mode: Mode }) {
   const max = maxStake(points);
   const marks: Array<[number, string]> =

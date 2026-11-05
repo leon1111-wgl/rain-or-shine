@@ -77,7 +77,6 @@ describe("market activity from chain records", () => {
     latest = 100150;
     setBets([{ account: A, side: 1, amount: 2n, block: 50099 }, { account: B, side: 2, amount: 3n, block: 50100 }, { account: A, side: 1, amount: 4n, block: 100100 }]);
     const result = await readMarketActivity(dep, provider, 7);
-    // Pages of 50,000 blocks, the most that publicnode answers in one query.
     expect(mocks.queryFilter.mock.calls).toEqual([
       ["selected-market-filter", 100, 50099], ["selected-market-filter", 50100, 100099], ["selected-market-filter", 100100, 100150],
     ]);

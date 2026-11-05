@@ -2,13 +2,11 @@ import { expect } from "chai";
 import { network } from "hardhat";
 import { payoutIfWins } from "../../src/metric/payout.js";
 
-// This connection is an isolated Hardhat test network, never the user's localhost.
 const connection = await network.create();
 const { ethers, networkHelpers } = connection;
 const { time } = networkHelpers;
 const BOND = ethers.parseUnits("10", 6);
 const MIN = ethers.parseEther("0.001");
-// PredictionMarket.MIN_SETTLE_WINDOW: refundAt >= proposalCutoff + liveness + 1 hour.
 const SETTLE_WINDOW = 3600;
 const HASH = ethers.keccak256(ethers.toUtf8Bytes("synthetic lifecycle test"));
 const RULES = ethers.toUtf8Bytes(JSON.stringify({
@@ -212,8 +210,6 @@ describe("Numeric market lifecycle and funds boundaries", function () {
       await expect(f.market.createMarket({ ...config, times }, RULES))
         .to.be.revertedWithCustomError(f.market, "InvalidMarketConfig").withArgs("settlement buffer");
     }
-    // Equality at close/start and observationEnd/earliest is intentionally allowed;
-    // configFor already uses the smallest refundAt the settle window permits.
     expect(t.refundAt).to.equal(t.proposalCutoff + 60 + SETTLE_WINDOW);
     await (await f.market.createMarket(config, RULES)).wait();
     expect(await f.market.marketCount()).to.equal(1n);
@@ -230,7 +226,6 @@ describe("Numeric market lifecycle and funds boundaries", function () {
     await expect(f.market.createMarket(config, exact)).to.emit(f.market, "MarketCreated")
       .withArgs(1, 1, f.proposer.address, ethers.keccak256(exact), ethers.hexlify(exact));
     expect(await f.market.marketRulesHash(1)).to.equal(ethers.keccak256(exact));
-    // Application rule validation lives off-chain. This byte-limit test is not a valid production rule document.
   });
 
   it("rejects unknown market identifiers consistently across reads and writes", async function () {
@@ -370,7 +365,6 @@ describe("Numeric market lifecycle and funds boundaries", function () {
     const f = await networkHelpers.loadFixture(fixture);
     const m = await create(f);
     await time.increaseTo(m.config.times.openAt);
-    // Uneven stakes from four accounts so the floor division leaves dust; Alice's top-up is the last bet.
     const bets = [[f.alice, 1, MIN + 3n], [f.bob, 2, 2n * MIN + 345_678_901n], [f.carol, 1, MIN + 700_000_000_001n], [f.outsider, 2, MIN + 11n]] as const;
     for (const [who, side, value] of bets) await (await f.market.connect(who).bet(m.id, side, { value })).wait();
     const before = await f.market.getMarketState(m.id);
@@ -386,7 +380,6 @@ describe("Numeric market lifecycle and funds boundaries", function () {
       const { stake } = await f.market.getPosition(m.id, who);
       expect(await f.market.claimable(m.id, who)).to.equal(payoutIfWins({ yesTotal, noTotal, side: "YES", stake, add: 0n }));
     }
-    // Nobody bet after Alice's top-up, so the estimate made before it is what she is paid.
     expect(await f.market.claimable(m.id, f.alice)).to.equal(aliceEstimate);
     expect(await f.market.claimable(m.id, f.bob)).to.equal(0n);
   });
@@ -423,7 +416,6 @@ describe("Numeric market lifecycle and funds boundaries", function () {
     });
   }
 
-  // A 0.01 mm step lets thresholds fall inside the open Trace interval (0, 5).
   const fineTraceMetric = {
     ...rainfallMetric, code: ethers.encodeBytes32String("RAIN_FINE_TEST"), minValue: -100, valueStep: 1,
   };
@@ -633,8 +625,6 @@ describe("Numeric market lifecycle and funds boundaries", function () {
     await openBoth(f, m);
     const id = await propose(f, m);
     await (await settle(f, id)).wait();
-    // Replay transport callbacks only. Impersonation is confined to the isolated test
-    // network. This tests idempotence, not a production caller's ability to bypass OO.
     const oracleAddress = await f.oracle.getAddress();
     await networkHelpers.setBalance(oracleAddress, ethers.parseEther("1"));
     const oracleSigner = await ethers.getImpersonatedSigner(oracleAddress);

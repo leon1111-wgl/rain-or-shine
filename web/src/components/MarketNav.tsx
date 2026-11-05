@@ -3,7 +3,6 @@ import { type MarketData, phaseOf } from "../lib/markets";
 import { viewOf, type View } from "../lib/phase";
 import { href } from "../lib/routes";
 
-/** Back link and the three views of one market. Says where the market's current phase belongs. */
 export function MarketNav({ market, view, now }: { market: MarketData; view: View; now: bigint }) {
   const phase = phaseOf(market, now);
   const current = viewOf(phase);

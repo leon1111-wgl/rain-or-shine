@@ -1,6 +1,3 @@
-// Small SVG charts for the markets, data and detail views. Plot values are fractions for drawing only. Every
-// value a reader sees comes preformatted from integer amounts (`label`, `title`).
-
 import { useId, useState, type MouseEvent, type ReactNode } from "react";
 
 const W = 600;
@@ -8,10 +5,8 @@ const H = 200;
 
 const useSvgId = () => useId().replace(/[^\w-]/g, "");
 
-/** Fraction of the sparkline height for `v` between `min` and `max`, with headroom at the top. */
 const level = (v: number, min: number, max: number) => (max === min ? 0.5 : ((v - min) / (max - min)) * 0.88);
 
-/** Yes share after each bet as a tiny line: green when it ended at or above where it started, red below. */
 export function Sparkline({ values }: { values: number[] }) {
   const id = useSvgId();
   if (values.length < 2) return <span className="spark none" aria-hidden="true" />;
@@ -37,15 +32,9 @@ export function Sparkline({ values }: { values: number[] }) {
 export interface ChartPoint {
   x: number;
   y: number;
-  /** What the tooltip says for this point (exact, preformatted). */
   label: ReactNode;
 }
 
-/**
- * One series as a step line with an optional fill, a crosshair and a tooltip. `domain` fixes the y range (a share
- * is always 0–100 %). Otherwise it runs from 0 to the largest value. Gridlines sit at the labelled `ticks`;
- * `reference` draws a dashed level (50 % for a share).
- */
 export function TimeChart({ points, tone, axis, reference, xLabel, area = true, domain, ticks }: { points: ChartPoint[]; tone: "yes" | "no" | "neutral"; axis: (y: number) => string; reference?: number; xLabel: (x: number) => string; area?: boolean; domain?: [number, number]; ticks?: number[] }) {
   const id = useSvgId();
   const [hover, setHover] = useState<number | null>(null);
@@ -56,7 +45,6 @@ export function TimeChart({ points, tone, axis, reference, xLabel, area = true, 
   const [y0, y1] = domain ?? [0, top === 0 ? 1 : top];
   const marks = ticks ?? [y0, (y0 + y1) / 2, y1];
   const px = (x: number) => (x1 === x0 ? W : ((x - x0) / (x1 - x0)) * W);
-  // Plot between 6 % and 94 % of the height so the line never touches a label.
   const py = (y: number) => H * 0.94 - ((y - y0) / (y1 - y0 || 1)) * H * 0.88;
   let d = `M0 ${py(points[0]!.y)}`;
   for (const p of points) d += `H${px(p.x)}V${py(p.y)}`;
@@ -115,12 +103,10 @@ export function TimeChart({ points, tone, axis, reference, xLabel, area = true, 
 export interface Bar {
   key: string;
   label: string;
-  /** Stacked parts, bottom first. Drawing values only. */
   parts: Array<{ value: number; tone: "yes" | "no" | "neutral" }>;
   title: ReactNode;
 }
 
-/** Stacked vertical bars on a labelled scale (`axis` formats the top and middle), with the hovered bar's title. */
 export function BarChart({ bars, axis }: { bars: Bar[]; axis?: (v: number) => string }) {
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(0, ...bars.map((b) => b.parts.reduce((n, p) => n + p.value, 0)));

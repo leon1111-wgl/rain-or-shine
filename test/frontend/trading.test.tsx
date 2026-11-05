@@ -1,5 +1,3 @@
-// The bet ticket, the claim on the settlement page and the markets page, on the numeric client's data. Bets and
-// claims go through the client's runner (`run`), whose own checks are covered in metric-context.test.tsx.
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ZeroAddress, ZeroHash, encodeBytes32String, keccak256, toUtf8Bytes, type ContractTransactionResponse, type JsonRpcSigner } from "ethers";
@@ -73,7 +71,6 @@ function view(id: number, code: string, opts: { date?: string; yes?: bigint; no?
   } as unknown as MarketView;
 }
 
-/** A basketball demo on the local chain: LAL against BOS, betting until the match starts at 4 Nov 19:30. */
 function sportsView(id: number, yes: bigint, no: bigint): MarketView {
   const preset = NUMERIC_METRIC_PRESETS.find((p) => p.code === "SCORE_MARGIN")!;
   const start = Number(hkDayWindow("20261104").start) + 19.5 * 3_600;
@@ -85,7 +82,6 @@ function sportsView(id: number, yes: bigint, no: bigint): MarketView {
   return { ...base, config: { ...config, condition: toBig(config.condition), times: toBig({ ...times }) }, metric: { ...preset, id }, rulesDocument: rules, rulesHash: keccak256(toUtf8Bytes(rules)) } as unknown as MarketView;
 }
 
-/** A custom market on a pressure log, with the source link its creator typed. The rules accept any absolute URL. */
 function customSourceView(id: number, sourceUrl: string): MarketView {
   const metric = customMetricRulesDocument({
     code: "PRESSURE_CHANGE", unit: "hPa", minValue: -50_000, maxValue: 50_000, valueStep: 100, allowsTrace: false,
@@ -246,7 +242,6 @@ describe("rules", () => {
   it("names a sports demo's synthetic source, match, scope and window, with a demo note", async () => {
     useApp([sportsView(4, 2n * 10n ** 15n, 10n ** 15n)]);
     render(<MarketDetailPage id={4} />);
-    // The events list names a window shorter than a day by its hours, so two such markets on one day stay apart.
     expect(document.querySelector(".market-list .list-name strong")).toHaveTextContent("4 Nov 19:30–22:00");
     await userEvent.click(await screen.findByTestId("detail-tab-rules"));
     const labels = [...document.querySelectorAll(".rules-grid .rule > span")].map((label) => label.textContent);
@@ -328,7 +323,6 @@ describe("waiting", () => {
   });
 });
 
-/** Mean relative humidity on 3 Nov between 70 % and 85 %, an HKO Daily Extract field market, with an assertion. */
 function humidityBand(): MarketView {
   const field = HKO_DAILY_EXTRACT_FIELDS.find((f) => f.key === "mean-humidity")!;
   const base = view(1, "TOTAL_RAINFALL", { date: "20261103", yes: 10n ** 15n + 5n, no: 10n ** 15n, asserted: true });
@@ -373,7 +367,6 @@ describe("markets page", () => {
     const rows = await screen.findAllByTestId("pool-card");
     expect(rows.map((r) => r.getAttribute("data-market"))).toEqual(["3", "2", "1"]);
     expect(within(rows[2]!).getByText("Will HKO headquarters record ≥ 1.0 mm of rain on 3 Nov?")).toBeInTheDocument();
-    // Weather types with their counts. Every temperature column shares one chip.
     expect(within(screen.getByTestId("metric-filter")).getAllByRole("button").map((b) => b.textContent)).toEqual(["All3", "Rain1", "Temperature2"]);
     await userEvent.click(screen.getByTestId("kind-filter-rain"));
     expect(screen.getAllByTestId("pool-card").map((r) => r.getAttribute("data-market"))).toEqual(["1"]);
@@ -394,7 +387,6 @@ describe("markets page", () => {
     expect(rows.map((r) => r.getAttribute("data-market"))).toEqual(["3", "2", "1", "4"]);
     expect(within(rows[3]!).getByTestId("market-tag")).toHaveTextContent("Demo");
     expect(within(screen.getByTestId("metric-filter")).getAllByRole("button").map((b) => b.textContent)).toEqual(["All4", "Rain1", "Temperature2", "Sports1"]);
-    // The demo has the most stakes. The focus still shows a weather market.
     expect(within(screen.getByTestId("focus")).getByRole("heading", { level: 2 })).toHaveTextContent("Will HKO headquarters record ≥ 1.0 mm of rain on 3 Nov?");
     await userEvent.click(screen.getByTestId("kind-filter-sport"));
     expect(screen.getAllByTestId("pool-card").map((r) => r.getAttribute("data-market"))).toEqual(["4"]);
@@ -427,7 +419,6 @@ describe("markets page", () => {
 });
 
 describe("intro", () => {
-  // Books are cached by market and totals, so each of these uses totals of its own.
   it("draws the featured market's Yes share after each bet once there are two bets, with both stakes under it", async () => {
     const [yes, no] = [3n * 10n ** 15n + 1n, 2n * 10n ** 15n];
     mocks.trades = [

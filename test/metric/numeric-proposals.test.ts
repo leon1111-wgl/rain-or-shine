@@ -45,7 +45,6 @@ function proposalContext(rulesDocument: string, expected: NumericRulesContext, c
   return { rulesDocument, expected: { ...expected, marketRulesHash: hash(rulesDocument) }, chainTimestamp };
 }
 
-/** A custom weather market: a weekly rainfall total read from a document the proposer imports. */
 function customFixture() {
   const metric = customMetricRulesDocument({
     code: "WEEKLY_RAINFALL", unit: "mm", minValue: 0, maxValue: 999_990, valueStep: 10, allowsTrace: false,
@@ -78,7 +77,6 @@ function customFixture() {
   return { rawBytes, capturedAt, context, build };
 }
 
-/** A sports demo market on one of the synthetic result files. */
 function sportsFixture(file = "basketball-lal-bos.json") {
   const rawBytes = new Uint8Array(readFileSync(new URL(`../../fixtures/demo/sports/${file}`, import.meta.url)));
   const result = JSON.parse(new TextDecoder().decode(rawBytes)) as SportsDemoInput;
@@ -126,7 +124,6 @@ function rewriteRules(context: ProposalContext, change: (rules: NumericMarketRul
   return { ...context, rulesDocument, expected: { ...context.expected, marketRulesHash: hash(rulesDocument) } };
 }
 
-
 describe("creation profiles", () => {
   it("fixes the source and ordered match parameters without including future scores", () => {
     const f = sportsFixture();
@@ -172,7 +169,6 @@ describe("HKO numeric proposal conversion", () => {
     });
     expect(proposal).not.toHaveProperty("outcome");
     expect(proposal).not.toHaveProperty("yes");
-    // Local snapshot consistency is tested here. No network authenticity is established.
   });
 
   it("keeps a full monthly raw hash even though only a short day excerpt is published", () => {
@@ -188,8 +184,6 @@ describe("HKO numeric proposal conversion", () => {
     expect(buildHkoNumericProposal(f.bundle, f.context).reading).toEqual({ kind: 2, value: 0 });
   });
 
-  // With the 0.1 mm rainfall step every reportable threshold is <= 0 or >= 0.05 mm, so TRACE
-  // always decides an HKO rainfall market. Thresholds the metric cannot report never get rules.
   it("refuses rules for a threshold the rainfall metric cannot report", () => {
     expect(() => hkoFixture("rainfall", "20260913", 2)).toThrow(/metric step/);
   });

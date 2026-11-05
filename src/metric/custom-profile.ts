@@ -19,7 +19,6 @@ export const CUSTOM_POLICIES: NumericResolutionPolicies = Object.freeze({
   missingData: "Do not propose missing, unavailable, ambiguous or invalid data; unresolved markets follow the contract refund deadline.",
   revision: "A proposal commits the exact imported source bytes. Later corrections or downloads do not rewrite those bytes or a finalized outcome.",
 });
-/** Source names are short labels. The procedure carries the detail. */
 export const MAX_SOURCE_NAME_BYTES = 128;
 /** A market's rules embed its metric's rules document and must stay within 4096 bytes. */
 export const MAX_CUSTOM_METRIC_DOCUMENT_BYTES = 1536;
@@ -32,7 +31,6 @@ export interface CustomMetricInput {
   maxValue: number;
   valueStep: number;
   allowsTrace: boolean;
-  /** How the observed value is defined and calculated. */
   interpretation: string;
 }
 
@@ -74,7 +72,6 @@ export function customMetricRulesDocument(input: CustomMetricInput): CustomMetri
   };
 }
 
-/** A registered metric as read from the chain (bytes32 code and unit) or from the interface's view of it. */
 export interface RegisteredMetric {
   code: string;
   unit: string;
@@ -87,7 +84,6 @@ export interface RegisteredMetric {
 
 const asText = (value: string) => (/^0x[0-9a-fA-F]{64}$/.test(value) ? value : encodeBytes32String(value));
 
-/** The first candidate that is this metric's exact rules document: its hash and every field match the registry. */
 export function findMetricRulesDocument(metric: RegisteredMetric, candidates: Iterable<string>): string | undefined {
   for (const candidate of candidates) {
     if (keccak256(toUtf8Bytes(candidate)).toLowerCase() !== metric.rulesHash.toLowerCase()) continue;
@@ -98,7 +94,6 @@ export function findMetricRulesDocument(metric: RegisteredMetric, candidates: It
         && BigInt(metric.minValue) === BigInt(parsed.minValue) && BigInt(metric.maxValue) === BigInt(parsed.maxValue)
         && BigInt(metric.valueStep) === BigInt(parsed.valueStep) && metric.allowsTrace === parsed.allowsTrace) return candidate;
     } catch (error) {
-      // A document with the right hash but invalid content cannot be this metric's. Keep looking.
       if (!(error instanceof Error)) throw error;
     }
   }
@@ -111,7 +106,6 @@ export function identifierFromText(text: string, fallback: string): string {
   return id || fallback;
 }
 
-/** A column of the HKO Daily Extract row that a custom market can read automatically. */
 export interface HkoDailyExtractField {
   key: "mean-pressure" | "mean-temperature" | "min-temperature" | "mean-dew-point" | "mean-humidity" | "mean-cloud";
   /** Index in the row of nine strings; 0 is the day. */
@@ -154,7 +148,6 @@ export const HKO_DAILY_EXTRACT_FIELDS: readonly HkoDailyExtractField[] = Object.
     "Mean amount of cloud over the market observation window, in percent, as the HKO Daily Extract column Mean Amount of Cloud (%) reports it. HKO publishes whole percents. NUMERIC is that value multiplied by 100. TRACE is invalid."),
 ]);
 
-/** The committed reading procedure of an HKO Daily Extract field. */
 export function hkoFieldProcedure(field: HkoDailyExtractField): string {
   const value = field.format === "decimal"
     ? "an available, unflagged value with one decimal place, multiplied by 100"
@@ -174,7 +167,6 @@ export interface CustomNumericProfile {
   sourceName: string;
   sourceUrl: string;
   procedure: string;
-  /** Set when the market reads one HKO Daily Extract field for one Hong Kong day. */
   hko?: { targetDate: string; field: HkoDailyExtractField };
 }
 
@@ -186,7 +178,6 @@ function sourceUrl(value: string): string {
   return value;
 }
 
-/** Whether custom rules accept this source link: an absolute URL without spaces, at most 256 bytes. */
 export function isSourceUrl(value: string): boolean {
   try {
     sourceUrl(value);
@@ -197,7 +188,6 @@ export function isSourceUrl(value: string): boolean {
   }
 }
 
-/** Check custom rules: fixed policies, a named source with a URL and procedure, and no official metric. */
 export function assertCustomNumericProfile(rules: NumericMarketRules): CustomNumericProfile {
   const checked = parseNumericMarketRules(JSON.stringify(rules));
   if (!isCustomNumericRules(checked)) fail("these rules do not use the custom source schema");
@@ -239,11 +229,9 @@ export interface CustomMarketRulesInput {
   sourceName: string;
   sourceUrl: string;
   procedure: string;
-  /** The metric's exact rules document, whose keccak256 is the registered rulesHash. */
   metricRulesDocument: string;
 }
 
-/** Commit the source, the procedure and the metric's rules before the result exists. */
 export function buildCustomNumericRules(input: CustomMarketRulesInput, context: NumericRulesContext): string {
   const document = buildNumericMarketRules({
     title: input.title,
@@ -257,7 +245,6 @@ export function buildCustomNumericRules(input: CustomMarketRulesInput, context: 
   return document;
 }
 
-/** A custom market on an HKO Daily Extract field for one Hong Kong day (YYYYMMDD). */
 export function buildHkoFieldNumericRules(input: { title: string; targetDate: string }, context: NumericRulesContext): string {
   const field = hkoFieldOf(context.metric);
   if (!field) fail("the market's metric is not a registered HKO Daily Extract field");

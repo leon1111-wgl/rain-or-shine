@@ -1,5 +1,3 @@
-// Starts a fresh Hardhat node, deploys with scripts/deploy-metric-local.ts (which also exports the ABIs and the
-// manifest), then starts Vite against the local chain.
 import { spawn, spawnSync } from "node:child_process";
 import { mkdirSync, openSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -15,7 +13,7 @@ async function rpcUp(): Promise<boolean> {
     const res = await fetch(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' });
     return res.ok;
   } catch {
-    return false; // nothing listening yet
+    return false;
   }
 }
 
@@ -52,7 +50,7 @@ export default async function globalSetup(): Promise<void> {
     try {
       return (await fetch(`http://127.0.0.1:${PORT}/`)).ok;
     } catch {
-      return false; // Vite still starting
+      return false;
     }
   }, "the Vite dev server");
   writeFileSync(PID_FILE, JSON.stringify({ hardhat: hardhat.pid, vite: vite.pid }));

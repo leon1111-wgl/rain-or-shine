@@ -1,7 +1,3 @@
-// The intro's sticky pill navigation: the mark, the sections (the active pill follows the scroll and its highlight
-// slides to it), the language switch and the way into the markets. Pills scroll within the page. The hash route
-// never changes.
-
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { type MessageKey, t } from "../../i18n";
 import { useI18n } from "../../i18n/I18nProvider";
@@ -57,7 +53,6 @@ export function IntroNav() {
       marker.current.style.width = `${pill.offsetWidth}px`;
       marker.current.style.transform = `translateX(${pill.offsetLeft}px)`;
     }
-    // On a narrow screen the row scrolls. Keep the section being read in view without moving the page.
     const el = row.current;
     if (pill && el && (pill.offsetLeft < el.scrollLeft || pill.offsetLeft + pill.offsetWidth > el.scrollLeft + el.clientWidth)) {
       el.scrollTo({ left: pill.offsetLeft - (el.clientWidth - pill.offsetWidth) / 2, behavior: prefersReducedMotion() ? "auto" : "smooth" });

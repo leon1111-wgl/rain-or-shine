@@ -38,7 +38,6 @@ export interface MetricDeploymentManifest {
     minimumBond: string;
     identifier: string;
     note: string;
-    /** External contracts have no deployment receipt owned by this project. */
     runtimeCodeKeccak256?: string;
     bondRuntimeCodeKeccak256?: string;
     dvmSupport?: false;
@@ -123,7 +122,6 @@ export function validateMetricManifest(input: unknown): MetricDeploymentManifest
     throw new Error("Invalid bond token metadata");
   }
   uint256(oracle.policyBond, "policyBond");
-  // The adapter refuses a zero policy bond.
   if (oracle.policyBond === "0") throw new Error("policyBond: must be nonzero");
   uint256(oracle.minimumBond, "minimumBond");
   hash(oracle.identifier, "identifier");

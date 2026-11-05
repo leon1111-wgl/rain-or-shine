@@ -7,7 +7,7 @@ export default async function globalTeardown(): Promise<void> {
   for (const pid of Object.values(pids)) {
     if (!pid) continue;
     try {
-      process.kill(-pid, "SIGTERM"); // the whole detached process group
+      process.kill(-pid, "SIGTERM");
     } catch {
       process.kill(pid, "SIGTERM");
     }

@@ -1,6 +1,3 @@
-// The market table: one row per event with its Yes share, 24 h change and trend, 24 h volume, total stake and
-// closing time. Columns sort on click (descending, ascending, then the newest-first order).
-
 import { useState } from "react";
 import { useFlash } from "../hooks/useFlash";
 import { type MessageKey, t } from "../i18n";

@@ -3,7 +3,6 @@ import { localizeChainMessage } from "../lib/chainErrors";
 import { useMetricApp } from "../metric/context";
 import { TxLink } from "./primitives";
 
-/** The numeric client's last action and its transaction, for panels that act through it directly. */
 export function ClientStatus() {
   const api = useMetricApp();
   if (!api.message) return null;
@@ -19,7 +18,6 @@ export function ClientStatus() {
   );
 }
 
-/** "Label: detail" with the detail in the interface language. The label is already the page's own text. */
 function localizeLabelled(message: string): string {
   const at = message.indexOf(": ");
   if (at < 0) return localizeChainMessage(message);

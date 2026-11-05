@@ -1,8 +1,3 @@
-// Custom metrics on a real local chain through the interface. The administrator defines a metric and its first
-// market in one flow: an inclusive range, its own source and procedure, and a one-hour window. Two accounts bet both
-// sides. The proposer pastes the source document and its reading, sees the contract's outcome and submits it. The local
-// Mock stands in for UMA, as in flow.spec.ts. Then come settlement and the winner's claim. A second test creates more
-// custom markets from the shared builders and checks how the interface reads them.
 import { expect, test, type Page } from "@playwright/test";
 import { sha256, toUtf8Bytes } from "ethers";
 import { customMetricRulesDocument } from "../../src/metric/custom-profile.js";
@@ -12,13 +7,11 @@ import {
 
 const HOUR = 3_600;
 const DAY = 86_400;
-/** Unix seconds as the form's Hong Kong datetime-local value. */
 const hktInput = (unix: number) => new Date((unix + 8 * HOUR) * 1000).toISOString().slice(0, 16);
-/** The next Hong Kong midnight after `unix`. */
 const nextHkMidnight = (unix: number) => Math.floor((unix + 8 * HOUR) / DAY) * DAY + DAY - 8 * HOUR;
 
 async function connected(page: Page, who: number, hash: string, locale = "en") {
-  await page.addInitScript((l) => localStorage.setItem("rainmark.locale", l), locale);
+  await page.addInitScript((l) => localStorage.setItem("rain-or-shine.locale", l), locale);
   await installWallet(page, who);
   await page.goto(`/${hash}`);
   await page.getByTestId("connect").click();
@@ -38,7 +31,6 @@ async function bet(page: Page, id: number, side: "YES" | "NO", amount: string) {
 test("a custom metric from registration to claim: inclusive range, pasted source document, settlement", async ({ browser }) => {
   const admin = await (await browser.newContext()).newPage();
   await connected(admin, ADMIN, "#/ops");
-  // One flow: a new metric, its source and procedure, an inclusive range and a one-hour window.
   const form = admin.getByTestId("create-market");
   await form.getByTestId("choice-new").click();
   await form.getByLabel("Metric code").fill("MSL_PRESSURE");
@@ -74,7 +66,6 @@ test("a custom metric from registration to claim: inclusive range, pasted source
   const times = (await market.getFunction("getMarketConfig")(id)).times;
   expect([Number(times.closeAt), Number(times.observationStart), Number(times.observationEnd)]).toEqual([start, start, start + HOUR]);
 
-  // Both sides from two accounts. The market reads as a custom question with its source in the rules.
   await travelTo(times.openAt);
   const yes = await (await browser.newContext()).newPage();
   await connected(yes, 3, `#/market/${id}`);
@@ -89,7 +80,6 @@ test("a custom metric from registration to claim: inclusive range, pasted source
   await connected(no, 4, `#/market/${id}`);
   await bet(no, id, "NO", "0.01");
 
-  // After the window the proposer pastes the source document, types the reading and sees the contract's outcome.
   await travelTo(times.earliestAssertionAt);
   await fundProposer();
   const proposer = await (await browser.newContext()).newPage();
@@ -109,7 +99,6 @@ test("a custom metric from registration to claim: inclusive range, pasted source
   const assertion = await market.getFunction("getAssertion")(id);
   expect([assertion.reading.kind, assertion.reading.value, assertion.rawSha256]).toEqual([1n, 100_940n, sha256(toUtf8Bytes(document))]);
 
-  // After the challenge period anyone settles. The Yes bettor claims the whole market.
   await travelTo((await chainNow()) + 130);
   await yes.goto(`/#/market/${id}/waiting`);
   await expect(yes.getByTestId("settle")).toBeEnabled();
@@ -145,12 +134,11 @@ test("custom weather markets read well in both languages and take an imported fi
     metric: metric("PEAK_GUST", "kmh", 0, 100_000, 1, "Highest gust at Waglan Island over the observation window, in km/h with two decimals."),
     comparison: 2, lower: "60", start: day + 15 * HOUR, end: day + 16 * HOUR, source: source("Regional wind report", "https://example.org/wind/waglan.csv"), title: "Gust at most 60 km/h",
   });
-  // Both sides are staked, so the gust market takes a result instead of refunding at its close.
   await directBet(3, gust.id, "YES", E(10));
   await directBet(4, gust.id, "NO", E(5));
 
   const page = await (await browser.newContext()).newPage();
-  await page.addInitScript(() => localStorage.setItem("rainmark.locale", "en"));
+  await page.addInitScript(() => localStorage.setItem("rain-or-shine.locale", "en"));
   await page.goto("/#/markets");
   const row = (id: number) => page.locator(`[data-testid="pool-card"][data-market="${id}"]`);
   const english: Array<[number, RegExp]> = [
@@ -172,7 +160,6 @@ test("custom weather markets read well in both languages and take an imported fi
   for (const [id, question] of chinese) await expect(row(id)).toContainText(question);
   await expect(row(gust.id).getByTestId("market-tag")).toHaveText("自定义");
 
-  // The gust market closes. Its proposer imports the report, and the contract says the reading resolves Yes.
   await travelTo(gust.times.earliestAssertionAt);
   await fundProposer();
   const proposer = await (await browser.newContext()).newPage();

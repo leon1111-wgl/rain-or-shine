@@ -20,8 +20,6 @@ import type { useMetricApp } from "../../web/src/metric/context";
 import { OracleActions as MarketPanel } from "../../web/src/metric/OracleActions";
 
 type MetricApi = ReturnType<typeof useMetricApp>;
-// Match Vite's browser decoder to avoid Node/jsdom Uint8Array realm conflicts.
-// Retain the real base64 validation and hashing.
 vi.mock("ethers", async (importOriginal) => {
   const actual = await importOriginal<typeof import("ethers")>();
   return {
@@ -71,7 +69,6 @@ vi.mock("../../web/src/metric/client", () => ({
 const ACCOUNT = "0x00000000000000000000000000000000000000a1";
 const MARKET = "0x0000000000000000000000000000000000000011";
 const NOW = 1800000000;
-/** The default market: a custom weekly rainfall total, read from a document the proposer imports. */
 const weekly = customMetricRulesDocument({
   code: "WEEKLY_RAINFALL", unit: "mm", minValue: 0, maxValue: 999_990, valueStep: 10, allowsTrace: false,
   interpretation: "Total rainfall at HKO headquarters over the market observation window, in mm.",
@@ -84,7 +81,6 @@ let currentMarket: MarketView;
 let expected: NumericRulesChainExpectation;
 let failures: string[];
 
-// jsdom and node:crypto use different Uint8Array realms.
 beforeAll(() => { sha256.register((data) => Uint8Array.from(sha256._(data))); });
 afterAll(() => { sha256.register(sha256._); });
 
@@ -110,7 +106,6 @@ const uploadInput = () => screen.getByLabelText(/^(Import source document|Upload
 const previewButton = () => screen.getByRole("button", { name: "Check result" });
 const proposeButton = () => screen.getByRole("button", { name: "2. Submit result" });
 const clearButton = () => screen.getByRole("button", { name: "Clear result file" });
-/** Imports the file and, for a custom market, types the reading the document gives. */
 async function upload(file = resultFile(), reading = "23.4") {
   await userEvent.upload(uploadInput(), file);
   const input = await screen.findByTestId("result-reading-input").catch(() => null);
@@ -167,7 +162,6 @@ function useHkoMarket() {
   return { raw, capture, bundle };
 }
 
-/** Switches the panel to a football demo: ARS against CHE, Yes when ARS wins. */
 function useSportsMarket() {
   const goal = NUMERIC_METRIC_PRESETS.find((item) => item.code === "GOAL_MARGIN")!;
   const config = {
@@ -233,7 +227,6 @@ beforeEach(() => {
   } as unknown as MarketView;
   mocks.numericContextForMarket.mockImplementation(() => expected);
   mocks.readNumericContext.mockImplementation(async () => ({ expected, chainTimestamp: NOW }));
-  // checkProposal returns the outcome the contract would apply: 1 Yes, 2 No.
   mocks.checkProposal.mockResolvedValue(1n);
   mocks.previewClaim.mockResolvedValue(hexlify(toUtf8Bytes("NUMERIC_OBSERVATION_V1 preview")));
   mocks.propose.mockResolvedValue(tx);
@@ -385,7 +378,7 @@ describe("post-event numeric result submission", () => {
     await upload(resultFile(raw));
     expect(mocks.propose).not.toHaveBeenCalled();
     expect(screen.queryByText("Technical details")).not.toBeInTheDocument();
-    expect(screen.queryByText(sha256(raw))).not.toBeInTheDocument(); // shown short, never as the whole value
+    expect(screen.queryByText(sha256(raw))).not.toBeInTheDocument();
     expect(screen.queryByText(currentMarket.rulesHash)).not.toBeInTheDocument();
 
     mocks.readNumericContext.mockImplementation(async () => ({ expected, chainTimestamp: NOW + 10 }));
@@ -436,7 +429,6 @@ describe("post-event numeric result submission", () => {
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ cache: "no-store" });
     await userEvent.click(proposeButton());
     await waitFor(() => expect(mocks.propose).toHaveBeenCalledOnce());
-    // The page fixes the capture time at the chain time of the import, like any imported file.
     const evidence = { sourceUrl: official, rawSha256: sha256(raw.bytes), capturedAt: capture + 60, excerpt: hexlify(toUtf8Bytes(JSON.stringify(["14", "1014.1", "28.7", "27.8", "26.1", "24.8", "84", "88", " 37.9"]))) };
     expect(mocks.propose).toHaveBeenCalledWith(1, { kind: 1, value: 2870 }, evidence, 10000000n);
     view.unmount();

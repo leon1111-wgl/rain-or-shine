@@ -1,11 +1,9 @@
 {
-  "captureTool": "scripts/weather.ts live-capture",
   "purpose": "test input for the live HKO panel (display data; never pool evidence)",
   "requestUrl": "https://data.weather.gov.hk/weatherAPI/opendata/opendata.php?dataType=RYES&date=20261003&lang=en&station=HKO",
   "fetchedAt": "2026-10-04T00:15:57.967Z",
   "httpStatus": 200,
   "contentType": "application/json; charset=utf-8",
   "byteLength": 1153,
-  "sha256": "0x31c16efa4e6506c1b02240784b012d219aea6e0e4b9483c916ab889d91194790",
   "rawFile": "RYES-20261003_en_20261004T001557Z.json"
 }

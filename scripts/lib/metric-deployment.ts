@@ -11,10 +11,8 @@ export const METRIC_ARTIFACTS = {
   MockOptimisticOracleV3: "artifacts/contracts/test/MockOptimisticOracleV3.sol/MockOptimisticOracleV3.json",
 } as const;
 
-// 新模型有独立的产品标识，禁止把旧 Factory 清单当作新 Market 清单。
 export async function readMetricManifest(network: MetricNetwork = "localhost") {
   const manifest = validateMetricManifest(JSON.parse(await readFile(metricManifestFile(network), "utf8")));
   if (manifest.network !== network) throw new Error("Numeric manifest is stored under the wrong network");
   return manifest;
 }
-

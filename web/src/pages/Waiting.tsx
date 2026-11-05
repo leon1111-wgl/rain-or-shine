@@ -1,6 +1,3 @@
-// View 3: waiting for the result. Progress comes from chain time and records only. The user cannot switch states.
-// Once UMA's challenge period is over anyone may settle. When the refund is effective, the settlement view acts.
-
 import { formatUnits } from "ethers";
 import type { ReactNode } from "react";
 import { ClientStatus } from "../components/ClientStatus";
@@ -99,7 +96,6 @@ function Waiting({ market }: { market: MarketData }) {
   );
 }
 
-/** The five fixed steps with the market's own on-chain times; `step` comes from the phase mapping. */
 function Timeline({ market, step }: { market: MarketData; step: number }) {
   const tm = market.times;
   const steps: Array<[string, ReactNode]> = [
@@ -121,7 +117,6 @@ function Timeline({ market, step }: { market: MarketData; step: number }) {
   );
 }
 
-/** What the proposer put on-chain: source, raw-byte hash, capture time, excerpt and bond. */
 function EvidenceDetails({ evidence, hko, bondDecimals, bondSymbol }: { evidence: EvidenceRecord; hko: boolean; bondDecimals: number; bondSymbol: string }) {
   return (
     <details className="evidence" data-testid="evidence">
@@ -130,7 +125,6 @@ function EvidenceDetails({ evidence, hko, bondDecimals, bondSymbol }: { evidence
         <dt>{t("evidence.source")}</dt>
         <dd className="mono">{evidence.sourceUrl}</dd>
         <dt>
-          {/* An official HKO market's source is the Observatory's file. A custom market's is the document its rules name. */}
           {t("fingerprint.data")} <InfoTip text={t(hko ? "fingerprint.dataTip" : "fingerprint.dataTipSource")} />
         </dt>
         <dd>

@@ -1,5 +1,3 @@
-// The markets of the dashboard as the interface sees them, one market by ID, and the verified bet history.
-
 import { useMemo } from "react";
 import { useMetricApp } from "../metric/context";
 import { loadActivity, loadMarketBook } from "../lib/activity";
@@ -25,7 +23,6 @@ export function useMarket(id: number): { market: MarketData | undefined; error: 
 
 const totalsKey = (markets: MarketData[]) => markets.map((m) => `${m.id}:${m.yesTotal}:${m.noTotal}:${m.yesAccounts}:${m.noAccounts}`).join(",");
 
-/** Everyone's bets in `markets`, re-read only when a market's totals change. */
 export function useActivity(markets: MarketData[] | undefined) {
   const api = useMetricApp();
   const list = markets ?? [];
@@ -33,7 +30,6 @@ export function useActivity(markets: MarketData[] | undefined) {
   return useAsync(() => loadActivity(api.dep, api.reader, list), `${identity}|${totalsKey(list)}`, { enabled: markets !== undefined, identity });
 }
 
-/** One market's verified bets and holders. */
 export function useMarketBook(market: MarketData | undefined) {
   const api = useMetricApp();
   const identity = `${api.dep.chainId}|${api.dep.contracts.PredictionMarket.address}|${market?.id ?? 0}`;

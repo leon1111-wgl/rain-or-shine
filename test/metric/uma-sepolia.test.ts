@@ -7,7 +7,6 @@ import {
   type UmaSepoliaConfig, type UmaSepoliaSnapshot,
 } from "../../scripts/lib/uma-sepolia.js";
 
-// The adapter pins this token on Sepolia, so the preflight configuration must select it.
 const currency = SEPOLIA_BOND_CURRENCY;
 const finder = "0x0000000000000000000000000000000000000022";
 const idWhitelist = "0x0000000000000000000000000000000000000033";

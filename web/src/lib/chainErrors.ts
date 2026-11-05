@@ -1,7 +1,3 @@
-// The numeric client reports contract errors and wallet outcomes in English (web/src/metric/client.ts,
-// errorMessage). This shows the known ones in the interface language and keeps any detail in parentheses;
-// unknown text is shown as it is, never hidden.
-
 import { type MessageKey, t } from "../i18n";
 
 const KNOWN: Array<[string, MessageKey]> = [
@@ -30,7 +26,6 @@ const KNOWN: Array<[string, MessageKey]> = [
   ["Insufficient bond allowance. Approve the correct contract first", "chainError.bondAllowance"],
   ["Wallet signature request cancelled.", "chainError.cancelled"],
   ["The RPC is rate-limiting requests. Wait a moment, then refresh. If this continues, use another RPC in the app and wallet.", "chainError.rateLimited"],
-  // Contract errors the client has no English hint for arrive under their own names.
   ["ProposerCannotBet", "chainError.proposerCannotBet"],
   ["ThresholdOutOfRange", "chainError.thresholdRange"],
   ["ThresholdStepMismatch", "chainError.thresholdStep"],

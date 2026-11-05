@@ -4,7 +4,6 @@ import os from "node:os";
 import path from "node:path";
 import { afterAll, describe, expect, it, vi } from "vitest";
 
-// These tests start real processes (tsx, a local server). On a loaded machine one can take well over the default 5 s.
 vi.setConfig({ testTimeout: 60_000 });
 
 const temp = mkdtempSync(path.join(os.tmpdir(), "rainpool-weather-cli-"));

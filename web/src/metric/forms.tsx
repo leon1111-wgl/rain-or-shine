@@ -1,5 +1,3 @@
-// The metric registry as a table. A new metric is registered by the new-market flow, together with its first market.
-
 import { formatFixed100 } from "@shared/metric/fixed100";
 import { isOfficialMetric, isSportsMetric } from "@shared/metric/numeric-profiles";
 import { type MessageKey, t } from "../i18n";

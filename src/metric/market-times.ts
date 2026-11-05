@@ -24,7 +24,6 @@ export const MARKET_TIME_KEYS = [
   "earliestAssertionAt", "proposalCutoff", "refundAt", "assertionLiveness",
 ] as const satisfies ReadonlyArray<keyof MarketTimes>;
 
-/** Each rule of PredictionMarket._validateMarketConfig that a set of times can break, in the contract's order. */
 export type MarketTimeProblem =
   | "NOT_WHOLE_SECONDS"
   | "OPENS_IN_PAST"
@@ -76,12 +75,9 @@ export function marketTimeProblems(t: MarketTimes, now?: number): MarketTimeProb
   return problems;
 }
 
-/** What follows the observation: when results are accepted, how long the challenge runs and the refund buffer. */
 export interface SettlementPlan {
-  /** Seconds from the observation's end to the last time to submit a result. */
   proposalWindow: number;
   assertionLiveness: number;
-  /** Seconds left after the last submission and the challenge period, at least MIN_SETTLE_WINDOW. */
   refundBuffer: number;
 }
 

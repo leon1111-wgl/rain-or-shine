@@ -1,7 +1,3 @@
-// A sports demo on a real local chain through the interface. The administrator picks the basketball card in the demo
-// group, keeps its match and sets the match window. Two accounts bet both sides. The market carries the Demo tag and
-// sits under its own Sports chip. The proposer imports the synthetic result file from fixtures/demo/sports. The local
-// Mock stands in for UMA, as in flow.spec.ts. Settlement says the result is synthetic.
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { sha256 } from "ethers";
@@ -9,11 +5,10 @@ import { ADMIN, PROPOSER, account, chain, chainNow, createRainMarket, expectTx, 
 
 const HOUR = 3_600;
 const RESULT_FILE = "fixtures/demo/sports/basketball-lal-bos.json";
-/** Unix seconds as the form's Hong Kong datetime-local value. */
 const hktInput = (unix: number) => new Date((unix + 8 * HOUR) * 1000).toISOString().slice(0, 16);
 
 async function connected(page: Page, who: number, hash: string) {
-  await page.addInitScript(() => localStorage.setItem("rainmark.locale", "en"));
+  await page.addInitScript(() => localStorage.setItem("rain-or-shine.locale", "en"));
   await installWallet(page, who);
   await page.goto(`/${hash}`);
   await page.getByTestId("connect").click();
@@ -31,7 +26,6 @@ async function bet(page: Page, id: number, side: "YES" | "NO", amount: string) {
 }
 
 test("a sports demo from its card to the claim: Demo tag, Sports chip, synthetic result file", async ({ browser }) => {
-  // A weather market too, so the markets page shows its type chips even when this file runs alone.
   await createRainMarket();
   const admin = await (await browser.newContext()).newPage();
   await connected(admin, ADMIN, "#/ops");
@@ -54,7 +48,6 @@ test("a sports demo from its card to the claim: Demo tag, Sports chip, synthetic
   const id = Number(await market.getFunction("marketCount")());
   const times = (await market.getFunction("getMarketConfig")(id)).times;
 
-  // Both sides. The market reads as a demo everywhere it shows.
   await travelTo(times.openAt);
   const yes = await (await browser.newContext()).newPage();
   await connected(yes, 3, `#/market/${id}`);
@@ -71,7 +64,6 @@ test("a sports demo from its card to the claim: Demo tag, Sports chip, synthetic
   const card = yes.locator(`[data-testid="pool-card"][data-market="${id}"]`);
   await expect(card.getByTestId("market-tag")).toHaveText("Demo");
 
-  // After the match the proposer imports the synthetic result file: LAL 108, BOS 101, a margin of 7.
   await travelTo(times.earliestAssertionAt);
   await fundProposer();
   const proposer = await (await browser.newContext()).newPage();
@@ -88,7 +80,6 @@ test("a sports demo from its card to the claim: Demo tag, Sports chip, synthetic
   const assertion = await market.getFunction("getAssertion")(id);
   expect([assertion.reading.kind, assertion.reading.value, assertion.rawSha256]).toEqual([1n, 700n, sha256(readFileSync(RESULT_FILE))]);
 
-  // After the challenge period anyone settles. The settlement names the synthetic file as its basis.
   await travelTo((await chainNow()) + 130);
   await yes.goto(`/#/market/${id}/waiting`);
   await yes.getByTestId("settle").click();

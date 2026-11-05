@@ -1,6 +1,5 @@
 import { t } from "../i18n";
 
-/** Whether the page is shown inside another page. A browser that will not say counts as framed. */
 export function isFramed(win: Window): boolean {
   try {
     return win.top !== win.self;

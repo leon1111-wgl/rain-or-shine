@@ -5,7 +5,6 @@ import { network } from "hardhat";
 import { buildCustomNumericRules, customMetricRulesDocument } from "../../src/metric/custom-profile.js";
 import { buildCustomNumericProposal } from "../../src/metric/numeric-proposals.js";
 
-// Only an in-process fork is used. None of these signers can send to public Sepolia.
 const connection = await network.create("sepoliaFork");
 const { ethers, networkHelpers } = connection;
 const { time } = networkHelpers;
@@ -27,7 +26,6 @@ const TOKEN_ABI = [
   "function decimals() view returns (uint8)",
   "function symbol() view returns (string)",
 ];
-// A custom weather metric: the change in mean sea-level pressure over a short window, read from a document.
 const custom = customMetricRulesDocument({
   code: "PRESSURE_CHANGE", unit: "hPa", minValue: -50_000, maxValue: 50_000, valueStep: 10, allowsTrace: false,
   interpretation: "Change in mean sea-level pressure at HKO headquarters over the market observation window, in hPa.",
@@ -53,7 +51,6 @@ async function deployOnFork() {
   const bond = await adapter.bondAmount();
   for (const [signer, spender] of [[proposer, adapter], [disputer, oracle]] as const) {
     const token = new Contract(TEST6, TOKEN_ABI, signer);
-    // The real 6TEST public mint is called only on the local fork.
     await (await token.getFunction("mint")(signer.address, 10n * bond)).wait();
     await (await token.getFunction("approve")(await spender.getAddress(), 10n * bond)).wait();
   }
@@ -66,7 +63,6 @@ type Fixture = Awaited<ReturnType<typeof deployOnFork>>;
 
 async function twoSidedMarket(f: Fixture) {
   const now = await time.latest();
-  // Snapshot 恢复后也明确固定下一块，避免 RPC 等待期间墙钟推进让 openAt 过期。
   await time.setNextBlockTimestamp(now + 1);
   const config = {
     proposer: f.proposer.address,
@@ -77,11 +73,9 @@ async function twoSidedMarket(f: Fixture) {
       openAt: now + 60, closeAt: now + 300,
       observationStart: now + 300, observationEnd: now + 600,
       earliestAssertionAt: now + 600, proposalCutoff: now + 4_200,
-      // The market requires at least a one-hour settle window after the latest expiry.
       refundAt: now + 4_200 + LIVENESS + 3_600, assertionLiveness: LIVENESS,
     },
   };
-  // Creation fixes the source and the reading procedure. The reading and its hash come later.
   const rulesDocument = buildCustomNumericRules({
     title: "Pressure change greater than zero?", ...SOURCE, metricRulesDocument: custom.rulesDocument,
   }, { config, metricId: 1, metric: await f.market.getMetric(1) });
@@ -100,7 +94,6 @@ type CreatedMarket = Awaited<ReturnType<typeof twoSidedMarket>>;
 
 async function propose(f: Fixture, created: CreatedMarket) {
   const capturedAt = await time.latest();
-  // A test document for the forked oracle flow. It is not a real pressure reading.
   const raw = toUtf8Bytes("Test pressure log: 08:00 1009.0 hPa, 11:00 1010.0 hPa");
   const config = await f.market.getMarketConfig(created.id);
   const proposal = buildCustomNumericProposal({ rawBytes: raw, reading: "1.0", capturedAt }, {
@@ -114,13 +107,10 @@ async function propose(f: Fixture, created: CreatedMarket) {
   });
   const preview = await f.adapter.connect(f.proposer).previewClaim(created.id, proposal.reading, proposal.evidence);
   console.log(`      proposing market ${created.id} to the real forked OOV3`);
-  // 分叉节点的自动估气可能长时间等待。此上限仅用于本地执行验证，
-  // 它不代表已验证公开网络/前端的 estimateGas 路径，实际 gasUsed 另行输出。
   const tx = await f.adapter.connect(f.proposer).propose(
     created.id, proposal.reading, proposal.evidence, f.bond, { gasLimit: 3_000_000 },
   );
   console.log(`      submitted local fork transaction ${tx.hash}`);
-  // EDR automines. Read once instead of polling indefinitely if a nonce is wrong.
   const receipt = await ethers.provider.getTransactionReceipt(tx.hash);
   if (!receipt) {
     const nonce = await ethers.provider.send("eth_getTransactionCount", [f.proposer.address, "pending"]);
@@ -173,7 +163,6 @@ describe("Sepolia fork: generic numeric market with the real UMA OOV3", function
       await finder.getFunction("getImplementationAddress")(encodeBytes32String("CollateralWhitelist")),
       ["function isOnWhitelist(address) view returns(bool)"], ethers.provider,
     );
-    // 不支持即失败。不跳过，也不改用 Mock 或另一个 identifier 掩盖部署条件。
     expect(await identifierWhitelist.getFunction("isIdentifierSupported")(identifier), "default identifier must remain supported").to.equal(true);
     expect(await collateralWhitelist.getFunction("isOnWhitelist")(TEST6)).to.equal(true);
     const token = new Contract(TEST6, TOKEN_ABI, ethers.provider);
@@ -242,7 +231,6 @@ describe("Sepolia fork: generic numeric market with the real UMA OOV3", function
     const f = await networkHelpers.loadFixture(deployOnFork);
     const created = await twoSidedMarket(f);
     const { id } = await propose(f, created);
-    // 同样只验证本地分叉执行。不把估气行为包含在此回归结论中。
     await expect(f.oracle.connect(f.disputer).disputeAssertion(id, f.disputer.address, { gasLimit: 3_000_000 }))
       .to.emit(f.adapter, "DisputeCallbackReceived").withArgs(created.id, id);
     expect((await f.market.getAssertion(created.id)).disputed).to.equal(true);
@@ -257,7 +245,6 @@ describe("Sepolia fork: generic numeric market with the real UMA OOV3", function
     await expect(f.market.connect(f.yesUser).claim(created.id))
       .to.changeEtherBalances(ethers, [f.yesUser, f.market], [YES_STAKE, -YES_STAKE]);
     expect((await f.market.getMarketState(created.id)).paidOut).to.equal(YES_STAKE + NO_STAKE);
-    // 退款的是下注 ETH。有争议的 UMA 保证金仍由真实 OO/DVM 保管。
     expect((await f.market.getEffectiveState(created.id)).terminal).to.equal(3n);
   });
 
@@ -267,7 +254,6 @@ describe("Sepolia fork: generic numeric market with the real UMA OOV3", function
     const before = await f.token.getFunction("balanceOf")(f.proposer.address);
     const { id } = await propose(f, created);
     await time.increaseTo(created.config.times.refundAt);
-    // Settle first: no refund can start while the undisputed assertion is pending.
     await expect(f.market.connect(f.noUser).claim(created.id)).to.be.revertedWithCustomError(f.market, "NothingToClaim");
     await expect(f.adapter.settle(id)).to.emit(f.market, "MarketResolved").withArgs(created.id, 1, id, 1, 100);
     expect(await f.oracle.getAssertionResult(id)).to.equal(true);

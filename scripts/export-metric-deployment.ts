@@ -38,7 +38,6 @@ for (const manifest of Object.values(deployments)) {
   }
 }
 
-// 仅导出真实存在的新版部署。尚未部署 Sepolia 时绝不生成占位地址。
 await mkdir("web/src/generated", { recursive: true });
 await writeFile("web/src/generated/metric-abi.json", JSON.stringify(abi, null, 2) + "\n");
 await writeFile(
@@ -47,4 +46,3 @@ await writeFile(
 );
 console.log(`Exported numeric ABIs and deployments for [${Object.keys(deployments).join(", ")}].`);
 if (!Object.keys(deployments).length) console.log("No numeric deployments yet. The app will prompt you to deploy.");
-

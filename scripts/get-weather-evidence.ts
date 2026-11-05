@@ -36,7 +36,6 @@ async function main() {
   if (args.length === 0) {
     const input = createInterface({ input: process.stdin, output: process.stdout });
     try {
-      // Hong Kong has a fixed UTC+08:00 offset. The default is its previous day.
       const yesterday = new Date(Date.now() + 8 * 3600000 - 86400000).toISOString().slice(0, 10).replaceAll("-", "");
       console.log("Rain or Shine: HKO weather evidence / 天文台天气证据\nNo wallet is needed. / 不需要钱包。\n");
       date = (await input.question(`Hong Kong date YYYYMMDD / 香港日期 (Enter = ${yesterday}): `)).trim() || yesterday;
@@ -60,7 +59,6 @@ async function main() {
     files.push(file);
     console.log(`Saved / 已保存 ${metric}: ${bundle.observation.valueText} ${bundle.observation.unit}\n  ${file}`);
   }
-  // HKO's own monthly file, byte for byte. Field markets import it, and so can official ones.
   const month = resolve(directory, `dailyExtract_${collected.date.slice(0, 6)}.xml`);
   await writeFile(month, collected.raw.bytes, { flag: "wx" });
   const observation = collected.bundles[0]!.observation;

@@ -26,16 +26,15 @@ function option(name, fallback) {
 // Use the same realpath call as the file checks. On Windows, short paths can differ between the two versions.
 const root = await realpath(resolve(option("--root", resolve(here, "../www"))));
 const basePort = Number(option("--port", "17620"));
-const noOpen = args.includes("--no-open") || process.env.RAINPOOL_NO_BROWSER === "1";
+const noOpen = args.includes("--no-open") || process.env.RAIN_OR_SHINE_NO_BROWSER === "1";
 if (!Number.isInteger(basePort) || basePort < 1024 || basePort > 65000) throw new Error("invalid local port");
 if (!existsSync(resolve(root, "index.html"))) throw new Error(`no prebuilt index.html in ${root}`);
 
-// The package's manifest.json tells a second launch whether this release is already running.
 function readJson(file) {
   try {
     return JSON.parse(readFileSync(file, "utf8"));
   } catch {
-    return null; // A development run has no manifest; the defaults below apply.
+    return null;
   }
 }
 const manifest = readJson(resolve(here, "../manifest.json"));
@@ -76,7 +75,6 @@ const MIME = {
   ".pdf": "application/pdf",
 };
 
-// A local launch log for troubleshooting. It is never uploaded.
 const REPORT = resolve(option("--report", resolve(dirname(root), "launch-report.log")));
 const shortcutTarget = option("--shortcut", "");
 const home = os.homedir();
@@ -95,7 +93,6 @@ function report(event, fields) {
     console.log(`launch-report.log could not be written (${error?.code ?? error}). The app still works.`);
   }
 }
-/** Folders on PATH that already contain a Node executable (none expected on a member's clean machine). */
 function nodeOnPath() {
   const exe = process.platform === "win32" ? "node.exe" : "node";
   const hits = (process.env.PATH ?? "").split(delimiter).filter((d) => d && existsSync(join(d, exe)));
@@ -105,7 +102,6 @@ let readyAt = 0;
 let pageSeen = false;
 
 const SHORTCUT_NAME = "Rain or Shine";
-/** One desktop shortcut to the START file the member double-clicked; replaced when it points elsewhere. */
 function placeShortcut(target) {
   const file = resolve(target);
   if (!existsSync(file)) return `skipped (no ${tidy(file)})`;
@@ -190,7 +186,7 @@ async function respond(req, res, port) {
   } catch (error) {
     const missing = error?.code === "ENOENT" || error?.code === "ENOTDIR";
     if (missing && !extname(path) && (req.headers.accept ?? "").includes("text/html")) {
-      return send(res, 200, await readFile(resolve(root, "index.html")), MIME[".html"], head); // A refreshed app route
+      return send(res, 200, await readFile(resolve(root, "index.html")), MIME[".html"], head);
     }
     return send(res, missing ? 404 : 500, missing ? "not found" : "file unavailable", undefined, head);
   }
@@ -210,7 +206,7 @@ function sameReleaseOn(port) {
           const info = JSON.parse(text);
           done(info.appId === APP_ID && info.releaseId === releaseId);
         } catch {
-          done(false); // Another program uses this port. Try the next one.
+          done(false);
         }
       });
     });
@@ -269,7 +265,7 @@ for (let offset = 0; offset < 10 && !server; offset++) {
       autoOpen: noOpen ? "off (--no-open)" : "requested",
     });
     openBrowser(url);
-    if (shortcutTarget && process.env.RAINPOOL_NO_SHORTCUT !== "1") {
+    if (shortcutTarget && process.env.RAIN_OR_SHINE_NO_SHORTCUT !== "1") {
       const result = placeShortcut(shortcutTarget);
       report("shortcut", { name: SHORTCUT_NAME, result });
       if (result === "created") console.log(`A desktop shortcut "${SHORTCUT_NAME}" was added. 桌面已添加快捷方式。`);

@@ -1,5 +1,3 @@
-// Interface text: Chinese is the default (design language). Every catalog has every key, non-empty, with the
-// same {placeholders}. No market-maker vocabulary leaks into the views.
 import { describe, expect, it } from "vitest";
 import { CATALOGS, DEFAULT_LOCALE, LOCALES, readStoredLocale, setActiveLocale, t, tSegments } from "../../web/src/i18n";
 import { zhCN } from "../../web/src/i18n/zh-CN";
@@ -50,6 +48,6 @@ describe("translation catalogs", () => {
     const segments = tSegments("rule.dateWindow", params);
     expect(segments.map((s) => s.text).join("")).toBe(t("rule.dateWindow", params));
     expect(segments.filter((s) => s.param).map((s) => [s.param, s.text])).toEqual([["from", params.from], ["to", params.to]]);
-    expect(tSegments("table.accounts", {}).map((s) => s.text).join("")).toBe(t("table.accounts")); // unfilled stays visible
+    expect(tSegments("table.accounts", {}).map((s) => s.text).join("")).toBe(t("table.accounts"));
   });
 });

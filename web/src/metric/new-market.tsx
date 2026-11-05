@@ -1,8 +1,3 @@
-// The new-market flow on the operations page: pick a metric, set the condition and the day, read the preview, create.
-// A metric that is not in the registry yet is registered by the same button first. That takes two wallet
-// confirmations. The shared rules in src/metric build and check everything. The contract checks it all again. On the
-// local chain, a separate group offers the sports demos.
-
 import { useMemo, useState } from "react";
 import { encodeBytes32String, getAddress, keccak256, toUtf8Bytes, type JsonRpcSigner } from "ethers";
 import { formatFixed100, parseFixed100 } from "@shared/metric/fixed100";
@@ -32,22 +27,18 @@ import {
 
 const HOUR = 3_600;
 const HKT = 8 * HOUR;
-/** The seven instants a creator can set by hand. The challenge period has its own field. */
 type TimeKey = Exclude<(typeof MARKET_TIME_KEYS)[number], "assertionLiveness">;
 const EDITABLE_TIMES = MARKET_TIME_KEYS.filter((key): key is TimeKey => key !== "assertionLiveness");
 const TIME_LABELS: Record<TimeKey, MessageKey> = {
   openAt: "rule.open", closeAt: "rule.close", observationStart: "custom.observationStart", observationEnd: "custom.observationEnd",
   earliestAssertionAt: "rule.earliest", proposalCutoff: "rule.cutoff", refundAt: "rule.refundAt",
 };
-/** Time problems a person fixes in the day or window fields. The rest belong to the timing settings. */
 const WINDOW_PROBLEMS: readonly MarketTimeProblem[] = ["NOT_WHOLE_SECONDS", "OPENS_IN_PAST", "CLOSES_BEFORE_OPEN", "OBSERVES_BEFORE_CLOSE", "EMPTY_OBSERVATION"];
 const MAX_TITLE_BYTES = 240;
 
-/** Unix seconds as a datetime-local value in Hong Kong time: "2026-11-05T14:00". */
 export function toHktInput(unix: number): string {
   return new Date((unix + HKT) * 1000).toISOString().slice(0, 16);
 }
-/** A datetime-local value read as Hong Kong time. NaN when it is not a complete date and time. */
 export function fromHktInput(text: string): number {
   const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(text.trim());
   if (!match) return Number.NaN;
@@ -65,7 +56,6 @@ function identifierProblem(value: string, name: string): string | null {
 type NewMetricField = "code" | "unit" | "min" | "max" | "step" | "definition" | "range";
 interface NewMetricInput { code: string; unit: string; min: string; max: string; step: string; definition: string; trace: boolean }
 
-/** A new metric's rules document, or the field each problem belongs to. Empty fields count only after a first try. */
 function parseNewMetric(input: NewMetricInput, submitted: boolean): { metric: CustomMetric | null; errors: Partial<Record<NewMetricField, string>> } {
   const errors: Partial<Record<NewMetricField, string>> = {};
   const code = input.code.trim();
@@ -97,7 +87,6 @@ function parseNewMetric(input: NewMetricInput, submitted: boolean): { metric: Cu
       errors,
     };
   } catch (error) {
-    // The shared check names the rule the definition breaks. Say it in the interface language, next to the right field.
     const text = error instanceof Error ? error.message : String(error);
     if (/exceed/.test(text)) errors.definition = t("registry.tooLong", { bytes: MAX_CUSTOM_METRIC_DOCUMENT_BYTES });
     else errors.range = /TRACE/.test(text) ? t("registry.traceRange") : t("registry.rangeStep");
@@ -106,7 +95,6 @@ function parseNewMetric(input: NewMetricInput, submitted: boolean): { metric: Cu
 }
 
 const codeOf = (choice: MetricChoice, newCode: string) => (choice.kind === "new" ? newCode.trim() : definitionOf(choice)!.code);
-/** A new metric's definition as far as its fields go, so the condition can start from a sensible value. */
 function guessDefinition(input: NewMetricInput) {
   const value = (text: string, fallback: number) => {
     try {
@@ -129,7 +117,6 @@ const quarterAfter = (unix: number) => Math.ceil(unix / 900) * 900;
 export function NewMarket({ template }: { template?: MarketData }) {
   const api = useMetricApp();
   const sepolia = api.dep.environment === "SEPOLIA_UMA";
-  // Sports demos settle on synthetic files, so only the local chain offers them.
   const local = api.dep.environment === "LOCAL_MOCK" && api.dep.chainId === 31337;
   const openDelay = sepolia ? 300 : 60;
   const minimumLiveness = sepolia ? 7200 : MIN_ASSERTION_LIVENESS;
@@ -137,7 +124,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
   const now = api.data?.now ?? initialTime;
   const registered = useMemo(() => api.data?.metrics ?? [], [api.data?.metrics]);
   const choices = metricChoices(registered, local);
-  // A template fills the first state. The parent mounts a fresh form for each template.
   const [initial] = useState(() => template ? templateOf(template, now, openDelay) : null);
   const [choiceKey, setChoiceKey] = useState(initial?.choiceKey ?? choices[0]!.key);
   const choice = choices.find((item) => item.key === choiceKey) ?? choices[0]!;
@@ -169,7 +155,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
   const field = choice.kind === "field" ? choice.field : undefined;
   const sports = choice.kind === "sports" ? choice : undefined;
   const dayOnly = choice.kind === "official" || !!field;
-  // A match always has a start and an end. It names no source in the form.
   const dayMode = dayOnly || (!sports && mode === "day");
   const needsSource = !dayOnly && !sports;
   const code = codeOf(choice, newMetric.code);
@@ -178,8 +163,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
   const needsRegistration = registration.state === "missing";
   const metricLabel = choice.kind === "new" ? code : choiceName(choice);
 
-  // The metric's exact rules document. A registered custom metric's comes from a market that embeds it, this browser,
-  // or a file the creator imports. Its hash must equal the registered one.
   const markets = api.data?.markets;
   const embeddedRules = useMemo(() => {
     const documents = new Set<string>();
@@ -187,7 +170,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
       try {
         documents.add(parseNumericMarketRules(market.rulesDocument).metric.rulesDocument);
       } catch (error) {
-        // Rules this interface cannot read offer no metric document. The others still can.
         if (!(error instanceof Error)) throw error;
       }
     }
@@ -214,7 +196,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
   const plan = () => ({
     proposalWindow: Math.round(Number(timing.proposalHours) * HOUR), assertionLiveness: Number(timing.liveness), refundBuffer: Math.round(Number(timing.bufferHours) * HOUR),
   });
-  /** The eight times for a market opening at `openAt`: from the day or window, then any time set by hand. */
   const timesFor = (openAt: number): MarketTimes => {
     const base = dayMode
       ? hkDayMarketTimes({ openAt, targetDate: date.replaceAll("-", ""), plan: plan() })
@@ -232,7 +213,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
     preview = timesFor(now + openDelay);
     timeProblems = marketTimeProblems(preview, now);
   } catch (error) {
-    // hkDayMarketTimes refuses an incomplete date. The date field asks for one.
     if (!(error instanceof Error)) throw error;
     timeProblems = ["NOT_WHOLE_SECONDS"];
   }
@@ -256,7 +236,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
   };
   const blocking = Object.values(errors).some((value) => Array.isArray(value) ? value.length > 0 : !!value)
     || (choice.kind === "new" && submitted && !parsedNew.metric);
-  // These fields sit in the closed "Advanced timing" section. Its heading says when one of them needs a look.
   const advancedProblem = errors.timing.length > 0 || !!errors.liveness || !!errors.title;
   const incomplete = !definition || !metricRules || (needsSource && (!source.name.trim() || !source.url.trim() || !source.procedure.trim()))
     || (!!sports && (!match.matchId.trim() || !match.teamA.trim() || !match.teamB.trim()));
@@ -275,7 +254,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
   };
   const setTime = (name: TimeKey, value: string) => setOverrides((current) => ({ ...current, [name]: value }));
 
-  /** Step 1 when needed: put the metric in the registry. A new metric's rules are also kept in this browser and downloaded. */
   const register = (signer: JsonRpcSigner) => {
     assertCurrent();
     const document = metricRules;
@@ -297,7 +275,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
     });
   };
 
-  /** Step 2, or the only step: create the market from fresh chain state. */
   const createOn = async (signer: JsonRpcSigner, expected: { id: number; hash: string }) => {
     if (!definition || !metricRules) throw new Error(t("new.needMetric"));
     if (sports && !local) throw new Error(t("new.demoLocalOnly"));
@@ -370,7 +347,6 @@ export function NewMarket({ template }: { template?: MarketData }) {
     const expected = { id: 0, hash: "" };
     const ok = await api.run(needsRegistration ? t("new.stepCreate") : t("create.label"), (signer) => createOn(signer, expected));
     if (!ok || !expected.id) return;
-    // The next ID is this market's unless another one came first. The rules hash tells them apart.
     try {
       const reader = marketOf(api.dep, api.reader);
       const count = Number(await reader.marketCount());
@@ -550,4 +526,3 @@ export function NewMarket({ template }: { template?: MarketData }) {
     </form>
   </section>;
 }
-

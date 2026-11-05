@@ -1,6 +1,3 @@
-// The six steps of an event, from bet to claim, picked by hand or played one after another on request, and the
-// betting rules the contract enforces.
-
 import { useEffect, useState } from "react";
 import { type MessageKey, t } from "../i18n";
 import { Icon, type IconName } from "./Icon";
@@ -38,7 +35,6 @@ function Steps({ step, playing, onPick }: { step: number; playing: boolean; onPi
 
 export function HowItWorks({ hours, autoplay = false }: { hours: bigint; autoplay?: boolean }) {
   const [step, setStep] = useState(0);
-  // Steps advance on their own only after the viewer presses play (or on the intro), never under reduced motion.
   const [playing, setPlaying] = useState(() => autoplay && !prefersReducedMotion());
   useEffect(() => {
     if (!playing) return;

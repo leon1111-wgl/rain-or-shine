@@ -20,12 +20,9 @@ export interface PhaseTimes {
 
 export interface PhaseSnapshot {
   times: PhaseTimes;
-  /** Written by the contract. */
   terminal: Terminal;
-  /** getEffectiveState(). */
   effective: Terminal;
   assertion: { disputed: boolean; rejected: boolean } | null;
-  /** UMA's record of the assertion; `settleReady` is the client's settlement check at the last read. */
   uma: { settled: boolean; settleReady: boolean } | null;
 }
 
@@ -72,7 +69,6 @@ export function viewOf(phase: DisplayPhase): View {
   return "waiting";
 }
 
-/** Progress steps of the waiting view: close, observation end, valid report, challenge period, settle/refund. */
 export function waitingStep(phase: DisplayPhase): number {
   switch (phase) {
     case "SCHEDULED":
@@ -94,7 +90,6 @@ export function waitingStep(phase: DisplayPhase): number {
   }
 }
 
-/** Who can act now, as stable keys the UI translates (never a promise of an outcome). */
 export function nextActions(phase: DisplayPhase): Array<"bet" | "propose" | "dispute" | "settle" | "claim"> {
   switch (phase) {
     case "OPEN":

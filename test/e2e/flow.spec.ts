@@ -1,10 +1,7 @@
-// The whole market on a real local chain through the interface: bet, the opposite side refused, the proposer's
-// result, settlement and the winner's claim. And a one-sided market's full refund. The local Mock stands in for
-// UMA here. The Sepolia runs use the real OOV3.
 import { expect, test, type Page } from "@playwright/test";
 import { ADMIN, E, PROPOSER, account, chain, chainNow, createQuickMarket, createRainMarket, directBet, expectTx, fundProposer, installWallet, travelTo, quickReport } from "./helpers.js";
 
-const english = async (page: Page) => page.addInitScript(() => localStorage.setItem("rainmark.locale", "en"));
+const english = async (page: Page) => page.addInitScript(() => localStorage.setItem("rain-or-shine.locale", "en"));
 
 async function connected(page: Page, account: number, hash: string) {
   await english(page);
@@ -25,13 +22,11 @@ test("bet, refused opposite side, proposal, settlement and claim", async ({ brow
   await expectTx(bettor, "ok");
   await expect(bettor.getByTestId("bet-done")).toBeVisible();
   await expect(bettor.getByTestId("done-position")).toContainText("0.020");
-  // The opposite side is refused: disabled in the ticket, and reverted by the contract when sent directly.
   await expect(bettor.getByTestId("side-NO")).toBeDisabled();
   await expect(bettor.getByTestId("side-lock")).toContainText("YES");
   await expect(directBet(3, market.id, "NO", E(1))).rejects.toThrow();
   await directBet(4, market.id, "NO", E(10));
 
-  // After the observation window the designated proposer imports the report, types its reading and submits it.
   await travelTo(market.times.earliestAssertionAt);
   await fundProposer();
   const proposer = await (await browser.newContext()).newPage();
@@ -44,7 +39,6 @@ test("bet, refused opposite side, proposal, settlement and claim", async ({ brow
   await proposer.getByTestId("propose").click();
   await expect(proposer.getByTestId("client-status")).toContainText("Submit observation assertion: complete");
 
-  // After the challenge period anyone settles. The Yes bettor claims the whole market.
   await travelTo((await chainNow()) + 130);
   await bettor.goto(`/#/market/${market.id}/waiting`);
   await expect(bettor.getByTestId("settle")).toBeEnabled();

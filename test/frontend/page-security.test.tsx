@@ -1,4 +1,3 @@
-// The page's own defences: its Content-Security-Policy, the frame guard and web-only links for data from the chain.
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { HKO_OPEN_DATA_ORIGIN } from "../../src/weather/profile";

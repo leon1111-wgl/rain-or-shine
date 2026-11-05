@@ -1,7 +1,3 @@
-// Trading activity of the markets, from the numeric client's verified per-market history
-// (web/src/metric/activity.ts: every BetPlaced log, checked against the market's totals at one block). A market's
-// history is read again only when its on-chain totals change. Until then the last verified read is reused.
-
 import type { Provider } from "ethers";
 import { readMarketActivity } from "../metric/activity";
 import type { MetricDeployment } from "../metric/client";
@@ -15,7 +11,6 @@ export interface ActivityItem {
   account: string;
   side: Side;
   amount: bigint;
-  /** After the bet: the account's stake in the market and both sides' totals. */
   stake: bigint;
   yesTotal: bigint;
   noTotal: bigint;
@@ -32,9 +27,7 @@ export interface Holder {
 }
 
 export interface MarketBook {
-  /** Oldest first. */
   items: ActivityItem[];
-  /** Largest stake first. */
   holders: Holder[];
 }
 
@@ -70,7 +63,6 @@ async function readBook(dep: MetricDeployment, reader: Provider, id: number): Pr
   return { items, holders: data.holders.map((h) => ({ account: h.account, side: sideOf(h.side), stake: h.stake, claimed: h.claimed })) };
 }
 
-/** One market's verified bets and holders. Reused while the market's totals stay the same. */
 export function loadMarketBook(dep: MetricDeployment, reader: Provider, m: MarketData): Promise<MarketBook> {
   const key = [dep.chainId, dep.contracts.PredictionMarket.address, dep.bindingTransactionHash, m.id, m.yesTotal, m.noTotal, m.yesAccounts, m.noAccounts].join(":");
   let entry = cache.get(key);
@@ -82,12 +74,9 @@ export function loadMarketBook(dep: MetricDeployment, reader: Provider, m: Marke
   return entry;
 }
 
-/** Every bet of the given markets, oldest first. The markets are read together. On Sepolia the client's paced
- *  provider queues and batches the calls, so this stays within the public RPC's rate. */
 export async function loadActivity(dep: MetricDeployment, reader: Provider, markets: MarketData[]): Promise<ActivityItem[]> {
   const books = await Promise.all(markets.filter((m) => m.total > 0n).map((m) => loadMarketBook(dep, reader, m)));
   return books.flatMap((b) => b.items).sort((a, b) => a.timestamp - b.timestamp || a.market - b.market || a.logIndex - b.logIndex);
 }
 
-/** Forget cached histories (tests). */
 export const clearActivityCache = () => cache.clear();

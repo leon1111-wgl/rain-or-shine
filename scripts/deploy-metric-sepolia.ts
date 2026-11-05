@@ -85,7 +85,7 @@ try {
   const send = async (name: string, request: TransactionRequest, gasLimit: bigint): Promise<TransactionReceipt> => {
     const fresh = await readUmaSepoliaSnapshot(provider, config);
     assertUmaSepoliaReady(fresh, config);
-    bondPolicy(fresh); // Recheck the current minimum against the operator's immutable spending cap.
+    bondPolicy(fresh);
     const nonce = latestNonce + transactions.length;
     if (await provider.getTransactionCount(adminAddress, "pending") !== nonce) throw new Error("Deployer nonce changed; stop and inspect the deployment journal");
     const estimate = await admin.estimateGas({ ...request, nonce });
@@ -121,8 +121,8 @@ try {
     to: mainAddress, data: market.interface.encodeFunctionData("setOracleAdapter", [adapterAddress]),
   }, SEPOLIA_DEPLOY_GAS_LIMITS.binding);
 
-  // A load-balanced RPC can answer "latest" from a node that has not seen the binding yet (2026-10-29 the
-  // oracleAdapter read returned zero). Wait for the head, then read at the binding block.
+  // A load-balanced RPC can answer "latest" from a node that has not seen the binding yet.
+  // Wait for the head, then read at the binding block.
   for (let tries = 0; await provider.getBlockNumber() < binding.blockNumber; tries++) {
     if (tries >= 30) throw new Error("RPC head did not reach the binding block; see " + journalFile);
     await new Promise((resolve) => setTimeout(resolve, 2000));

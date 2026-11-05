@@ -1,7 +1,3 @@
-// The oracle side of one market: importing and checking an observed result, submitting it with the proposal bond,
-// disputing, settling, the local Mock's simulated answers and the local chain's time controls. Every step re-reads
-// the market at one block and stops when the account, network, market or file changes. Pages show one part each.
-
 import { useLayoutEffect, useRef, useState } from "react";
 import { ZeroHash, dataLength, formatUnits, toUtf8Bytes, type JsonRpcSigner } from "ethers";
 import {
@@ -30,9 +26,7 @@ import { Field } from "./form-parts";
 import { InfoTip, ShortHash } from "../components/primitives";
 
 const HKO_FILE_LIMIT = 5_000_000;
-/** A sports demo's whole result file goes on-chain as the excerpt. */
 const SPORTS_FILE_LIMIT = MAX_EXCERPT_BYTES;
-/** "hko-field": a custom market on an HKO Daily Extract column, read from the monthly file. "sports": a demo match. */
 type SourceKind = "hko" | "custom" | "hko-field" | "sports";
 type ImportedResult = {
   owner: string;
@@ -42,17 +36,14 @@ type ImportedResult = {
   | { kind: "hko"; bundle: unknown; payload: NumericProposal }
   | { kind: "hko-field"; raw: RawEvidence; payload: NumericProposal }
   | { kind: "sports"; rawBytes: Uint8Array; capturedAt: number; payload: NumericProposal }
-  /** The reading and excerpt are typed next to the document, so the proposal is built at each check. */
   | { kind: "custom"; rawBytes: Uint8Array; capturedAt: number }
 );
 interface ClaimPreview {
   owner: string;
   request: number;
   payload: NumericProposal;
-  /** checkProposal's answer: 1 when the reading meets the condition, 2 when it does not. */
   outcome: bigint;
 }
-/** Which part of the panel a page shows; "all" keeps every part together. */
 export type PanelPart = "result" | "oracle" | "time" | "all";
 
 function messageOf(error: unknown) {
@@ -67,12 +58,10 @@ function sourceKind(rules: NumericMarketRules): SourceKind {
   assertHkoNumericProfile(rules);
   return "hko";
 }
-/** The HKO day an HKO market reads, official or a Daily Extract field. */
 function hkoDateOf(rules: NumericMarketRules): string | null {
   if (isCustomNumericRules(rules)) return assertCustomNumericProfile(rules).hko?.targetDate ?? null;
   return assertHkoNumericProfile(rules).targetDate;
 }
-/** HKO's monthly file itself, rather than the evidence tool's bundle: its top level holds "stn". */
 const isDailyExtract = (value: unknown) => typeof value === "object" && value !== null && !Array.isArray(value) && "stn" in value;
 const looksLikeJson = (bytes: Uint8Array) => /^\s*[{[]/.test(new TextDecoder().decode(bytes.subarray(0, 64)));
 const FETCH_TIMEOUT_MS = 20_000;
@@ -110,7 +99,6 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
   const [pasted, setPasted] = useState("");
   const [readingText, setReadingText] = useState("");
   const [excerptText, setExcerptText] = useState("");
-  /** The fetch from HKO: running, failed, or not possible on this host (then the proposer imports the file). */
   const [fetchState, setFetchState] = useState<{ owner: string; state: "busy" | "manual" | "error"; text: string } | null>(null);
   const times = market.config.times;
   const now = api.data?.now ?? 0;
@@ -158,7 +146,6 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
     if (fileInput.current) fileInput.current.value = "";
   };
 
-  /** A custom market's proposal from the imported bytes and the reading and excerpt typed next to them. */
   const customPayload = (selected: Extract<ImportedResult, { kind: "custom" }>, context: NumericProposalContext) =>
     buildCustomNumericProposal({
       rawBytes: selected.rawBytes, reading: readingText, capturedAt: selected.capturedAt,
@@ -207,12 +194,10 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
         };
         next = { kind, owner, request, name: file.name, raw, payload: buildHkoFieldProposal(raw, context) };
       } else if (kind === "sports") {
-        // Fixed once, when the bytes are imported. The check and the submission keep it.
         const capturedAt = fresh.chainTimestamp;
         next = { kind, owner, request, name: file.name, rawBytes: bytes, capturedAt, payload: buildSportsNumericProposal(bytes, capturedAt, context) };
       } else {
         const parsed = parseJsonStrict(decodeUtf8(bytes));
-        // HKO's own monthly file works too. The page builds the same bundle the evidence tool would.
         let bundle = parsed;
         if (isDailyExtract(parsed)) {
           const raw: RawEvidence = {
@@ -228,7 +213,6 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
       if (isCurrent(owner, request)) setImported(next);
     } catch (error) {
       if (isCurrent(owner, request)) {
-        // A day HKO has not published yet is a normal wait. Say so in the reader's language.
         const unpublished = error instanceof WeatherDataError && error.code === "DATA_UNAVAILABLE";
         setImportError({ owner, request, text: unpublished ? t("result.notPublished") : messageOf(error) });
         if (fileInput.current) fileInput.current.value = "";
@@ -238,7 +222,6 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
     }
   };
 
-  /** Read the month's Daily Extract through this page's server. A static host has none, so the proposer imports it. */
   const fetchFromHko = async () => {
     const date = rules ? hkoDateOf(rules) : null;
     if (!date) return;
@@ -344,7 +327,6 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
   let draftProblem = "";
   let draft: NumericProposal | undefined;
   if (selection?.kind === "custom" && readingText.trim() && rules) {
-    // The reading as typed, checked against the market's chain context of the last dashboard read.
     try {
       draft = customPayload(selection, {
         rulesDocument: market.rulesDocument, expected: numericContextForMarket(market), chainTimestamp: Math.max(now, selection.capturedAt),

@@ -237,7 +237,6 @@ export function traceDecides(c: Pick<NumericCondition, "comparison" | "lower" | 
     ? c.upper <= 0 || c.lower >= 5 || (c.lower <= 0 && c.upper >= 5)
     : c.lower <= 0 || c.lower >= 5;
 }
-/** A rule of ConditionLib.validateForMetric (createMarket) that a condition breaks. */
 export type ConditionProblem = "RANGE_ORDER" | "OUTSIDE_RANGE" | "OFF_STEP" | "TRACE_UNDECIDABLE";
 const CONDITION_MESSAGES: Record<ConditionProblem, string> = {
   RANGE_ORDER: "RANGE requires lower <= upper",
@@ -309,7 +308,6 @@ function sameDefinition(actual: NumericMetricDefinition, expected: NumericMetric
     if (actual[key] !== expected[key]) fail(`${name} mismatch: ${key}`);
   }
 }
-/** Check a metric's rules document on its own: schema, scale, definition text and a definition the registry accepts. */
 export function parseNumericMetricRulesDocument(document: string): NumericMetricRules {
   text(document, "metric rules document");
   const inner = exact(
@@ -399,7 +397,6 @@ function context(value: unknown, withMarketHash = false) {
   conditionFitsMetric(normalizedConfig.condition, normalizedMetric);
   return { config: normalizedConfig, metric: normalizedMetric };
 }
-/** Build from proposed config and independently read metric definitions. */
 export function buildNumericMarketRules(input: NumericMarketRulesInput, chainContext: NumericRulesContext): string {
   const i = exact(input, INPUT_KEYS, "market rules input");
   const c = context(chainContext);

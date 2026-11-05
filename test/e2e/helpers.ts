@@ -1,5 +1,3 @@
-// E2E helpers: chain access through the local node's unlocked test accounts (never used on public chains),
-// local-only time travel, market creation through the real contract, and an injected test wallet.
 import { readFileSync } from "node:fs";
 import { type Page, expect } from "@playwright/test";
 import { Contract, JsonRpcProvider, encodeBytes32String, toUtf8Bytes, type InterfaceAbi } from "ethers";
@@ -42,13 +40,11 @@ export async function chain(i = 0) {
   };
 }
 
-/** The chain's current time: a fresh block is mined first, because the last block can be minutes old. */
 export async function chainNow(): Promise<number> {
   await provider.send("evm_mine", []);
   return (await provider.getBlock("latest"))!.timestamp;
 }
 
-/** Local-chain time travel (never available on public networks). */
 export async function travelTo(timestamp: number | bigint): Promise<void> {
   const now = await chainNow();
   if (Number(timestamp) > now) await provider.send("evm_setNextBlockTimestamp", [Number(timestamp)]);
@@ -80,7 +76,6 @@ async function create(config: { proposer: string; sourceId: string; subjectId: s
   return { id, times: { openAt: t.openAt!, closeAt: t.closeAt!, observationEnd: t.observationEnd!, earliestAssertionAt: t.earliestAssertionAt!, refundAt: t.refundAt! } };
 }
 
-/** A custom weather metric for quick local markets: the HKO temperature at the end of a short window. */
 export const QUICK_METRIC = customMetricRulesDocument({
   code: "QUICK_TEMPERATURE", unit: "degC", minValue: -10_000, maxValue: 10_000, valueStep: 10, allowsTrace: false,
   interpretation: "Air temperature at HKO headquarters at the end of the observation window, in degrees Celsius.",
@@ -90,7 +85,6 @@ const QUICK_SOURCE = {
   procedure: "Read the HKO headquarters temperature from the first report at or after the end of the window.",
 };
 
-/** A short custom weather market (local chain): betting opens in 60 s and lasts `minutes`; Yes if the reading is ≥ 26.0 °C. */
 export async function createQuickMarket(minutes = 30): Promise<Created> {
   const { market } = await chain(ADMIN);
   let id = 0;
@@ -116,12 +110,10 @@ export async function createQuickMarket(minutes = 30): Promise<Created> {
   return created;
 }
 
-/** An HKO rainfall market (≥ threshold mm) for the Hong Kong day `days` ahead. Betting opens in 60 s. */
 export async function createRainMarket(days = 3, threshold = "1.0"): Promise<Created> {
   return createOfficialMarket("TOTAL_RAINFALL", days, threshold);
 }
 
-/** An official HKO market (≥ threshold) for the Hong Kong day `days` ahead. Betting opens in 60 s. */
 export async function createOfficialMarket(code: "TOTAL_RAINFALL" | "DAILY_MAX_TEMPERATURE", days: number, threshold: string): Promise<Created> {
   const id = await metricId(code);
   const { market } = await chain(ADMIN);
@@ -140,7 +132,6 @@ export async function createOfficialMarket(code: "TOTAL_RAINFALL" | "DAILY_MAX_T
   return created;
 }
 
-/** A custom market on an HKO Daily Extract field, inclusive range, for the Hong Kong day `days` ahead. */
 export async function createFieldMarket(key: string, days: number, lower: string, upper: string): Promise<Created> {
   const field = HKO_DAILY_EXTRACT_FIELDS.find((entry) => entry.key === key);
   if (!field) throw new Error(`no Daily Extract field ${key}`);
@@ -166,7 +157,6 @@ export async function createFieldMarket(key: string, days: number, lower: string
   return created;
 }
 
-/** The id of a registered metric, or 0 when no metric has this code. */
 export async function registeredMetricId(code: string): Promise<number> {
   const { market } = await chain(ADMIN);
   const count = Number(await market.getFunction("metricCount")());
@@ -181,14 +171,12 @@ export interface CustomMarketSpec {
   comparison: number;
   lower: string;
   upper?: string;
-  /** The observation window, Unix seconds. Betting closes when it starts. */
   start: number;
   end: number;
   source: { sourceName: string; sourceUrl: string; procedure: string };
   title: string;
 }
 
-/** A custom market from the shared builders, registering its metric when new. Betting opens in 60 s. */
 export async function createCustomMarket(spec: CustomMarketSpec): Promise<Created> {
   const { market } = await chain(ADMIN);
   let id = await registeredMetricId(spec.metric.definition.code);
@@ -212,25 +200,18 @@ export async function createCustomMarket(spec: CustomMarketSpec): Promise<Create
   return created;
 }
 
-/** A bet sent directly on-chain by account i (to set up states the UI then reads). */
 export async function directBet(i: number, id: number, side: "YES" | "NO", wei: bigint): Promise<void> {
   const { market } = await chain(i);
   await (await market.getFunction("bet")(id, side === "YES" ? 1 : 2, { value: wei })).wait();
 }
 
-/** A test report for a quick market: the temperature it states, in °C. Local test data, not an observation. */
 export const quickReport = (celsius: string) => `Test report. HKO headquarters temperature: ${celsius} C.`;
 
-/** Mints and returns the local bond token balance needed by the proposer. */
 export async function fundProposer(): Promise<void> {
   const { bond } = await chain(PROPOSER);
   await (await bond.getFunction("mint")(await account(PROPOSER), 1_000_000_000n)).wait();
 }
 
-/**
- * Injects an EIP-1193 test wallet that forwards to the local node with the chosen unlocked account.
- * window.__wallet offers setAccount / setChain / rejectNext for scripted wallet behaviour.
- */
 export async function installWallet(page: Page, accountIndex: number, chainId = "0x7a69"): Promise<void> {
   const accounts = (await provider.send("eth_accounts", [])) as string[];
   await page.addInitScript(
@@ -315,7 +296,6 @@ export async function connect(page: Page): Promise<void> {
   await expect(page.getByTestId("wallet-account")).toBeVisible();
 }
 
-/** Waits for the transaction status inside the page to report `result`. */
 export async function expectTx(page: Page, result: "ok" | "failed"): Promise<void> {
   await expect(page.getByTestId("tx-status").first()).toHaveAttribute("data-result", result, { timeout: 30_000 });
 }
