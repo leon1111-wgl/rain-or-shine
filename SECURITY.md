@@ -43,8 +43,8 @@ A check runs twice a day. It reports new alerts, failed builds and any change to
 - The app reads the chain through public RPC providers. A dishonest provider could show wrong numbers. It cannot move
   your funds. Your wallet signs and sends each transaction.
 - GitHub Pages cannot send security headers, so the web app sets its policy inside the page.
-- Some build and test tools have published advisories with no fix in their current versions: Hardhat 3, ESLint and
-  Mocha. They run only on a developer's computer and in CI. None of them ships in the app.
+- Two build and test tools have published advisories with no fix in their current versions: Hardhat 3 and Mocha. They
+  run only on a developer's computer and in CI. Neither ships in the app.
 
 ## Report a problem
 

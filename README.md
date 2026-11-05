@@ -3,7 +3,8 @@
 Rain or Shine is a prediction market for Hong Kong weather. It runs on the Ethereum Sepolia test network. Each market
 asks one question about a reading, for example "Will HKO headquarters record ≥ 1.0 mm of rain on 3 Nov?". People take
 Yes or No with test ETH. The Hong Kong Observatory publishes the reading. UMA's Optimistic Oracle V3 confirms it.
-Winners share all the stakes. There is no platform fee. The app is in Chinese and English.
+Winners share all the stakes. There is no platform fee. The app is in Chinese and English. It is a COMP7610 group
+project at the University of Hong Kong.
 
 - Project page: https://leon1111-wgl.github.io/rain-or-shine/
 - Live app: https://leon1111-wgl.github.io/rain-or-shine/app/
