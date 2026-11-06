@@ -10,9 +10,9 @@ Rain or Shine runs on the Ethereum Sepolia test network with test ETH.
   [PredictionMarket](https://repo.sourcify.dev/11155111/0x668643AF961C4032909C1c15A741b6d2d6216e92) and
   [UmaMetricOracleAdapter](https://repo.sourcify.dev/11155111/0x6927E0936D5B25B7aCea6582f0b1638C1bC6bedc).
 - The administrator can register metrics and create markets. It cannot change a bet, a result or a payout.
-- Only a market's named proposer can submit its result. The proposer cannot bet in that market.
+- Only a market's named proposer can submit its result. The proposer's address cannot bet in that market.
 - A result counts only when UMA calls back for the assertion the market recorded.
-- Anyone can dispute a result for two hours. A disputed market refunds. It never pays the wrong side.
+- Anyone can dispute a result for two hours. A disputed market refunds on Sepolia.
 - Each result records a fingerprint of the HKO file it came from. Anyone can check the reading against that file.
 
 ## In the app
@@ -39,7 +39,11 @@ A check runs twice a day. It reports new alerts, failed builds and any change to
 ## Limits
 
 - Test ETH has no value. This is a course project.
-- Sepolia has no UMA vote, so a disputed market refunds instead of being judged.
+- Sepolia has no UMA vote, so a disputed market refunds instead of being judged, and both bonds stay locked.
+- The bond token is free to mint. On Sepolia, anyone can force a refund by disputing, at no cost.
+- A reading nobody disputes in time is final, even if it is wrong.
+- A proposer could bet from a second wallet and stay silent when it would lose. That turns the loss into a refund, so
+  the proposer has to be trusted.
 - The app reads the chain through public RPC providers. A dishonest provider could show wrong numbers. It cannot move
   your funds. Your wallet signs and sends each transaction.
 - GitHub Pages cannot send security headers, so the web app sets its policy inside the page.

@@ -166,11 +166,11 @@ footer p { margin: 0 0 6px; }
   </div>
   <div class="stats">
     <div class="stat"><b>12</b><span>weather markets on Sepolia</span></div>
-    <div class="stat"><b>122</b><span>bets on Sepolia</span></div>
-    <div class="stat"><b>0.263 ETH</b><span>staked by 8 test wallets</span></div>
+    <div class="stat"><b>123</b><span>bets on Sepolia</span></div>
+    <div class="stat"><b>0.265 ETH</b><span>staked by 8 test wallets</span></div>
     <div class="stat"><b>0</b><span>platform fee</span></div>
   </div>
-  <p class="asof">Read from Sepolia on 6 November 2026, 20:10 (Hong Kong time).</p>
+  <p class="asof">Read from Sepolia on 6 November 2026, 20:28 (Hong Kong time).</p>
   <figure>
     <img src="fig/loop.webp" width="3200" height="1600" alt="A loop of seven steps: ask, bet, observe, propose, challenge, settle and claim. In the middle, a refund if there is no valid result.">
     <figcaption><b>Figure 1.</b> Every market is a closed loop. It starts with a question and ends with a payout. If no valid result arrives, the loop still closes: everyone gets their stake back.</figcaption>
@@ -184,9 +184,9 @@ footer p { margin: 0 0 6px; }
 
     <ol class="story">
       <li><b>Ask</b>It is a cloudy Monday. Mei thinks Tuesday will be wet. Ken thinks it will stay dry. A market asks: <span class="question">"Will HKO headquarters record 1.0 mm of rain or more on Tuesday?"</span></li>
-      <li><b>Bet</b>Mei stakes 0.02 ETH on Yes. Ken stakes 0.01 ETH on No. The ETH waits in the smart contract. Nobody can take it out early. Not even us.</li>
+      <li><b>Bet</b>Mei stakes 0.02 ETH on Yes. Ken stakes 0.01 ETH on No. The ETH waits in the smart contract. Nobody can take it out early.</li>
       <li><b>Observe</b>Tuesday passes. On Wednesday morning, the Hong Kong Observatory publishes Tuesday's rainfall: 3.2 mm.</li>
-      <li><b>Propose</b>The market's proposer sends "3.2 mm" to UMA's optimistic oracle. They lock a bond behind it, so a false number puts their own money at risk.</li>
+      <li><b>Propose</b>The market's proposer sends "3.2 mm" to UMA's optimistic oracle. They lock a bond behind it.</li>
       <li><b>Challenge</b>For two hours, anyone can dispute the number. Anyone can check it against HKO's file. Nobody disputes.</li>
       <li><b>Settle</b>Anyone can now settle. The contract checks the rule: 3.2 is at least 1.0. Yes wins.</li>
       <li><b>Claim</b>Mei claims 0.03 ETH: her stake plus Ken's. There is no fee. Ken sees the result and the reason.</li>
@@ -198,7 +198,7 @@ footer p { margin: 0 0 6px; }
     <div class="cards">
       <div class="card"><h4>Smart contracts</h4><p>Markets, Yes and No pools, outcomes, refunds and claims. An adapter talks to UMA. Written in Solidity.</p></div>
       <div class="card"><h4>A web app</h4><p>Browse, bet, follow and claim. English and Chinese. MetaMask signs every transaction.</p></div>
-      <div class="card"><h4>Live markets</h4><p>Six weather markets on Sepolia for 3 to 5 November and two one-hour rehearsals. A new pair opens every three days until 1 December. 122 bets from our test wallets so far.</p></div>
+      <div class="card"><h4>Live markets</h4><p>Six weather markets on Sepolia for 3 to 5 November and two one-hour rehearsals. A new pair opens every three days until 1 December. 123 bets from our test wallets so far.</p></div>
       <div class="card"><h4>Custom markets</h4><p>Any HKO daily value, such as humidity or minimum temperature. Or any source the creator names. A local sports demo shows other topics work too.</p></div>
       <div class="card"><h4>An HKO tool</h4><p>It downloads HKO's file and reads the value, so the proposer submits the right number.</p></div>
       <div class="card"><h4>Desktop packages</h4><p>Zip files for macOS and Windows. Unzip, double-click, and the app opens. Nothing to install.</p></div>
@@ -219,7 +219,7 @@ footer p { margin: 0 0 6px; }
       <tr><td><b>Proposer</b></td><td>Submit HKO's reading to UMA with a bond.</td><td>Bet in its own market.</td></tr>
       <tr><td><b>Anyone</b></td><td>Check a reading. Dispute it with a bond during the challenge window. Settle it after.</td><td>Change a result that is already final.</td></tr>
     </table></div>
-    <p>The app hides buttons a wallet cannot use. The contracts check every permission again. A proposer could still bet from another wallet. The real protection is the challenge window: anyone can dispute a wrong reading.</p>
+    <p>The app hides buttons a wallet cannot use. The contracts check every permission again. A proposer could still bet from another wallet and stay silent when it would lose. That turns the loss into a refund, so the proposer has to be trusted.</p>
 
     <h3><span class="num">2.2</span>User stories</h3>
     <div class="table-wrap"><table>
@@ -231,7 +231,7 @@ footer p { margin: 0 0 6px; }
       <tr><td>Market admin</td><td>create a market from a metric card and a preview</td><td>new questions are quick and correct</td><td>Operations</td></tr>
       <tr><td>Market admin</td><td>add a new metric, such as humidity</td><td>markets are not limited to rain</td><td>Operations</td></tr>
       <tr><td>Proposer</td><td>load HKO's file and see the outcome before I submit</td><td>I submit the right reading</td><td>Operations</td></tr>
-      <tr><td>Anyone</td><td>check a reading and settle it after the challenge window</td><td>nobody has to trust us</td><td>Waiting</td></tr>
+      <tr><td>Anyone</td><td>check a reading and settle it after the challenge window</td><td>closing a market does not depend on us</td><td>Waiting</td></tr>
     </table></div>
 
     <h3><span class="num">2.3</span>The rules of a market</h3>
@@ -452,10 +452,10 @@ footer p { margin: 0 0 6px; }
       <tr><td>8</td><td>Rain at HKO headquarters from 22:30 to 23:30 on 31 Oct (one-hour rehearsal)</td><td><span class="tag custom">Custom</span></td><td>2</td><td>40.0 %</td><td>Settled: No</td></tr>
       <tr><td>9</td><td>Rain of 1.0 mm or more on 8 Nov</td><td><span class="tag">Official</span></td><td>4</td><td>25.0 %</td><td>Open until 7 Nov, 23:59</td></tr>
       <tr><td>10</td><td>Maximum temperature of 29.0 °C or more on 8 Nov</td><td><span class="tag">Official</span></td><td>5</td><td>50.0 %</td><td>Open until 7 Nov, 23:59</td></tr>
-      <tr><td>11</td><td>Rain of 1.0 mm or more on 11 Nov</td><td><span class="tag">Official</span></td><td>1</td><td>100.0 %</td><td>Open until 10 Nov, 23:59</td></tr>
+      <tr><td>11</td><td>Rain of 1.0 mm or more on 11 Nov</td><td><span class="tag">Official</span></td><td>2</td><td>100.0 %</td><td>Open until 10 Nov, 23:59</td></tr>
       <tr><td>12</td><td>Maximum temperature of 26.0 °C or more on 11 Nov</td><td><span class="tag">Official</span></td><td>1</td><td>100.0 %</td><td>Open until 10 Nov, 23:59</td></tr>
     </table></div>
-    <p class="asof">Read from Sepolia on 6 November 2026, 20:10 (Hong Kong time). Results come in from 4 November to 3 December.</p>
+    <p class="asof">Read from Sepolia on 6 November 2026, 20:28 (Hong Kong time). Results come in from 4 November to 3 December.</p>
     <h4 class="mini">The whole loop, live</h4>
     <p>On the night of 31 October two one-hour markets ran the last steps of the loop early, on the real UMA oracle. Both read HKO&#x27;s hourly rain at the Observatory. One ended in a refund and one in a payout, each as the rules say. The rehearsal also found a bug before the six main markets need the same steps.</p>
     <ol class="loop-list">
@@ -490,16 +490,16 @@ footer p { margin: 0 0 6px; }
       <tr><td>Web app</td><td>235</td><td>Pages, forms and number formats in both languages</td></tr>
       <tr><td>End to end</td><td>18</td><td>A real browser on a real local chain: create, bet, propose, settle, claim and refund</td></tr>
     </table></div>
-    <p class="asof">All passing on 6 November 2026. Lint, type checks and the production build also pass.</p>
+    <p class="asof">All passing on 6 November 2026.</p>
 
     <h3><span class="num">3.6</span>Security</h3>
-    <p>Nobody can change a bet, a result or a payout. Not even us.</p>
+    <p>Bets, final results and payouts cannot be edited by anyone, including us.</p>
     <div class="cards">
       <div class="card"><h4>On chain</h4><p>The contracts cannot be upgraded, paused or emptied. Only the named proposer can submit a result. Only UMA's answer settles it. A disputed market refunds.</p></div>
       <div class="card"><h4>In the app</h4><p>There is no server and no key. Your wallet signs every transaction. The app checks the contracts before it acts. Outside scripts are blocked.</p></div>
       <div class="card"><h4>In the code and downloads</h4><p>Build steps are pinned. CodeQL and Dependabot watch the code. Nobody can rewrite the main branch. GitHub signs each desktop package.</p></div>
     </div>
-    <p>A check runs twice a day and reports any problem. Details are in <a href="https://github.com/leon1111-wgl/rain-or-shine/blob/main/SECURITY.md">SECURITY.md</a>.</p>
+    <p>A check runs twice a day and reports what it finds. Details are in <a href="https://github.com/leon1111-wgl/rain-or-shine/blob/main/SECURITY.md">SECURITY.md</a>.</p>
   </div>
 </section>
 
@@ -531,8 +531,8 @@ footer p { margin: 0 0 6px; }
     <h3><span class="num">4.3</span>Problems we found, and how we solved them</h3>
     <div class="table-wrap"><table>
       <tr><th>Problem</th><th>Our answer</th></tr>
-      <tr><td>Who can be trusted to report the weather?</td><td>Nobody has to be. HKO publishes the data. Anyone can check the claim on UMA and dispute it. The admin cannot set a result.</td></tr>
-      <tr><td>The reporter could bet, then hide a bad result.</td><td>The proposer cannot bet in its own market. With no result, everyone is refunded.</td></tr>
+      <tr><td>Who reports the weather?</td><td>HKO publishes the data. The named proposer submits it, and has to be trusted to do so. Anyone can check the number and dispute it.</td></tr>
+      <tr><td>The reporter could bet, then hide a bad result.</td><td>The proposer's address cannot bet in its own market. With no result, everyone is refunded. A second wallet can still get around this (Section 5).</td></tr>
       <tr><td>Vague rules lead to disputes.</td><td>Each market fixes its question, source, condition and deadlines at creation. The app shows them as a short spec.</td></tr>
       <tr><td>Data can be late or missing.</td><td>Seven days to propose, then refunds. The waiting page says when HKO usually publishes.</td></tr>
       <tr><td>A wrong number could be submitted.</td><td>Anyone can dispute it for two hours. A rejected number refunds the market at once.</td></tr>
@@ -559,7 +559,8 @@ footer p { margin: 0 0 6px; }
   <div class="wrap">
     <h2><span class="num">5</span>Limits and next steps</h2>
     <ul>
-      <li>Each market has one named proposer. If it stays silent, the market refunds and bettors lose only time. Next: let anyone propose, with a reward.</li>
+      <li>Each market has one named proposer. If it stays silent, the market refunds. With a second wallet, it could use this to avoid a loss. Next: let anyone propose, with a reward.</li>
+      <li>Sepolia has no UMA voters, and the bond token is free. So a dispute there can void a result but not correct it, and anyone can do that at no cost. Next: a network with UMA's vote.</li>
       <li>Bets are held to the end. Next: an order book or AMM for early exits.</li>
       <li>All markets read one station. Next: more stations, districts and typhoon signals.</li>
       <li>The sports cards in the app are a local demo with sample data. They never run on Sepolia.</li>

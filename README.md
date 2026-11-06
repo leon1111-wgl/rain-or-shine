@@ -33,8 +33,8 @@ project at the University of Hong Kong.
 1. The administrator creates a market. Its question, threshold, day, proposer and deadlines are fixed in its rules.
 2. While betting is open, a wallet picks Yes or No. After that it can only add to the same side. Bets cannot be
    withdrawn.
-3. After HKO publishes the day's data, the proposer submits the reading to UMA with a bond. The proposer cannot bet
-   in that market.
+3. After HKO publishes the day's data, the proposer submits the reading to UMA with a bond. The proposer's address
+   cannot bet in that market.
 4. Anyone can dispute during the challenge period. After it, anyone can settle. The contract then decides Yes or No.
 5. Everyone is refunded if only one side has stakes at the close. The same happens if the oracle rejects the result.
    It also happens if no undisputed result arrives by the refund deadline.
