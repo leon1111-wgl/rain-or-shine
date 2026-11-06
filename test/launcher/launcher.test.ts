@@ -55,13 +55,16 @@ beforeAll(async () => {
   await writeFile(join(folder, "www/config.public.json"), JSON.stringify({ rpcOrigins: ["https://ethereum-sepolia-rpc.publicnode.com"] }));
   await writeFile(join(folder, "outside-private.txt"), "must not be served");
   await symlink(join(folder, "outside-private.txt"), join(folder, "www/assets/linked.txt"));
-  const probe = http.createServer();
-  probe.listen(0, "127.0.0.1");
-  await once(probe, "listening");
-  const address = probe.address();
-  if (!address || typeof address === "string") throw new Error("No test port");
-  port = address.port;
-  await new Promise<void>((ok, fail) => probe.close(error => error ? fail(error) : ok()));
+  // The launcher accepts ports up to 65000. The system can hand out higher ones.
+  do {
+    const probe = http.createServer();
+    probe.listen(0, "127.0.0.1");
+    await once(probe, "listening");
+    const address = probe.address();
+    if (!address || typeof address === "string") throw new Error("No test port");
+    port = address.port;
+    await new Promise<void>((ok, fail) => probe.close(error => error ? fail(error) : ok()));
+  } while (port > 65000);
   child = start();
   await ready(child);
 }, 15000);
