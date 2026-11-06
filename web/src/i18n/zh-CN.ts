@@ -163,6 +163,7 @@ export const zhCN = {
   "hko.readAt": "读取 {time}",
   "hko.stale": "天文台报告已超过 3 小时未更新。",
   "hko.error": "暂时读不到天文台数据：{error}。不显示替代数值。",
+  "hko.unreachable": "当前网络连不上天文台。如果开了 VPN 或代理，请让 gov.hk 直连。市场和下注不受影响。",
   "hko.note": "* 自动站临时数据，仅供参考。市场结果以天文台每日摘要为准。",
   "rule.date": "观测日期",
   "rule.dateValue": "{date}（香港时间）",

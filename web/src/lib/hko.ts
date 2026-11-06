@@ -27,6 +27,8 @@ export interface HkoLive {
   yesterday: Part<DailyRain>;
 }
 
+export const HKO_UNREACHABLE = "HKO_UNREACHABLE";
+
 const TIMEOUT_MS = 12_000;
 const published = new Map<string, DailyRain>();
 
@@ -41,7 +43,15 @@ export function viaPageServer(official: string): string {
   return `${HKO_RELAY_PREFIX}${url.pathname}${url.search}`;
 }
 
-const request = (url: string, fetchImpl: typeof fetch) => fetchImpl(url, { cache: "no-store", signal: AbortSignal.timeout(TIMEOUT_MS) });
+const request = async (url: string, fetchImpl: typeof fetch) => {
+  try {
+    return await fetchImpl(url, { cache: "no-store", signal: AbortSignal.timeout(TIMEOUT_MS) });
+  } catch (err) {
+    // fetch rejects with a TypeError when the connection fails. The timeout signal rejects with a TimeoutError.
+    if (err instanceof TypeError || (err as { name?: string } | null)?.name === "TimeoutError") throw new Error(HKO_UNREACHABLE, { cause: err });
+    throw err;
+  }
+};
 
 async function getJson(official: string, fetchImpl: typeof fetch): Promise<unknown> {
   const relayed = await request(viaPageServer(official), fetchImpl);
@@ -54,6 +64,8 @@ async function getJson(official: string, fetchImpl: typeof fetch): Promise<unkno
       // Some static hosts answer an unknown path with the app page instead of a 404.
       if (!openData) throw err;
     }
+  } else if (relayed.status === 502 && (await relayed.text()).startsWith("HKO unreachable")) {
+    throw new Error(HKO_UNREACHABLE);
   } else if (relayed.status !== 404 || !openData) {
     throw new Error(`HTTP ${relayed.status}`);
   }

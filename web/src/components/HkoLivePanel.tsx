@@ -1,7 +1,7 @@
 import { currentWeatherPageUrl, type Reading } from "@shared/weather/live";
 import { useAsync } from "../hooks/useAsync";
 import { activeLocale, t } from "../i18n";
-import { type HkoLive, hkoLangOf, loadHkoLive } from "../lib/hko";
+import { HKO_UNREACHABLE, type HkoLive, hkoLangOf, loadHkoLive } from "../lib/hko";
 import { formatHktClock, formatHktStamp, formatLocalDate } from "../lib/time";
 import { InfoTip, Skeleton } from "./primitives";
 
@@ -14,6 +14,8 @@ interface Shown {
   note: string;
   title?: string;
 }
+
+const hoverText = (error: string) => (error === HKO_UNREACHABLE ? t("hko.unreachable") : error);
 
 function Tile({ label, testId, shown }: { label: string; testId: string; shown: Shown }) {
   return (
@@ -30,7 +32,7 @@ function Tile({ label, testId, shown }: { label: string; testId: string; shown: 
 function Readings({ data }: { data: HkoLive }) {
   const readAt = BigInt(data.readAt);
   const stamp = (at: number) => formatHktStamp(BigInt(at), readAt);
-  const failed = (error: string): Shown => ({ value: "—", note: t("hko.failed"), title: error });
+  const failed = (error: string): Shown => ({ value: "—", note: t("hko.failed"), title: hoverText(error) });
   const notProvided: Shown = { value: "—", note: t("hko.notProvided") };
   const reading = (r: Reading | null): Shown => (r ? { value: `${r.value} ${UNITS[r.unit] ?? r.unit}`, note: stamp(r.at) } : notProvided);
   const { current, hourly, yesterday } = data;
@@ -43,7 +45,7 @@ function Readings({ data }: { data: HkoLive }) {
       ? notProvided
       : { value: hourly.value.mm === null ? t("hko.maintenance") : `${hourly.value.mm} mm`, note: t("hko.until", { time: stamp(hourly.value.until) }) };
   const day: Shown = !yesterday.ok
-    ? { value: "—", note: yesterday.error.startsWith("DATA_UNAVAILABLE") ? t("hko.notPublished") : t("hko.failed"), title: yesterday.error }
+    ? { value: "—", note: yesterday.error.startsWith("DATA_UNAVAILABLE") ? t("hko.notPublished") : t("hko.failed"), title: hoverText(yesterday.error) }
     : {
         value: yesterday.value.rainfall.kind === "TRACE" ? t("hko.trace") : `${yesterday.value.rainfall.text} mm`,
         note: t("hko.wholeDay", { date: formatLocalDate(yesterday.value.date).slice(5) }),
@@ -88,7 +90,7 @@ export function HkoLivePanel() {
       </header>
       {live.error && (
         <p className="hko-error" role="alert" data-testid="hko-error">
-          {t("hko.error", { error: live.error })}{" "}
+          {live.error === HKO_UNREACHABLE ? t("hko.unreachable") : t("hko.error", { error: live.error })}{" "}
           <button type="button" className="text-button" onClick={live.reload}>
             {t("load.retry")}
           </button>

@@ -6,7 +6,7 @@ import { currentWeatherUrl, hourlyRainfallUrl } from "../../src/weather/live";
 import { ryesUrl } from "../../src/weather/profile";
 import { HkoLivePanel } from "../../web/src/components/HkoLivePanel";
 import { setActiveLocale } from "../../web/src/i18n";
-import { clearHkoCache, loadHkoLive, viaPageServer } from "../../web/src/lib/hko";
+import { clearHkoCache, HKO_UNREACHABLE, loadHkoLive, viaPageServer } from "../../web/src/lib/hko";
 
 const DIR = "fixtures/official/hko-open-data";
 const CAPTURED_AT = Date.parse("2026-10-04T08:15:56+08:00");
@@ -78,7 +78,7 @@ describe("live HKO reads (web/src/lib/hko.ts)", () => {
     expect(fetchImpl.mock.calls.map((c) => String(c[0])).filter((url) => url.startsWith("https://"))).toEqual([]);
     clearHkoCache();
     const down = vi.fn(async () => Promise.reject(new TypeError("Failed to fetch")));
-    await expect(loadHkoLive("sc", down, () => CAPTURED_AT)).rejects.toThrow("Failed to fetch");
+    await expect(loadHkoLive("sc", down, () => CAPTURED_AT)).rejects.toThrow(HKO_UNREACHABLE);
   });
 
   it("on a static host with no relay it reads HKO's open-data host directly", async () => {
@@ -137,12 +137,22 @@ describe("live HKO panel", () => {
     expect(screen.getByTestId("hko-times")).not.toHaveTextContent("天文台发布");
   });
 
-  it("when nothing can be read it shows an error with a retry and no readings", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new TypeError("Failed to fetch"))));
+  it.each([
+    ["a failed connection", async () => Promise.reject(new TypeError("Failed to fetch"))],
+    ["a timeout", async () => Promise.reject(new DOMException("signal timed out", "TimeoutError"))],
+    ["a relay that cannot reach HKO", async () => new Response("HKO unreachable: ECONNRESET\n", { status: 502 })],
+  ])("after %s it says what to do, with a retry and no readings", async (_case, answer) => {
+    vi.stubGlobal("fetch", vi.fn(answer));
     render(<HkoLivePanel />);
-    expect(await screen.findByTestId("hko-error")).toHaveTextContent("暂时读不到天文台数据：Failed to fetch。不显示替代数值。");
+    expect(await screen.findByTestId("hko-error")).toHaveTextContent("当前网络连不上天文台。如果开了 VPN 或代理，请让 gov.hk 直连。市场和下注不受影响。");
     expect(screen.getByRole("button", { name: "重试" })).toBeInTheDocument();
     expect(screen.queryByTestId("hko-temperature")).toBeNull();
+  });
+
+  it("when HKO answers with an error it shows that error, not the network advice", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("HKO answered HTTP 503\n", { status: 502 })));
+    render(<HkoLivePanel />);
+    expect(await screen.findByTestId("hko-error")).toHaveTextContent("暂时读不到天文台数据：HTTP 502。不显示替代数值。");
   });
 
   it("shows a warning in force and calls out a report older than three hours", async () => {

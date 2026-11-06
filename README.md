@@ -73,6 +73,9 @@ The app opens at http://localhost:5173 and reads the Sepolia deployment. It read
 it needs no key. To act, use MetaMask on Sepolia (chain ID 11155111). Turn on "Show test networks" if MetaMask hides
 it. Get a little Sepolia ETH from a faucet, such as https://sepolia-faucet.pk910.de.
 
+The live weather panel reads the Hong Kong Observatory from your browser. Some VPNs and proxies block gov.hk. If the
+panel says it cannot reach HKO, let gov.hk connect directly. Markets and bets still work.
+
 Who can do what:
 
 - Anyone can bet, settle a result after its challenge period, and claim winnings or refunds.

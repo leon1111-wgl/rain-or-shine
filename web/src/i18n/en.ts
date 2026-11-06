@@ -154,6 +154,7 @@ export const en: Catalog = {
   "hko.readAt": "read {time}",
   "hko.stale": "The HKO report has not been updated for over 3 hours.",
   "hko.error": "HKO data cannot be read right now: {error}. No substitute values are shown.",
+  "hko.unreachable": "This network cannot reach HKO. If you use a VPN or proxy, let gov.hk connect directly. Markets and bets are not affected.",
   "hko.note": "* Provisional station data, for reference only. Market results use the HKO Daily Extract.",
   "detail.yesPool": "Yes stakes (ETH)",
   "detail.noPool": "No stakes (ETH)",
