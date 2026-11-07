@@ -36,6 +36,14 @@ a { color: var(--blue); text-underline-offset: 3px; }
 
 .hero { padding-top: 56px; padding-bottom: 8px; }
 .hero h1 { display: flex; align-items: center; gap: 16px; margin: 0; font-size: clamp(40px, 6.4vw, 66px); line-height: 1.05; letter-spacing: -0.02em; }
+.team { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; margin: 22px 0 0; max-width: none; }
+.team li { display: inline-flex; align-items: center; gap: 9px; margin: 0; padding: 5px 16px 5px 5px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; font-size: 15.5px; font-weight: 500; line-height: 1.2; white-space: nowrap; }
+.team .av { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; font-size: 12px; font-weight: 700; letter-spacing: 0.03em; }
+.team li:nth-child(1) .av { background: #fdf0d5; color: var(--amber); }
+.team li:nth-child(2) .av { background: #e6eefc; color: var(--blue); }
+.team li:nth-child(3) .av { background: #e3f1e8; color: var(--green); }
+.team li:nth-child(4) .av { background: #ece9f8; color: var(--violet); }
+.team li:nth-child(5) .av { background: #fbefeb; color: var(--red); }
 .lead { font-size: clamp(19px, 2.3vw, 23px); line-height: 1.5; max-width: 760px; margin: 18px 0 8px; }
 .note { color: var(--muted); font-size: 15px; margin: 0; }
 .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 30px; }
@@ -130,6 +138,9 @@ footer p { margin: 0 0 6px; }
   .top .wrap { gap: 12px; padding: 0 16px; }
   .top .app { margin-left: 0; padding: 8px 12px; font-size: 15px; }
   .brand { gap: 8px; }
+  .team { gap: 8px; }
+  .team li { gap: 8px; padding: 4px 13px 4px 4px; font-size: 14.5px; }
+  .team .av { width: 26px; height: 26px; font-size: 11px; }
 }
 @media (max-width: 340px) {
   .top .wrap { gap: 10px; padding: 0 12px; }
@@ -157,6 +168,13 @@ footer p { margin: 0 0 6px; }
 
 <div class="wrap hero">
   <h1><svg viewBox="0 0 32 32" width="64" height="64" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="#ffb547"/><path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="none" stroke="#f7f5ef" stroke-width="3"/><path d="M21 8.5C21 8.5 28.5 16.4 28.5 21.2A7.5 7.5 0 0 1 13.5 21.2C13.5 16.4 21 8.5 21 8.5Z" fill="#4c9bff"/></svg>Rain or Shine</h1>
+  <ul class="team" aria-label="Team members">
+    <li><span class="av" aria-hidden="true">CX</span>Chen Xin</li>
+    <li><span class="av" aria-hidden="true">WG</span>Wang Guoliang</li>
+    <li><span class="av" aria-hidden="true">XH</span>Xu Hanyue</li>
+    <li><span class="av" aria-hidden="true">WY</span>Wu Yiwen</li>
+    <li><span class="av" aria-hidden="true">TY</span>Tian Yuelin</li>
+  </ul>
   <p class="lead">Bet on Hong Kong weather. The Observatory reports what happened. An oracle confirms it on chain. A smart contract pays the winners.</p>
   <p class="note">A COMP7610 group project at the University of Hong Kong. It runs on the Ethereum Sepolia test network with test ETH. No real money is used.</p>
   <div class="buttons">
