@@ -24,7 +24,7 @@ export function readStoredLocale(): Locale {
     const stored = globalThis.localStorage?.getItem(STORAGE_KEY);
     return isLocale(stored) ? stored : DEFAULT_LOCALE;
   } catch {
-    return DEFAULT_LOCALE; // storage blocked (private mode, sandboxed frame): fall back to the default
+    return DEFAULT_LOCALE; // Storage is blocked. Use the default.
   }
 }
 

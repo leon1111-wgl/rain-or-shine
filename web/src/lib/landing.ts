@@ -7,7 +7,7 @@ export function readSkipIntro(storage: Pick<Storage, "getItem"> | undefined = gl
   try {
     return storage?.getItem(KEY) === "1";
   } catch {
-    return false; // storage blocked: show the intro
+    return false; // Storage is blocked. Show the intro.
   }
 }
 
@@ -16,7 +16,7 @@ export function writeSkipIntro(skip: boolean, storage: Pick<Storage, "setItem" |
     if (skip) storage?.setItem(KEY, "1");
     else storage?.removeItem(KEY);
   } catch {
-    return; // storage unavailable: the choice applies for this session only
+    return; // Storage is unavailable. The choice lasts for this session only.
   }
 }
 

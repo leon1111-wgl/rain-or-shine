@@ -68,7 +68,7 @@ function parseNewMetric(input: NewMetricInput, submitted: boolean): { metric: Cu
     try {
       return parseFixed100(text);
     } catch {
-      errors[field] = t("create.thresholdInvalid"); // parseFixed100 accepts only a plain decimal with at most two places
+      errors[field] = t("create.thresholdInvalid"); // parseFixed100 accepts only a plain decimal with up to two places.
       return 0;
     }
   };
@@ -100,7 +100,7 @@ function guessDefinition(input: NewMetricInput) {
     try {
       return parseFixed100(text);
     } catch {
-      return fallback; // an unfinished field: the metric step shows its own error
+      return fallback; // The field is unfinished. The metric step shows its own error.
     }
   };
   return { code: "", unit: input.unit.trim(), minValue: value(input.min, -100_000), maxValue: value(input.max, 100_000), valueStep: Math.max(1, value(input.step, 1)), allowsTrace: false };

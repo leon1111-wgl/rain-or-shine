@@ -4,7 +4,7 @@ export function isFramed(win: Window): boolean {
   try {
     return win.top !== win.self;
   } catch {
-    return true; // reading top threw: some other page holds this one
+    return true; // Reading top threw. Another page holds this one.
   }
 }
 

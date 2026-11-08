@@ -19,7 +19,7 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${E2E_PORT}`,
     channel: process.env.PW_CHANNEL ?? "chrome",
     headless: true,
-    launchOptions: { timeout: 600_000 }, // a loaded machine can take minutes to start Chrome
+    launchOptions: { timeout: 600_000 }, // A busy machine can take minutes to start Chrome.
     viewport: { width: 1280, height: 800 },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

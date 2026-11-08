@@ -7,7 +7,7 @@ export function readStars(storage: Pick<Storage, "getItem" | "setItem"> | undefi
     const parsed: unknown = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed.filter((a): a is string => typeof a === "string" && ENTRY.test(a)).map((a) => a.toLowerCase()) : [];
   } catch {
-    return []; // storage blocked or the entry is not what this page wrote
+    return []; // Storage is blocked, or the entry is not from this page.
   }
 }
 
@@ -15,7 +15,7 @@ export function writeStars(stars: string[], storage: Pick<Storage, "getItem" | "
   try {
     storage?.setItem(KEY, JSON.stringify(stars));
   } catch {
-    return; // storage unavailable: the choice still applies for this session
+    return; // Storage is unavailable. The choice still holds for this session.
   }
 }
 

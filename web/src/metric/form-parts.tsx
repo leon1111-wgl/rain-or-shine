@@ -55,7 +55,7 @@ export function thresholdProblem(metric: ThresholdMetric | undefined, comparison
     low = parseFixed100(lower);
     high = range ? parseFixed100(upper) : 0;
   } catch {
-    return t("create.thresholdInvalid"); // parseFixed100 accepts only a plain decimal with at most two places
+    return t("create.thresholdInvalid"); // parseFixed100 accepts only a plain decimal with up to two places.
   }
   const [problem] = conditionProblems({ comparison: Number(comparison), lower: low, upper: high }, metric);
   const facts = { min: formatFixed100(metric.minValue), max: formatFixed100(metric.maxValue), step: formatFixed100(metric.valueStep), unit: unitOf(metric.unit) };
