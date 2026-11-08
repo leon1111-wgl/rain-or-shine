@@ -4,7 +4,7 @@ import { sha256 } from "ethers";
 import { describe, expect, it } from "vitest";
 import type { RawEvidence } from "../../src/weather/parse.js";
 import { parseDailyExtractObservation } from "../../src/weather/observations.js";
-import { WeatherDataError, formatMm100, parseRainfallToken } from "../../src/weather/strict.js";
+import { WeatherDataError, parseRainfallToken } from "../../src/weather/strict.js";
 import { dailyExtractMonthUrl, dailyExtractYearUrl, hkDayWindow } from "../../src/weather/profile.js";
 
 const DIR = "fixtures/official/hko-daily-extract";
@@ -109,10 +109,6 @@ describe("rainfall tokens: precision, Trace and missing values (DATA-03, DATA-04
       expect(code(() => parseRainfallToken(token, "x")), token).toBe("DATA_INVALID");
     }
     expect(code(() => parseRainfallToken(1, "x"))).toBe("DATA_INVALID");
-  });
-
-  it("formats hundredths without rounding", () => {
-    expect([formatMm100(3790), formatMm100(100), formatMm100(5), formatMm100(0n)]).toEqual(["37.9", "1.0", "0.05", "0.0"]);
   });
 });
 

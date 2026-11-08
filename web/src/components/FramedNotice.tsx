@@ -8,7 +8,7 @@ export function isFramed(win: Window): boolean {
   }
 }
 
-/** Shown instead of the app inside another site's frame, where a page laid over it could steer clicks to the wallet. */
+/** Shown instead of the app inside another site's frame. A page on top could steer clicks to the wallet. */
 export function FramedNotice() {
   return (
     <div className="empty" role="alert" data-testid="framed-notice">

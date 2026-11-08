@@ -1,6 +1,6 @@
-// Display phases derived from on-chain reads. The contract decides (getEffectiveState). This module only names the
-// phase for the views. It never invents a state the chain has not reached: REFUND_ELIGIBLE means "claim() would
-// write the refund", not that a refund transaction happened.
+// Display phases from on-chain reads. The contract decides the state (getEffectiveState).
+// This module only names the phase for the views. It never shows a state the chain has not reached.
+// REFUND_ELIGIBLE means claim() would pay a refund. It does not mean a refund happened.
 
 export type Terminal = "UNRESOLVED" | "YES" | "NO" | "REFUND";
 export type RefundReason = "NONE" | "EMPTY" | "SINGLE_SIDED" | "NO_VALID_SETTLEMENT";
@@ -87,25 +87,5 @@ export function waitingStep(phase: DisplayPhase): number {
       return 3;
     default:
       return 4;
-  }
-}
-
-export function nextActions(phase: DisplayPhase): Array<"bet" | "propose" | "dispute" | "settle" | "claim"> {
-  switch (phase) {
-    case "OPEN":
-      return ["bet"];
-    case "AWAITING_PROPOSAL":
-      return ["propose"];
-    case "PROPOSED":
-      return ["dispute"];
-    case "SETTLEABLE":
-      return ["settle"];
-    case "REFUND_ELIGIBLE":
-    case "REFUND":
-    case "RESOLVED_YES":
-    case "RESOLVED_NO":
-      return ["claim"];
-    default:
-      return [];
   }
 }

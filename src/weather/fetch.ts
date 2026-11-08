@@ -1,7 +1,5 @@
 import type { RawEvidence } from "./parse.js";
-import { WeatherDataError, decodeUtf8, parseJsonStrict } from "./strict.js";
-import { ryesRainfallToken } from "./live.js";
-import { HKO_DAILY_EXTRACT_PROFILE, ryesUrl, toCompactDate } from "./profile.js";
+import { WeatherDataError } from "./strict.js";
 
 export interface FetchPolicy {
   timeoutMs: number;
@@ -51,22 +49,4 @@ export async function fetchRaw(url: string, policy: Partial<FetchPolicy> = {}): 
     }
   }
   throw new WeatherDataError("DATA_UNAVAILABLE", `${url} failed after ${p.retries + 1} attempt(s): ${lastError}`);
-}
-
-export async function fetchDailyExtractIndex(policy: Partial<FetchPolicy> = {}): Promise<{ endYear: number; endMonth: number }> {
-  const raw = await fetchRaw(HKO_DAILY_EXTRACT_PROFILE.indexFile, policy);
-  const doc = parseJsonStrict(decodeUtf8(raw.bytes)) as { hko?: Array<Record<string, unknown>> };
-  const entry = doc.hko?.find((e) => e.code === "dailyExtract");
-  if (!entry || !Number.isInteger(entry.endYear) || !Number.isInteger(entry.endMonth)) {
-    throw new WeatherDataError("DATA_INVALID", "hko.xml has no dailyExtract entry with endYear/endMonth");
-  }
-  return { endYear: entry.endYear as number, endMonth: entry.endMonth as number };
-}
-
-export async function fetchRyesRainfall(date: string, policy: Partial<FetchPolicy> = {}): Promise<{ raw: RawEvidence; value: string }> {
-  const compact = toCompactDate(date);
-  const raw = await fetchRaw(ryesUrl(compact), policy);
-  const doc = parseJsonStrict(decodeUtf8(raw.bytes)) as Record<string, unknown>;
-  if (doc.ReportTimeInfoDate !== compact) throw new WeatherDataError("DATA_UNAVAILABLE", `RYES has no report for ${compact} yet`);
-  return { raw, value: ryesRainfallToken(doc.HKOReadingsRainfall) };
 }

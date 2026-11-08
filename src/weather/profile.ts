@@ -1,22 +1,12 @@
 export type WeatherObservationMode = "LIVE_HKO" | "DEMO_FIXTURE";
 
 export const HKO_DAILY_EXTRACT_PROFILE = {
-  profileId: "HKO_DAILY_EXTRACT_RAINFALL_V1",
   sourceId: "HKO_DAILY_EXTRACT",
   stationId: "HKO",
-  stationName: "Hong Kong Observatory headquarters (Tsim Sha Tsui): the 'Hong Kong Observatory' group of the Daily Extract; not the airport, not a territory-wide average",
-  metric: "TOTAL_RAINFALL_MM",
   column: { index: 8, header: "Total Rainfall (mm)", group: "Hong Kong Observatory" },
-  page: "https://www.hko.gov.hk/en/cis/dailyExtract.htm",
   monthlyFile: "https://www.hko.gov.hk/cis/dailyExtract/dailyExtract_{YYYYMM}.xml",
   yearlyFile: "https://www.hko.gov.hk/cis/dailyExtract/dailyExtract_{YYYY}.xml",
-  indexFile: "https://www.hko.gov.hk/cis/hko.xml",
-  timezone: "Asia/Hong_Kong",
   utcOffsetMinutes: 480,
-  window: "day label D = local calendar day D 00:00 to D+1 00:00 Asia/Hong_Kong (UTC+08:00, no DST); cross-checked day by day against RYES HKOReadingsRainfall",
-  precision: "one decimal place in mm; 'Trace' (less than 0.05 mm per HKO) is kept as its own category",
-  revisionPolicy:
-    "A proposal cites one snapshot of the monthly file (SHA-256 of the exact bytes). The file grows every day, so a later download hashes differently; verification compares the date's row. A pool outcome never changes after it is final.",
 } as const;
 
 const DATE_RE = /^(\d{4})(\d{2})(\d{2})$/;
@@ -69,7 +59,7 @@ export function ryesUrl(compactDate: string, lang: "en" | "sc" = "en"): string {
   return `${HKO_OPEN_DATA_ORIGIN}/weatherAPI/opendata/opendata.php?dataType=RYES&date=${compactDate}&lang=${lang}&station=HKO`;
 }
 
-// V2 readings describe a fact only. Event thresholds are evaluated by the contract.
+// V2 readings only state a fact. The contract applies the thresholds.
 export const OBSERVATION_PARSER_VERSION = "rainpool-weather-parser/2.0.0";
 
 export const HKO_WEATHER_METRICS = {

@@ -52,7 +52,6 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("../../web/src/metric/context", () => ({
   useMetricApp: mocks.useMetricApp,
-  dateTime: (value: number | bigint) => String(value),
   downloadText: mocks.downloadText,
 }));
 vi.mock("../../web/src/metric/client", () => ({

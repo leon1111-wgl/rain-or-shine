@@ -1,4 +1,4 @@
-// English. Every key of the Chinese reference catalog is required (Catalog type); chain data is never translated.
+// English. It needs every key of the Chinese reference catalog. Chain data is never translated.
 
 import type { Catalog } from "./zh-CN";
 

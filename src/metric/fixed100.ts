@@ -1,4 +1,4 @@
-/** Encode decimal text exactly as int32 ×100, independently of the metric step. */
+/** Encodes decimal text exactly as an int32 ×100. The metric step plays no part. */
 export function parseFixed100(input: string): number {
   const token = input.trim();
   const match = /^(-?)(0|[1-9]\d*)(?:\.(\d{1,2}))?$/.exec(token);

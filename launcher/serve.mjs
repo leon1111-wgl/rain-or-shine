@@ -175,7 +175,7 @@ async function respond(req, res, port) {
     if ((await stat(file)).isDirectory()) file = resolve(file, "index.html");
     const actual = await realpath(file);
     if (!actual.startsWith(root + sep)) return send(res, 403, "symlink outside www", undefined, head);
-    // One handle for the check and the read, so the file cannot be swapped between them.
+    // The check and the read use one handle. The file cannot change between them.
     const handle = await open(actual, "r");
     try {
       if (!(await handle.stat()).isFile()) return send(res, 404, "not a file", undefined, head);
@@ -192,7 +192,7 @@ async function respond(req, res, port) {
   }
 }
 
-/** True when this exact release already answers on `port` (a second double-click), so it is reused, not duplicated. */
+/** Checks whether this release already runs on `port`. A second double-click then reuses it. */
 function sameReleaseOn(port) {
   return new Promise((done) => {
     const request = http.get({ host: "127.0.0.1", port, path: "/_health", timeout: 800, headers: { Host: `127.0.0.1:${port}` } }, (response) => {

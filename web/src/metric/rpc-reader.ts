@@ -1,7 +1,7 @@
 import { FetchRequest, JsonRpcProvider, isError, type JsonRpcPayload, type JsonRpcResult } from "ethers";
 
-/** A public Sepolia RPC without a key. It is fast, so the reader asks it first for current state and logs. Some of its
- * servers drop old history: receipts go to the manifest's gateway first, and logs it has dropped move there too. */
+/** A fast public Sepolia RPC without a key. The reader asks it first for current state and logs.
+ * Some of its servers drop old history. Receipts go to the manifest's gateway first. Dropped logs move there too. */
 export const SEPOLIA_FALLBACK_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 export function readUrls(dep: { environment: string; publicRpcUrl: string }): { current: string; history?: string } {
   return dep.environment === "SEPOLIA_UMA" ? { current: SEPOLIA_FALLBACK_RPC, history: dep.publicRpcUrl } : { current: dep.publicRpcUrl };
@@ -9,12 +9,12 @@ export function readUrls(dep: { environment: string; publicRpcUrl: string }): { 
 /** The most blocks that one log query may span: publicnode refuses more than 50,000. The gateway takes more. */
 export const LOG_BLOCK_SPAN = 50_000;
 const REST_MS = 60_000;
-/** When the history RPC is busy and the other one has no history, the history RPC is asked again after these pauses. */
+/** Retry pauses for a busy history RPC. The other RPC lacks the history in this case. */
 const HISTORY_PAUSES_MS = [1500, 3000, 6000, 12000];
-/** The history gateway rejects a request with more than five calls, so it gets at most this many per request. */
+/** The history gateway rejects more than five calls per request. It gets at most this many. */
 const HISTORY_BATCH = 4;
-/** Calls that go to the history RPC first. Logs go to the fast RPC first: it usually still has them, and when it has
- * dropped them it says so, and the call moves on. */
+/** Calls that go to the history RPC first. Logs go to the fast RPC first. It usually still has them.
+ * It reports dropped logs. The call then moves on. */
 const HISTORY_METHODS = new Set(["eth_getTransactionReceipt", "eth_getTransactionByHash"]);
 
 type Payload = JsonRpcPayload | JsonRpcPayload[];
@@ -52,10 +52,10 @@ function missingHistory(payload: Payload, results: JsonRpcResult[]): boolean {
   return results.some((r) => ids.includes(r.id) && (r as { result?: unknown }).result === null);
 }
 
-/** Keep public RPC bursts small, sharing one queue across dashboard and activity reads. One request is in flight at a
- * time, so a dashboard read costs one round trip per batch; sixteen calls per batch keep that short as markets grow.
- * With a second RPC that keeps history, receipts go to it first and everything else to the first RPC. A call one RPC
- * cannot serve (rate limit, server error, timeout, missing history) goes to the other in the same slot. */
+/** One queue for all public RPC reads keeps bursts small. One request is in flight at a time.
+ * A dashboard read costs one round trip per batch. Sixteen calls per batch keep it short with many markets.
+ * A second RPC with history gets the receipts first. Everything else goes to the first RPC.
+ * A call can fail on one RPC from a rate limit, server error, timeout or missing history. It then moves to the other RPC in the same slot. */
 export class PacedReadProvider extends JsonRpcProvider {
   private pending: Promise<void> = Promise.resolve();
   private nextStart = 0;
@@ -64,7 +64,7 @@ export class PacedReadProvider extends JsonRpcProvider {
   private active = 0;
 
   constructor(request: string | FetchRequest, private readonly intervalMs = 1000, history?: string | FetchRequest) {
-    // With somewhere else to go, an RPC is not retried on 429. The other RPC is the retry.
+    // With a second RPC, a 429 is not retried here. The other RPC is the retry.
     const state = connectionOf(request, history === undefined ? 4 : 1);
     super(state, undefined, { batchMaxCount: 16, cacheTimeout: -1 });
     this.connections = [state];

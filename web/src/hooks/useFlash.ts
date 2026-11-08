@@ -1,4 +1,4 @@
-// The previous totals live in state, adjusted while rendering (React's documented pattern), so no ref is read during render.
+// The previous totals live in state. They update during render. React documents this pattern. No ref is read during render.
 
 import { useState } from "react";
 import { flashTone } from "../lib/market";

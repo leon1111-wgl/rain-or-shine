@@ -1,9 +1,8 @@
-// Chain reads with explicit loading/error states.
-// - `key` encodes every input of the request. A new key re-reads, and responses of superseded runs
-//   (previous account, chain, market, input or poll tick) are discarded.
-// - `identity` names what the data belongs to. When it changes the old data is cleared immediately, so
-//   one account's or market's numbers are never shown as another's. Refreshes keep data on screen.
-// - An RPC error never turns into empty or zero data: it is reported next to the last good read.
+// Chain reads with explicit loading and error states.
+// - `key` covers every input of the request. A new key reads again. Responses from older runs are dropped.
+// - `identity` names the owner of the data. A new identity clears the old data at once.
+//   One account's or market's numbers never appear as another's. Refreshes keep data on screen.
+// - An RPC error never becomes empty or zero data. It shows next to the last good read.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -36,7 +35,7 @@ export function useAsync<T>(load: () => Promise<T>, key: string, opts: AsyncOpti
   const [nonce, setNonce] = useState(0);
   const [slot, setSlot] = useState<Slot<T>>({ identity, data: undefined, error: null, settled: false });
   if (slot.identity !== identity) {
-    // Adjusting state while rendering for a new identity (React's documented pattern): drop old data now.
+    // Update state during render for a new identity. React documents this pattern. The old data goes now.
     setSlot({ identity, data: undefined, error: null, settled: false });
   }
   const loadRef = useRef(load);

@@ -132,7 +132,7 @@ export function NewMarket({ template }: { template?: MarketData }) {
   const [source, setSource] = useState(initial?.source ?? { name: "", url: "", procedure: "" });
   const [match, setMatch] = useState<MatchInput>(initial?.match ?? DEMO_MATCHES.BASKETBALL);
   const [mode, setMode] = useState<WindowMode>(initial?.window.mode ?? "day");
-  // Null means "the default". Defaults follow the chain's clock, which a local chain can move ahead of the wall clock.
+  // Null means the default. Defaults follow the chain's clock. A local chain can run ahead of the wall clock.
   const [dateInput, setDate] = useState<string | null>(initial?.window.mode === "day" ? initial.window.date : null);
   const [startInput, setStart] = useState<string | null>(initial?.window.mode === "window" ? toHktInput(initial.window.start) : null);
   const [endInput, setEnd] = useState<string | null>(initial?.window.mode === "window" ? toHktInput(initial.window.end) : null);
@@ -184,7 +184,7 @@ export function NewMarket({ template }: { template?: MarketData }) {
     try {
       saved = globalThis.localStorage?.getItem(metricDocKey(api.dep.contracts.PredictionMarket.address, choice.metric.rulesHash)) ?? null;
     } catch (error) {
-      // Storage blocked: the creator can import the rules file instead.
+      // Storage is blocked. The creator can import the rules file instead.
       if (!(error instanceof Error)) throw error;
     }
     metricRules = findMetricRulesDocument(choice.metric, [
@@ -264,7 +264,7 @@ export function NewMarket({ template }: { template?: MarketData }) {
       try {
         localStorage.setItem(metricDocKey(api.dep.contracts.PredictionMarket.address, hash), document);
       } catch (error) {
-        // Storage blocked or full: the downloaded file still holds the rules, and this form can import it.
+        // Storage is blocked or full. The downloaded file still holds the rules. This form can import it.
         if (!(error instanceof Error)) throw error;
       }
       downloadText(`${d.code}-rules.json`, document);
@@ -357,7 +357,7 @@ export function NewMarket({ template }: { template?: MarketData }) {
         }
       }
     } catch (error) {
-      // The market exists either way. Without the read, the page shows no link, and the market list has it.
+      // The market exists either way. Without the read the page shows no link. The market list still has it.
       if (!(error instanceof Error)) throw error;
     }
   };

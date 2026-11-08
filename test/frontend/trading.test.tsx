@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => ({
   evidence: null as null | { txHash: string; bond: bigint; proposer: string; sourceUrl: string; rawSha256: string; capturedAt: bigint; excerpt: string },
   trades: [] as Array<{ transactionHash: string; logIndex: number; account: string; side: 1 | 2; amount: bigint; timestamp: number }>,
 }));
-vi.mock("../../web/src/metric/context", () => ({ useMetricApp: mocks.useMetricApp, dateTime: (v: number | bigint) => String(v), downloadText: vi.fn() }));
+vi.mock("../../web/src/metric/context", () => ({ useMetricApp: mocks.useMetricApp, downloadText: vi.fn() }));
 vi.mock("../../web/src/hooks/useApp", () => ({ useApp: () => ({ ...mocks.useMetricApp(), now: mocks.now }), useNow: () => mocks.now }));
 vi.mock("../../web/src/hooks/useWallet", () => ({
   useWallet: () => ({ status: "connected", account: ACCOUNT, chainId: 31337, targetChainId: 31337, isCorrectChain: true, epoch: 1, error: null, connect: vi.fn(), switchChain: vi.fn(), getSigner: async () => signer }),

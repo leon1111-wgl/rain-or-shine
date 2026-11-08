@@ -168,7 +168,7 @@ export function templateOf(m: MarketData, now: number, openDelay: number): Templ
   const end = Number(times.observationEnd);
   const wholeDay = (start + HKT) % DAY === 0 && end - start === DAY;
   if (!sports && (s.kind === "HKO" || field || wholeDay)) return { choiceKey, condition, source, match, window: { mode: "day", date: nextOpenDay(now, openDelay) }, timing };
-  // A quarter of an hour of room, so the chain time at creation still finds the window open.
+  // Leave fifteen minutes of room. The window is then still open at creation.
   let shift = Math.ceil((now + openDelay + 15 * 60 - start) / DAY) * DAY;
   if (shift < 0) shift = 0;
   return { choiceKey, condition, source, match, window: { mode: "window", start: start + shift, end: end + shift }, timing };

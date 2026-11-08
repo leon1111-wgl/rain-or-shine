@@ -10,7 +10,7 @@ import {
   readUmaSepoliaConfig, readUmaSepoliaSnapshot,
 } from "./lib/uma-sepolia.js";
 
-// Setting this variable is the explicit broadcast boundary. Preflight needs no key or confirmation.
+// Broadcasting needs this variable. Preflight needs no key and no confirmation.
 if (process.env.DEPLOY_CONFIRM !== "sepolia") throw new Error("Broadcast disabled. Review npm run preflight:metric:sepolia, then explicitly set DEPLOY_CONFIRM=sepolia.");
 const expectedAdminInput = process.env.SEPOLIA_CHECK_ADDRESS?.trim();
 if (!expectedAdminInput) throw new Error("Set SEPOLIA_CHECK_ADDRESS to the public administrator address checked by preflight before deploying");
@@ -53,8 +53,8 @@ try {
   const publicUrl = new URL(publicRpcUrl);
   if (!/^https?:$/.test(publicUrl.protocol) || publicUrl.username || publicUrl.password) throw new Error("SEPOLIA_PUBLIC_RPC_URL must be a public HTTP(S) endpoint without credentials");
 
-  // Encode both constructors before paying for the first transaction. Adapter gas
-  // estimation needs the main contract to exist. The total cap reserves all 3 limits.
+  // Encode both constructors before the first paid transaction. Adapter gas estimation needs the main contract.
+  // The total cap covers all three limits.
   const mainRequest = await marketFactory.getDeployTransaction(adminAddress);
   const adapterRequest = await adapterFactory.getDeployTransaction(snapshot.oracle, mainAddress, snapshot.currency, policy.policyBond);
   for (const request of [mainRequest, adapterRequest]) {
@@ -93,8 +93,8 @@ try {
     journal.status = "SUBMITTING";
     journal.currentAttempt = { name, nonce, gasLimit, estimate };
     await persist();
-    // An RPC timeout can occur after accepting a transaction but before returning
-    // its hash. Never label that case as definitely "no broadcast".
+    // An RPC may accept a transaction and then time out. The hash is then missing.
+    // A timeout does not prove that nothing was sent.
     broadcastAttempted = true;
     const tx = await admin.sendTransaction({
       ...request, nonce, gasLimit,
@@ -121,8 +121,8 @@ try {
     to: mainAddress, data: market.interface.encodeFunctionData("setOracleAdapter", [adapterAddress]),
   }, SEPOLIA_DEPLOY_GAS_LIMITS.binding);
 
-  // A load-balanced RPC can answer "latest" from a node that has not seen the binding yet.
-  // Wait for the head, then read at the binding block.
+  // A load-balanced RPC may answer "latest" from a node without the binding.
+  // Wait for the head. Then read at the binding block.
   for (let tries = 0; await provider.getBlockNumber() < binding.blockNumber; tries++) {
     if (tries >= 30) throw new Error("RPC head did not reach the binding block; see " + journalFile);
     await new Promise((resolve) => setTimeout(resolve, 2000));

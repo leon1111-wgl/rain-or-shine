@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fetchDailyExtractIndex, fetchRaw, fetchRyesRainfall } from "../../src/weather/fetch.js";
+import { fetchRaw } from "../../src/weather/fetch.js";
 
 describe("fetch policy: bounded retries, no fallback source (DATA-05, DATA-08)", () => {
   const response = (status: number, body: string, headers: Record<string, string> = {}) => new Response(body, { status, headers });
@@ -29,18 +29,5 @@ describe("fetch policy: bounded retries, no fallback source (DATA-05, DATA-08)",
       throw new TypeError("fetch failed");
     };
     await expect(fetchRaw("https://x.test/a", { ...noSleep, retries: 2, fetchImpl: down })).rejects.toThrow(/after 3 attempt/);
-  });
-
-  it("normalises RYES spellings for the day-label cross-check only", async () => {
-    const ryes = (value: string, date = "20260902"): typeof fetch => async () => response(200, JSON.stringify({ ReportTimeInfoDate: date, HKOReadingsRainfall: value }));
-    expect((await fetchRyesRainfall("20260902", { ...noSleep, fetchImpl: ryes("trace") })).value).toBe("Trace");
-    expect((await fetchRyesRainfall("20260902", { ...noSleep, fetchImpl: ryes("0") })).value).toBe("0.0");
-    expect((await fetchRyesRainfall("20260902", { ...noSleep, fetchImpl: ryes("3.3") })).value).toBe("3.3");
-    await expect(fetchRyesRainfall("20260903", { ...noSleep, fetchImpl: ryes("3.3") })).rejects.toMatchObject({ code: "DATA_UNAVAILABLE" });
-  });
-
-  it("reads hko.xml's dailyExtract end month for provenance", async () => {
-    const index: typeof fetch = async () => response(200, '{"hko":[{"code":"dailyExtract","startYear":1884,"startMonth":1,"endYear":2026,"endMonth":9}]}');
-    expect(await fetchDailyExtractIndex({ ...noSleep, fetchImpl: index })).toEqual({ endYear: 2026, endMonth: 9 });
   });
 });

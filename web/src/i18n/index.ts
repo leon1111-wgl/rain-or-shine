@@ -32,7 +32,7 @@ export function storeLocale(locale: Locale): void {
   try {
     globalThis.localStorage?.setItem(STORAGE_KEY, locale);
   } catch {
-    // Storage unavailable: the choice still applies for this session.
+    // Storage is unavailable. The choice still holds for this session.
     return;
   }
 }

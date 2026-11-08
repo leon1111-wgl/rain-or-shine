@@ -1,7 +1,7 @@
-// Time display with explicit zones. Markets are defined in Asia/Hong_Kong; UTC is shown alongside.
-// Nothing depends on the viewer's browser timezone.
+// Time display with explicit zones. Markets use Asia/Hong_Kong. UTC is shown alongside.
+// Nothing depends on the viewer's time zone.
 
-import { activeLocale, t } from "../i18n";
+import { t } from "../i18n";
 
 const fmt = (timeZone: string) =>
   new Intl.DateTimeFormat("en-CA", {
@@ -49,11 +49,6 @@ export function formatHktStamp(unix: bigint, reference: bigint): string {
 export function formatLocalDate(yyyymmdd: bigint | number | string): string {
   const s = String(yyyymmdd);
   return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
-}
-
-export function formatMonthShort(yyyymmdd: string): string {
-  const s = String(yyyymmdd);
-  return new Intl.DateTimeFormat(activeLocale(), { month: "short", timeZone: "UTC" }).format(Date.UTC(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, 1));
 }
 
 export function formatCountdown(seconds: bigint): string {

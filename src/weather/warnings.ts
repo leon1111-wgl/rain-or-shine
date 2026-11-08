@@ -90,10 +90,10 @@ function timestamp(value: unknown, field: string): { text: string; ms: number } 
 }
 
 /**
- * Parses the official warnsum snapshot, not a historical warning archive.
- * NO_ACTIVE_WARNING only means this response has no WTCSGNL entry. A stored
- * snapshot must not be reused as proof of current conditions or a warning-free month.
- * Source schema: HKO Open Data API Documentation, Weather Warning Summary.
+ * Parses the official warnsum snapshot. It is not a warning archive.
+ * NO_ACTIVE_WARNING only means this response has no WTCSGNL entry.
+ * A stored snapshot proves nothing about later conditions or a whole month.
+ * Source: HKO Open Data API Documentation, Weather Warning Summary.
  */
 export function parseTropicalCycloneWarning(raw: RawEvidence): TropicalCycloneWarningSnapshot {
   if (!["en", "sc", "tc"].some((lang) => raw.sourceURL === warningSummaryUrl(lang as WarningLanguage))) {

@@ -1,5 +1,5 @@
 import { Fragment, createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { type Locale, type MessageKey, activeLocale, setActiveLocale, storeLocale, t } from "./index";
+import { type Locale, activeLocale, setActiveLocale, storeLocale, t } from "./index";
 
 interface I18nApi {
   locale: Locale;
@@ -29,19 +29,4 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
 export function useI18n(): I18nApi {
   return useContext(I18nContext) ?? { locale: activeLocale(), setLocale: setActiveLocale };
-}
-
-export function tNodes(key: MessageKey, nodes: Record<string, ReactNode>): ReactNode[] {
-  const template = t(key);
-  const out: ReactNode[] = [];
-  let last = 0;
-  for (const match of template.matchAll(/\{(\w+)\}/g)) {
-    const index = match.index;
-    out.push(template.slice(last, index));
-    const name = match[1]!;
-    out.push(<Fragment key={`${name}@${index}`}>{name in nodes ? nodes[name] : match[0]}</Fragment>);
-    last = index + match[0].length;
-  }
-  out.push(template.slice(last));
-  return out;
 }

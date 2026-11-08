@@ -1,9 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   normalizeSportsDemo,
-  parseSportsDemoForMetric,
   type SportsDemoInput,
-  type SportsMetricTarget,
 } from "../../src/metric/sports-demo.js";
 import { parseFixed100 } from "../../src/metric/fixed100.js";
 import { readFileSync } from "node:fs";
@@ -233,56 +231,4 @@ describe("sports demo normalization", () => {
     );
   });
 
-
-  describe("sports demo and selected metric", () => {
-    const scoreMetric: SportsMetricTarget = {
-        code: "SCORE_MARGIN",
-        unit: "points",
-        minValue: -50000,
-        maxValue: 50000,
-        valueStep: 100,
-    };
-
-    it("accepts a matching metric and keeps the unscaled value", () => {
-        const result = parseSportsDemoForMetric(
-        JSON.stringify(basketball),
-        scoreMetric
-        );
-
-        expect(result).toMatchObject({
-        metricCode: "SCORE_MARGIN",
-        unit: "points",
-        valueText: "7",
-        });
-    });
-
-    it.each([
-        ["wrong metric", { code: "GOAL_MARGIN" }, /metric or unit/],
-        ["wrong unit", { unit: "goals" }, /metric or unit/],
-        ["above maximum", { maxValue: 600 }, /outside metric range/],
-        ["below minimum", { minValue: 800 }, /outside metric range/],
-        ["invalid step", { valueStep: 200 }, /metric step/],
-    ] as const)(
-        "rejects %s",
-        (_name, override, error) => {
-        expect(() =>
-            parseSportsDemoForMetric(
-            JSON.stringify(basketball),
-            { ...scoreMetric, ...override }
-            )
-        ).toThrow(error);
-        }
-    );
-
-    it("rejects duplicate JSON fields before normalization", () => {
-        const text = JSON.stringify(basketball).replace(
-        '"scoreA":108',
-        '"scoreA":108,"scoreA":109'
-        );
-
-        expect(() =>
-        parseSportsDemoForMetric(text, scoreMetric)
-        ).toThrow(/duplicate JSON key/);
-    });
-  });
 });

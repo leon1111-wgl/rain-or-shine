@@ -1,5 +1,5 @@
-// The HKO evidence tool for proposers. It fetches the month's Daily Extract, checks the day's readings and saves
-// the files the result panel imports. It signs nothing and sends nothing. Messages are in English and Chinese.
+// The HKO evidence tool for proposers. It fetches the month's Daily Extract and checks the day's readings.
+// It saves the files for the result panel. It signs and sends nothing. Messages are in English and Chinese.
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";

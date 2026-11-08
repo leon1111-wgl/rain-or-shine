@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sourced by START-MAC.command and GET-WEATHER.command. Works with the Bash 3.2 that macOS ships.
+# START-MAC.command and GET-WEATHER.command source this file. It works with the Bash 3.2 in macOS.
 app_pause() {
   if [ -t 0 ]; then
     printf '\nPress Return to close. 按回车关闭。'

@@ -25,7 +25,7 @@ function useController(dep: MetricDeployment) {
     const existing = pendingRefresh.current;
     if (existing?.identity === identity && existing.reader === reader) {
       if (!force) return existing.promise;
-      // A post-action refresh must observe a snapshot taken after the action.
+      // A refresh after an action must read a later snapshot.
       await existing.promise;
       if (identity !== identityRef.current) return;
       const newer = pendingRefresh.current;
@@ -48,7 +48,7 @@ function useController(dep: MetricDeployment) {
           verification = check;
         }
         await verification.promise;
-        // Wallet restoration can supersede a read while its account-independent check runs.
+        // Wallet restoration can replace a read during its account-free check.
         if (request !== sequence.current || identity !== identityRef.current) return;
         setLoadingStage("events");
         const next = await readDashboard(dep, reader, wallet.account ?? undefined);
@@ -69,7 +69,7 @@ function useController(dep: MetricDeployment) {
     const poll = async () => {
       if (stopped) return;
       await refresh();
-      // Wait for each complete read before scheduling another remote RPC round.
+      // Finish each read before the next RPC round.
       if (!stopped) timer = setTimeout(() => void poll(), dep.environment === "SEPOLIA_UMA" ? 30000 : 5000);
     };
     queueMicrotask(() => void poll());
@@ -132,7 +132,6 @@ export function useMetricApp() {
   if (!value) throw new Error("Missing MetricProvider");
   return value;
 }
-export const dateTime = (unix: number | bigint) => new Date(Number(unix) * 1000).toLocaleString("en-GB", { timeZone: "Asia/Hong_Kong", hour12: false });
 export function downloadText(name: string, text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: "application/json;charset=utf-8" }));
   const a = document.createElement("a"); a.href = url; a.download = name; a.click();

@@ -27,9 +27,9 @@ const hkoRelay: Plugin = {
 };
 
 const generatedDeployments = fileURLToPath(new URL("./src/generated/metric-deployments.json", import.meta.url));
-/** The built page's Content-Security-Policy (src/lib/page-policy.ts). It lets the page read the RPCs of the chain the
- * app is built for, picked as selectMetricDeployment picks it, and HKO's open-data host. The dev server needs inline
- * scripts, so only the build gets the policy. */
+/** The built page's Content-Security-Policy (src/lib/page-policy.ts).
+ * It allows the RPCs of the target chain and HKO's open-data host. selectMetricDeployment picks the chain.
+ * The dev server needs inline scripts. Only the build gets the policy. */
 function pagePolicyPlugin(): Plugin {
   let target: string | undefined;
   return {
@@ -49,7 +49,7 @@ function pagePolicyPlugin(): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
-  // Relative asset paths. Routing uses the hash, so the build also works under a subpath such as GitHub Pages.
+  // Relative asset paths. Routing uses the hash. The build also works under a subpath such as GitHub Pages.
   base: "./",
   cacheDir: fileURLToPath(new URL("../cache/vite-web", import.meta.url)),
   plugins: [react(), hkoRelay, pagePolicyPlugin()],
@@ -69,7 +69,7 @@ export default defineConfig(({ mode }) => ({
     include: ["test/frontend/**/*.test.{ts,tsx}"],
     environment: "jsdom",
     setupFiles: ["test/frontend/setup.ts"],
-    // The file-upload and wallet flows run many awaited steps; on a loaded machine one can pass 5 s.
+    // The file-upload and wallet flows await many steps. On a busy machine one test can pass 5 s.
     testTimeout: 20_000,
     coverage: {
       provider: "v8",

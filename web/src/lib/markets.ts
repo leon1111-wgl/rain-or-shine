@@ -1,7 +1,7 @@
-// The interface's view of a market, read from the numeric client's Dashboard (web/src/metric/client.ts). Every
-// field comes from chain reads at the dashboard's block. The question text is built from the registered metric,
-// the market's condition and the rules document, after that document has been checked against the chain. The
-// free-text title in the rules is never shown as the question.
+// The interface's view of a market. It comes from the Dashboard of the numeric client (web/src/metric/client.ts).
+// Every field comes from chain reads at the dashboard's block.
+// The question text comes from the metric, the condition and the rules document. The rules are checked against the chain first.
+// The free-text title in the rules never becomes the question.
 
 import { ZeroAddress, ZeroHash } from "ethers";
 import { formatFixed100 } from "@shared/metric/fixed100";
@@ -83,7 +83,7 @@ function subjectOf(view: MarketView): MarketSubject {
     }
     return { kind: "HKO", targetDate: assertHkoNumericProfile(rules).targetDate };
   } catch (error) {
-    // Rules that do not match the chain or a supported profile are shown as unrecognized, never guessed.
+    // Unmatched rules show as unrecognized. They must match the chain and a supported profile. Nothing is guessed.
     if (error instanceof Error) return { kind: "UNRECOGNIZED" };
     throw error;
   }

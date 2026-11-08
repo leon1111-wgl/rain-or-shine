@@ -64,8 +64,8 @@ function validateReading(reading: NumericProposal["reading"], rules: NumericMark
     || metric.unit !== "mm" || metric.minValue > 0 || metric.maxValue < 5) {
     fail("TRACE is not supported by this metric");
   }
-  // Zero is only TRACE's encoded placeholder. The rules check, like createMarket,
-  // already refused any condition on this metric that TRACE cannot decide.
+  // Zero is only TRACE's placeholder. The rules check rejects conditions that TRACE cannot decide.
+  // createMarket rejects them too.
 }
 
 function proposal(
@@ -129,7 +129,7 @@ export function buildSportsNumericProposal(
   if (!(rawBytes instanceof Uint8Array) || rawBytes.length === 0 || rawBytes.length > MAX_EXCERPT_BYTES) {
     fail("sports result must contain 1..2048 original bytes");
   }
-  // Parse without BOM, but preserve the original bytes for hashing and evidence.
+  // Parse the text without the BOM. Keep the original bytes for the hash and the evidence.
   const input = parseJsonStrict(decodeUtf8(rawBytes));
   if (typeof input !== "object" || input === null || Array.isArray(input)) fail("sports result must be an object");
   const data = input as Record<string, unknown>;
@@ -153,13 +153,13 @@ export function buildSportsNumericProposal(
   );
 }
 
-/** A custom market's evidence: the exact imported bytes, the reading the proposer reads from them, and an excerpt. */
+/** A custom market's evidence: the exact imported bytes, the proposer's reading and an excerpt. */
 export interface CustomProposalInput {
   rawBytes: Uint8Array;
   reading: string;
-  /** When the document was acquired, in Unix seconds: not before the observation ends, not after the chain time. */
+  /** The download time in Unix seconds. It lies between the observation's end and the chain time. */
   capturedAt: number;
-  /** The part that shows the reading, copied exactly from the document. The whole document when it fits 2048 bytes. */
+  /** The part with the reading, copied exactly. A document up to 2048 bytes is copied whole. */
   excerpt?: Uint8Array;
 }
 
@@ -171,7 +171,7 @@ function containsBytes(whole: Uint8Array, part: Uint8Array): boolean {
   return false;
 }
 
-/** Hash the imported bytes and attach the proposer's reading. The oracle, not this check, judges the reading. */
+/** Hashes the imported bytes and adds the proposer's reading. The oracle judges the reading. */
 export function buildCustomNumericProposal(input: CustomProposalInput, context: NumericProposalContext): NumericProposal {
   const rules = prepare(context);
   const profile = assertCustomNumericProfile(rules);

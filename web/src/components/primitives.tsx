@@ -7,7 +7,7 @@ import { useToasts } from "../hooks/useToasts";
 import { type MessageKey, type Params, t, tSegments } from "../i18n";
 import { formatEth, formatEthFixed, stakeShare } from "../lib/amount";
 import { explorerTx, shortHex } from "../lib/chain";
-import { countdownTone, formatCountdown, formatMonthShort } from "../lib/time";
+import { countdownTone, formatCountdown } from "../lib/time";
 import { Icon, type IconName } from "./Icon";
 
 const PHASE_TONE: Record<DisplayPhase, "" | "green" | "amber" | "terra"> = {
@@ -107,15 +107,6 @@ export function Skeleton({ rows = 3, testId }: { rows?: number; testId?: string 
 export function Countdown({ target }: { target: bigint }) {
   const now = useNow();
   return <span className={`countdown ${countdownTone(target - now)}`}>{formatCountdown(target - now)}</span>;
-}
-
-export function DateChip({ date }: { date: string }) {
-  return (
-    <span className="date-chip" aria-hidden="true">
-      <strong>{Number(date.slice(6, 8))}</strong>
-      <small>{formatMonthShort(date)}</small>
-    </span>
-  );
 }
 
 export function Callout({ children, tone, testId }: { children: ReactNode; tone?: "amber"; testId?: string }) {

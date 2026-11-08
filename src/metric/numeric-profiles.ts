@@ -76,7 +76,7 @@ export function isOfficialMetric(metric: { code: string; rulesHash: string }): b
   return matchesPreset(OFFICIAL_METRIC_CODES, metric);
 }
 
-/** The sports demo metrics. Their results are synthetic files, so their markets stay on the local chain. */
+/** The sports demo metrics. Their results are synthetic files. Their markets stay on the local chain. */
 export const SPORTS_METRIC_CODES = ["SCORE_MARGIN", "GOAL_MARGIN"] as const;
 export function isSportsMetric(metric: { code: string; rulesHash: string }): boolean {
   return matchesPreset(SPORTS_METRIC_CODES, metric);

@@ -70,7 +70,7 @@ function uint256(value: unknown, label: string): void {
   }
 }
 
-/** Validate export input and browser input without trusting JSON's declared type. */
+/** Validates export input and browser input. It does not trust the declared JSON types. */
 export function validateMetricManifest(input: unknown): MetricDeploymentManifest {
   const dep = object(input, "Metric manifest");
   const local = dep.environment === "LOCAL_MOCK";

@@ -1,5 +1,5 @@
-// Native ETH amounts as integer wei (bigint). Inputs are parsed from strict decimal strings, never through
-// JS numbers, so 0.1 + 0.2 style rounding cannot reach a transaction value.
+// ETH amounts as integer wei (bigint). Inputs are parsed from strict decimal strings, never from JS numbers.
+// Float rounding such as 0.1 + 0.2 never reaches a transaction.
 
 import { t } from "../i18n";
 

@@ -214,10 +214,6 @@ label.field-label { display: block; margin-bottom: 6px; font-size: 12px; color: 
 .close-time small { font-size: 12px; color: var(--muted); }
 .countdown { font-size: 15px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
 
-.date-chip { flex: none; display: grid; place-items: center; align-content: center; width: 40px; height: 40px; border-radius: 10px; background: var(--panel-3); color: var(--text); line-height: 1.1; }
-.date-chip strong { font-size: 16px; font-weight: 700; }
-.date-chip small { font-size: 10.5px; color: var(--muted); text-transform: uppercase; }
-
 .tx { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--blue); border-radius: 6px; background: var(--blue-soft); font-size: 12px; overflow-wrap: anywhere; }
 .tx-ok { border-left-color: var(--yes); background: var(--yes-soft); }
 .tx-bad { border-left-color: var(--no); background: var(--no-soft); }
@@ -636,8 +632,8 @@ th .info-tip { margin-left: 4px; }
 .ops-list .secondary { min-height: 30px; padding: 5px 12px; font-size: 12px; }
 
 /* ---------------------------------------------------------------- motion
-   Only for what the viewer did (hover, a pressed play, a new step) or a value that just changed (a flashing row, a
-   moving share bar, a toast). The intro at #/ has its own motion further down. All of it stops for reduced motion. */
+   Motion only follows the viewer's actions or a changed value. Examples are hover, a pressed play button, a flashing row,
+   a moving share bar and a toast. The intro at #/ has its own motion below. All motion stops for reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
   button, a, .market-row, .nav-item { transition: background-color 0.15s, color 0.15s, border-color 0.15s; }
   .skeleton span { animation: shimmer 1.4s linear infinite; }
@@ -995,9 +991,9 @@ a.metric-cell:hover { color: var(--text); text-decoration: underline; text-under
 .data-table tr.selected td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .data-table tr.selected td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
 
-/* In Chinese the Chinese face comes first, so full-width punctuation (？，：) keeps its width. */
-/* Full-width question and exclamation marks drawn centred, as in Hong Kong and Japanese type. The mainland style sets
-   them flush left in their box, so after a unit ("°C？") they read like a Latin "?". Elsewhere PingFang SC is used. */
+/* In Chinese the Chinese face comes first. Full-width punctuation (？，：) then keeps its width. */
+/* Full-width question and exclamation marks are drawn centred, as in Hong Kong and Japanese type.
+   The mainland style sets them flush left. After a unit ("°C？") they then look like a Latin "?". Elsewhere PingFang SC is used. */
 @font-face { font-family: "Centred Punctuation"; src: local("HiraginoSans-W3"); font-weight: 100 449; unicode-range: U+FF01, U+FF1F; }
 @font-face { font-family: "Centred Punctuation"; src: local("HiraginoSans-W5"); font-weight: 450 649; unicode-range: U+FF01, U+FF1F; }
 @font-face { font-family: "Centred Punctuation"; src: local("HiraginoSans-W6"); font-weight: 650 900; unicode-range: U+FF01, U+FF1F; }

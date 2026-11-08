@@ -1,5 +1,5 @@
-// The web app imports the ABIs and deployment manifests that export-metric-deployment.ts writes, and a fresh clone
-// has none yet. Generate them once when they are missing. Existing ones are left as they are.
+// The web app imports the ABIs and deployment manifests from export-metric-deployment.ts.
+// A fresh clone has none. This script creates missing ones and keeps existing ones.
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 

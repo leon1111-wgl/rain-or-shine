@@ -50,7 +50,7 @@ async function mapBounded<T, R>(items: readonly T[], read: (item: T) => Promise<
   return result;
 }
 
-/** Reconstruct one market's bets and verify them against a single chain snapshot. */
+/** Rebuilds one market's bets and checks them against one chain snapshot. */
 export async function readMarketActivity(dep: MetricDeployment, reader: Provider, marketId: number): Promise<MarketActivityData> {
   if (!Number.isSafeInteger(marketId) || marketId <= 0) throw new Error("Invalid market ID for activity.");
   const [network, block] = await Promise.all([reader.getNetwork(), reader.getBlock("latest")]);

@@ -17,7 +17,7 @@ export function ClockProvider({ children }: { children: ReactNode }) {
   const tick = useTicker(1000);
   const [anchor, setAnchor] = useState<{ chain: number; at: number } | null>(null);
   if (chain !== undefined && anchor?.chain !== chain) {
-    // Adjusting state while rendering for a new read (React's documented pattern).
+    // Update state during render for a new read. React documents this pattern.
     setAnchor({ chain, at: tick });
   }
   const wall = Math.floor(tick / 1000);

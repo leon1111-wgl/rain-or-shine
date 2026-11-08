@@ -83,7 +83,7 @@ export function OracleActions({ market, part = "all" }: { market: MarketView; pa
     times.earliestAssertionAt, times.proposalCutoff, times.refundAt, times.assertionLiveness,
     market.assertion.assertionId,
   ].join(":");
-  // Remount all local state on identity changes, including an A -> B -> A switch.
+  // A new identity resets all local state. This includes a switch from A to B and back to A.
   return <OracleActionsBody key={identity} market={market} identity={identity} part={part} />;
 }
 
@@ -185,7 +185,7 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
       const context = { rulesDocument: market.rulesDocument, ...fresh };
       let next: ImportedResult;
       if (kind === "custom") {
-        // The acquisition time is fixed once, when the bytes are imported. The check and the submission keep it.
+        // The download time is fixed at import. The check and the submission keep it.
         next = { kind, owner, request, name: file.name, rawBytes: bytes, capturedAt: fresh.chainTimestamp };
       } else if (kind === "hko-field") {
         const raw: RawEvidence = {
@@ -274,8 +274,8 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
     if (!api.wallet.account || account.toLowerCase() !== api.wallet.account.toLowerCase()) {
       throw new Error(t("result.signerChanged"));
     }
-    // Both checks are intentional: include proposer, state and proposal-window validation. checkProposal also
-    // returns the outcome the contract would apply to this reading.
+    // Both checks are needed. They cover the proposer, the state and the proposal window.
+    // checkProposal also returns the outcome for this reading.
     const outcome = await marketOf(api.dep, signer).checkProposal(market.id, account, payload.reading, payload.evidence.rawSha256);
     guard();
     const adapter = adapterOf(api.dep, signer);
@@ -310,7 +310,7 @@ function OracleActionsBody({ market, identity, part }: { market: MarketView; ide
       owner: checked.selected.owner, request: checked.selected.request,
       payload: checked.payload, outcome: checked.outcome,
     });
-    // A static call first, so a bond or allowance problem shows before the wallet asks to sign.
+    // Run a static call first. A bond or allowance problem then shows before the wallet prompt.
     await checked.adapter.propose.staticCall(market.id, checked.payload.reading, checked.payload.evidence, bond);
     checked.guard();
     return checked.adapter.propose(market.id, checked.payload.reading, checked.payload.evidence, bond);

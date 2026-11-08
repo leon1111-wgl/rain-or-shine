@@ -10,7 +10,7 @@ import zipfile
 
 
 def runtime(archive, prefix, output, arch):
-    # Extract two named regular files only; never unpack arbitrary archive paths.
+    # Extract only the two named files. Never unpack other archive paths.
     output.mkdir(parents=True, exist_ok=True)
     with tarfile.open(archive, "r:gz") as source:
         for source_name, destination, maximum in [("bin/node", "node", 250_000_000), ("LICENSE", "LICENSE", 5_000_000)]:
@@ -40,7 +40,7 @@ def runtime(archive, prefix, output, arch):
 
 
 def windows_runtime(archive, prefix, output):
-    # Extract two named regular files only; never unpack arbitrary archive paths.
+    # Extract only the two named files. Never unpack other archive paths.
     output.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive) as source:
         for source_name, destination, maximum in [("node.exe", "node.exe", 250_000_000), ("LICENSE", "LICENSE", 5_000_000)]:
@@ -62,7 +62,7 @@ def windows_runtime(archive, prefix, output):
 
 
 def archive_zip(root, destination):
-    # Explicit Unix permission bits are needed when creating macOS ZIPs on Windows.
+    # macOS zips built on Windows need explicit Unix permission bits.
     if root.is_symlink() or not root.is_dir():
         raise ValueError("Package root must be a real directory")
     with zipfile.ZipFile(destination, "x", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:

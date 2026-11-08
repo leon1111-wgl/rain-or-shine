@@ -1,6 +1,5 @@
 import { encodeBytes32String } from "ethers";
 import { parseFixed100 } from "./fixed100.js";
-import { parseJsonStrict } from "../weather/strict.js";
 
 export type SportsDemoInput = {
     schema: "RAINPOOL_SPORTS_DEMO_V1";
@@ -176,46 +175,4 @@ export function normalizeSportsDemo(
     sourceId: "DEMO_FOOTBALL",
     scoreScope: "REGULATION_90",
   };
-}
-
-
-export interface SportsMetricTarget {
-  code: string;
-  unit: string;
-
-  minValue: number;
-  maxValue: number;
-  valueStep: number;
-}
-
-
-export function parseSportsDemoForMetric(
-  text: string,
-  metric: SportsMetricTarget
-): NormalizedSportsDemo {
-  const normalized = normalizeSportsDemo(parseJsonStrict(text));
-
-  if (
-    normalized.metricCode !== metric.code ||
-    normalized.unit !== metric.unit
-  ) {
-    throw new Error(
-      "imported sports metric or unit does not match selected metric"
-    );
-  }
-
-  const scaledValue = parseFixed100(normalized.valueText);
-
-  if (
-    scaledValue < metric.minValue ||
-    scaledValue > metric.maxValue
-  ) {
-    throw new Error("imported sports reading is outside metric range");
-  }
-
-  if (scaledValue % metric.valueStep !== 0) {
-    throw new Error("imported sports reading does not match metric step");
-  }
-
-  return normalized;
 }

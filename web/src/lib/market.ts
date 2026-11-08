@@ -113,8 +113,6 @@ export function marketTotals(markets: MarketData[], items: ActivityItem[], now: 
   };
 }
 
-export const poolMultiple = (total: bigint, side: bigint) => (side === 0n ? null : Number((total * 100n) / side) / 100);
-
 export function viewCounts(markets: MarketData[], now: bigint): Record<"all" | View, number> {
   const counts = { all: markets.length, detail: 0, waiting: 0, settlement: 0 };
   for (const p of markets) counts[viewOf(phaseOf(p, now))]++;

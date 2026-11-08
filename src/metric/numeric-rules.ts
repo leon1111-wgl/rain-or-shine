@@ -244,7 +244,7 @@ const CONDITION_MESSAGES: Record<ConditionProblem, string> = {
   OFF_STEP: "condition threshold does not match the metric step",
   TRACE_UNDECIDABLE: "TRACE cannot decide this condition",
 };
-/** Every rule the condition breaks for this metric. Comparison 5 is the inclusive range [lower, upper]. */
+/** Lists every rule the condition breaks for this metric. Comparison 5 is the inclusive range [lower, upper]. */
 export function conditionProblems(
   c: Pick<NumericCondition, "comparison" | "lower" | "upper">,
   m: Pick<NumericMetricDefinition, "minValue" | "maxValue" | "valueStep" | "allowsTrace">,
@@ -257,7 +257,7 @@ export function conditionProblems(
   if (m.allowsTrace && !traceDecides(c)) problems.push("TRACE_UNDECIDABLE");
   return problems;
 }
-/** Mirror ConditionLib.validateForMetric, which createMarket applies. */
+/** Mirrors ConditionLib.validateForMetric. createMarket applies the same check. */
 function conditionFitsMetric(c: NumericCondition, m: NumericMetricDefinition): void {
   const [problem] = conditionProblems(c, m);
   if (problem) fail(CONDITION_MESSAGES[problem]);
@@ -266,7 +266,7 @@ function times(value: unknown, fromChain: boolean): NumericPoolTimes {
   const t = fields(value, TIME_KEYS, "times", fromChain);
   const result = {} as NumericPoolTimes;
   for (const key of TIME_KEYS) result[key] = integer(t[key], key, 1, Number.MAX_SAFE_INTEGER, fromChain);
-  // Historical rule validity must not depend on the current wall clock, so no current time is passed.
+  // Old rules must stay valid at any time. So no current time is passed.
   const [problem] = marketTimeProblems(result);
   if (problem) fail(marketTimeMessage(problem));
   return result;
@@ -328,7 +328,7 @@ function metric(value: unknown): NumericMarketMetric {
   const normalized = definition(m, false);
   const rulesDocument = text(m.rulesDocument, "metric rules document");
   const rulesHash = hash(m.rulesHash, "metric rulesHash");
-  // Commit exact source text, without trimming or JSON reserialization.
+  // Commit the exact source text. Do not trim it or reserialize the JSON.
   if (keccak256(toUtf8Bytes(rulesDocument)) !== rulesHash) fail("metric rules hash mismatch");
   sameDefinition(parseNumericMetricRulesDocument(rulesDocument), normalized, "metric rules definition");
   return { ...normalized, scale: 100, rulesHash, rulesDocument };
@@ -364,7 +364,7 @@ function policies(value: unknown): NumericResolutionPolicies {
   };
 }
 
-/** Check internal consistency, not onchain commitment or source authenticity. */
+/** Checks internal consistency only. It does not check the chain or the source. */
 export function parseNumericMarketRules(document: string): NumericMarketRules {
   text(document, "market rules document");
   const d = exact(parseJsonStrict(document), MARKET_KEYS, "market rules");
@@ -414,7 +414,7 @@ export function buildNumericMarketRules(input: NumericMarketRulesInput, chainCon
   parseNumericMarketRules(document);
   return document;
 }
-/** Bind exact text and configuration to independently read chain expectations. */
+/** Checks the exact text and configuration against values read from the chain. */
 export function assertNumericMarketRulesMatchChain(
   document: string, expected: NumericRulesChainExpectation,
 ): NumericMarketRules {

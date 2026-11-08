@@ -168,7 +168,7 @@ export function checkObservationBundle(value: unknown, expected?: ObservationEvi
     } catch {
       add("sourceUrl", false, "cannot derive an official monthly URL for targetDate");
     }
-    // Compare with the independently derived window, never the claimed bundle window.
+    // Compare with the window derived here. Never use the window in the bundle.
     const windowEndMs = parsed ? Number(parsed.windowEnd) * 1000 : Number.NaN;
     add("completeDay", capturedMs !== null && Number.isFinite(windowEndMs) && capturedMs >= windowEndMs,
       "LIVE capture must be at or after the end of the requested Hong Kong calendar day");

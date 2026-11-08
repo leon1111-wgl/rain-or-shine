@@ -8,8 +8,8 @@ export { CANONICAL_SEPOLIA_OOV3, SEPOLIA_BOND_CURRENCY } from "../../src/metric/
 
 export const SEPOLIA_CHAIN_ID = 11155111;
 export const SEPOLIA_PUBLIC_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-// Sepolia activated Glamsterdam on 2026-10-06. EIP-8037 reprices code
-// deposit/state creation. Pre-upgrade 5M/4M caps cannot deploy these artifacts.
+// Sepolia activated Glamsterdam on 2026-10-06. EIP-8037 reprices code deposit and state creation.
+// The old 5M and 4M caps cannot deploy these contracts.
 export const SEPOLIA_DEPLOY_GAS_LIMITS = Object.freeze({
   PredictionMarket: 30_000_000n, UmaMetricOracleAdapter: 25_000_000n, binding: 300_000n,
 });
@@ -88,7 +88,7 @@ function call<T>(contract: Contract, name: string, blockTag: number, ...args: un
   return contract.getFunction(name)(...args, { blockTag }) as Promise<T>;
 }
 
-/** All mutable UMA reads are pinned to one block. This function never sends or signs a transaction. */
+/** Reads UMA state at one block. It never signs or sends a transaction. */
 export async function readUmaSepoliaSnapshot(provider: Provider, config: UmaSepoliaConfig): Promise<UmaSepoliaSnapshot> {
   validateUmaSepoliaConfig(config);
   const [network, block] = await Promise.all([provider.getNetwork(), provider.getBlock("latest")]);
@@ -134,7 +134,7 @@ export async function readUmaSepoliaSnapshot(provider: Provider, config: UmaSepo
   };
 }
 
-/** Refuse stale permissive caches. The current Finder whitelist must independently agree. */
+/** Rejects a stale cached whitelist entry. The live Finder whitelist must also allow the identifier. */
 export function assertUmaSepoliaReady(snapshot: UmaSepoliaSnapshot, config: UmaSepoliaConfig): void {
   validateUmaSepoliaConfig(config);
   if (snapshot.chainId !== SEPOLIA_CHAIN_ID || getAddress(snapshot.oracle) !== CANONICAL_SEPOLIA_OOV3
@@ -143,7 +143,7 @@ export function assertUmaSepoliaReady(snapshot: UmaSepoliaSnapshot, config: UmaS
     || snapshot.currencyCodeHash.toLowerCase() !== config.expected.bondRuntimeCodeKeccak256.toLowerCase()) fail("runtime code changed");
   if (snapshot.identifier !== encodeBytes32String(config.expected.identifier)) fail("defaultIdentifier differs from the reviewed identifier");
   if (!snapshot.identifierSupported) fail("defaultIdentifier is not currently whitelisted; do not deploy");
-  // OOv3 automatically populates a false identifier cache when the live whitelist is true.
+  // A false cache entry is no problem. OOv3 refreshes it from the live whitelist.
   if (!snapshot.dependencyCodePresent || snapshot.cachedOracle === ZeroAddress
     || getAddress(snapshot.cachedOracle) !== getAddress(snapshot.finderOracle)) fail("Finder dependencies or OOv3 cachedOracle are stale");
   if (!snapshot.currencySupported || !snapshot.currencyCached) fail("bond currency must be whitelisted and cached before deployment");

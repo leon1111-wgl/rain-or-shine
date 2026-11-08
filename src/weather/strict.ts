@@ -45,14 +45,6 @@ export function parseRainfallToken(token: unknown, field: string): RainfallValue
   return { kind: "NUMERIC", mm100, text };
 }
 
-export function formatMm100(mm100: number | bigint): string {
-  const v = BigInt(mm100);
-  if (v < 0n) throw new RangeError("rainfall cannot be negative");
-  const whole = v / 100n;
-  const cents = v % 100n;
-  return cents % 10n === 0n ? `${whole}.${cents / 10n}` : `${whole}.${cents.toString().padStart(2, "0")}`;
-}
-
 export function decodeUtf8(bytes: Uint8Array): string {
   let text: string;
   try {
@@ -144,7 +136,7 @@ export interface PercentValue {
   text: string;
 }
 
-/** HKO publishes relative humidity and cloud as a whole percent ("87"). The value is that percent multiplied by 100. */
+/** HKO publishes humidity and cloud as a whole percent ("87"). The value is that percent × 100. */
 export function parseWholePercentToken(token: unknown, field: string): PercentValue {
   const text = publishedText(token, field);
   if (!/^(0|[1-9]\d{0,2})$/.test(text) || Number(text) > 100) {

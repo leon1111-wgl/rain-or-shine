@@ -96,7 +96,7 @@ await run(process.execPath, [npmCli, "run", "build:weather:portable"]);
 const exported = JSON.parse(await readFile(resolve(root, "web/src/generated/metric-deployments.json"), "utf8")) as { deployments: Record<string, unknown> };
 if (Object.keys(exported.deployments).join(",") !== "11155111") throw new Error("The package must contain only the Sepolia deployment");
 
-// The web app's source maps and the weather tool's region comments name the third-party code they bundle.
+// Source maps and region comments name the bundled third-party code.
 const dist = resolve(root, "web/dist");
 const weatherTools = resolve(root, "cache/portable-weather");
 const bundled = new Set<string>();

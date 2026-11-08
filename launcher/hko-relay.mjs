@@ -1,6 +1,6 @@
 export const HKO_RELAY_PREFIX = "/hko-open-data";
 const OPEN_DATA = "https://data.weather.gov.hk";
-// The Daily Extract file sends no CORS header, so a browser can only read it through this relay.
+// The Daily Extract file sends no CORS header. A browser reads it through this relay.
 const HKO_SITE = "https://www.hko.gov.hk";
 const LANG = /^(en|sc|tc)$/;
 const JSON_TYPE = "application/json; charset=utf-8";

@@ -16,7 +16,7 @@ export type { WeatherMetric } from "./profile.js";
 
 export const MAX_DEMO_OBSERVATION_BYTES = 512;
 
-/** V2 uses signed fixed-point integers; Trace deliberately has no exact value. */
+/** V2 uses signed fixed-point integers. Trace has no exact value. */
 export interface WeatherObservation {
   schemaVersion: 2;
   mode: WeatherObservationMode;
@@ -82,7 +82,7 @@ function observation(raw: RawEvidence, compact: string, metric: WeatherMetric, t
   };
 }
 
-/** Read one HKO fact. No YES/NO decision or administrator-defined threshold is involved. */
+/** Reads one HKO fact. It makes no YES/NO decision and uses no admin threshold. */
 export function parseDailyExtractObservation(raw: RawEvidence, requestedDate: string, metric: WeatherMetric): WeatherObservation {
   const profile = weatherMetricProfile(metric);
   const { compactDate, row, rows } = readDailyExtractDay(raw, requestedDate);

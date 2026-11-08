@@ -1,6 +1,6 @@
-// The eight market times as PredictionMarket.createMarket checks them, with one problem code per broken rule, and the
-// window presets the creation forms and the operator script offer. Times are Unix seconds; Hong Kong time is UTC+08:00
-// without daylight saving. This module mirrors the contract. It is not the contract and does not replace its checks.
+// The eight market times, checked as PredictionMarket.createMarket checks them. Each broken rule has one problem code.
+// The module also has the window presets for the creation forms and the operator script.
+// Times are Unix seconds. Hong Kong time is UTC+08:00 without daylight saving. The contract still runs its own checks.
 
 import { hkDayWindow } from "../weather/profile.js";
 
@@ -54,8 +54,8 @@ export function marketTimeMessage(problem: MarketTimeProblem): string {
 }
 
 /**
- * Every rule the times break. `now` is the chain time for a market about to be created. Leave it out to check the
- * times of an existing market, whose validity must not depend on the current clock.
+ * Lists every rule the times break. `now` is the chain time for a new market.
+ * Leave it out for an existing market. Its times must not depend on the current clock.
  */
 export function marketTimeProblems(t: MarketTimes, now?: number): MarketTimeProblem[] {
   if (MARKET_TIME_KEYS.some((key) => !Number.isSafeInteger(t[key]) || t[key] <= 0)) return ["NOT_WHOLE_SECONDS"];
@@ -68,7 +68,7 @@ export function marketTimeProblems(t: MarketTimes, now?: number): MarketTimeProb
   if (t.proposalCutoff <= t.earliestAssertionAt) problems.push("EMPTY_PROPOSAL_WINDOW");
   if (t.refundAt <= t.proposalCutoff) problems.push("REFUNDS_BEFORE_CUTOFF");
   if (t.assertionLiveness < MIN_ASSERTION_LIVENESS) problems.push("LIVENESS_TOO_SHORT");
-  // BigInt: the sum of three safe integers need not be one.
+  // BigInt: a sum of three safe integers can leave the safe range.
   else if (BigInt(t.refundAt) < BigInt(t.proposalCutoff) + BigInt(t.assertionLiveness) + BigInt(MIN_SETTLE_WINDOW)) {
     problems.push("SETTLE_WINDOW_TOO_SHORT");
   }
@@ -81,7 +81,7 @@ export interface SettlementPlan {
   refundBuffer: number;
 }
 
-/** The times for an observation window, with betting closing when the observation starts unless told otherwise. */
+/** The times for an observation window. By default, betting closes as the observation starts. */
 export function windowMarketTimes(input: {
   openAt: number;
   observationStart: number;
@@ -103,7 +103,7 @@ export function windowMarketTimes(input: {
   };
 }
 
-/** One complete Hong Kong calendar day (YYYYMMDD). Betting closes a minute before the day starts. */
+/** One complete Hong Kong calendar day (YYYYMMDD). Betting closes one minute before the day. */
 export function hkDayMarketTimes(input: { openAt: number; targetDate: string; plan: SettlementPlan }): MarketTimes {
   const window = hkDayWindow(input.targetDate);
   const start = Number(window.start);

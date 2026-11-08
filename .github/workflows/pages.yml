@@ -1,7 +1,7 @@
 # Publishes the project page and the Sepolia app to GitHub Pages on every push to main.
 # The page is at the site root. The app is at /app/.
 # Turn it on once in Settings > Pages > Source: GitHub Actions.
-# Every action is pinned to a full commit, and only the deploy job may write to Pages.
+# Every action is pinned to a full commit. Only the deploy job may write to Pages.
 name: Pages
 
 on:

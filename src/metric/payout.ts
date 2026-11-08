@@ -1,6 +1,6 @@
-// What a winning position is paid, exactly as PredictionMarket._entitlement computes it: the position's stake times
-// all stakes, divided by the winning side's stakes, rounded down (OpenZeppelin Math.mulDiv), with no fee. A refund
-// returns the stake and is not computed here.
+// The payout of a winning position. It matches PredictionMarket._entitlement.
+// Payout = stake × all stakes ÷ winning stakes, rounded down with OpenZeppelin Math.mulDiv. There is no fee.
+// A refund returns the stake. This file does not compute refunds.
 
 export type PayoutSide = "YES" | "NO";
 
@@ -12,7 +12,7 @@ export interface PayoutInput {
   add: bigint;
 }
 
-/** Wei paid to the position if its side wins once `add` has joined it; 0n while that side has no stake at all. */
+/** The position's payout in wei for a win, with `add` included. A side without stake pays 0n. */
 export function payoutIfWins({ yesTotal, noTotal, side, stake, add }: PayoutInput): bigint {
   if (yesTotal < 0n || noTotal < 0n || stake < 0n || add < 0n) throw new RangeError("payout inputs must not be negative");
   const sideBefore = side === "YES" ? yesTotal : noTotal;

@@ -1,7 +1,7 @@
-// Custom markets: any registered numeric metric except the two official ones, any comparison, any observation window
-// the contract accepts and any source document. The creator commits the source's name and URL and the reading
-// procedure in the market rules. The policies are fixed. A custom market on an HKO Daily Extract field (a column of the
-// same daily row the official metrics read) also commits the day and the column, so its reading can be automated.
+// Custom markets use any registered metric except the two official ones.
+// Any comparison and any valid observation window are allowed. The policies are fixed.
+// The rules name the source, its URL and the reading procedure.
+// A market on an HKO Daily Extract column also names the day and the column. Its reading can then be automated.
 
 import { encodeBytes32String, keccak256, toUtf8Bytes } from "ethers";
 import { dailyExtractMonthUrl, hkDayWindow, parseCompactDate } from "../weather/profile.js";
@@ -12,7 +12,7 @@ import {
   type NumericRulesContext,
 } from "./numeric-rules.js";
 
-/** The result schema that marks custom rules. The creator's procedure says how to read the source. */
+/** This result schema marks custom rules. The creator's procedure says how to read the source. */
 export const CUSTOM_RESULT_SCHEMA = "RAINPOOL_CUSTOM_SOURCE";
 export const CUSTOM_POLICIES: NumericResolutionPolicies = Object.freeze({
   finality: "Use the value the committed source publishes for the committed observation window, read by the committed procedure after the window ends.",
@@ -20,13 +20,13 @@ export const CUSTOM_POLICIES: NumericResolutionPolicies = Object.freeze({
   revision: "A proposal commits the exact imported source bytes. Later corrections or downloads do not rewrite those bytes or a finalized outcome.",
 });
 export const MAX_SOURCE_NAME_BYTES = 128;
-/** A market's rules embed its metric's rules document and must stay within 4096 bytes. */
+/** A market's rules embed its metric's rules document. The total must fit in 4096 bytes. */
 export const MAX_CUSTOM_METRIC_DOCUMENT_BYTES = 1536;
 
 export interface CustomMetricInput {
   code: string;
   unit: string;
-  /** Fixed-point ×100 integers, as the registry stores them. */
+  /** Fixed-point integers ×100. The registry stores them this way. */
   minValue: number;
   maxValue: number;
   valueStep: number;
@@ -53,7 +53,7 @@ function plainText(value: unknown, name: string, maxBytes: number): string {
   return value;
 }
 
-/** The registry's rules document for a custom metric, in the same field order as the built-in presets. */
+/** The registry's rules document for a custom metric. The field order matches the built-in presets. */
 export function customMetricRulesDocument(input: CustomMetricInput): CustomMetric {
   const rulesDocument = JSON.stringify({
     schema: NUMERIC_METRIC_RULES_SCHEMA, code: input.code, unit: input.unit, scale: 100,
@@ -100,7 +100,7 @@ export function findMetricRulesDocument(metric: RegisteredMetric, candidates: It
   return undefined;
 }
 
-/** An on-chain identifier (bytes32 text) from a free-text label: A–Z, 0–9 and underscores, at most 31 characters. */
+/** Turns a free-text label into an on-chain identifier. It keeps A–Z, 0–9 and underscores, up to 31 characters. */
 export function identifierFromText(text: string, fallback: string): string {
   const id = text.normalize("NFKD").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 31).replace(/_+$/, "");
   return id || fallback;
@@ -108,7 +108,7 @@ export function identifierFromText(text: string, fallback: string): string {
 
 export interface HkoDailyExtractField {
   key: "mean-pressure" | "mean-temperature" | "min-temperature" | "mean-dew-point" | "mean-humidity" | "mean-cloud";
-  /** Index in the row of nine strings; 0 is the day. */
+  /** Index in the row of nine strings. Index 0 is the day. */
   column: 1 | 3 | 4 | 5 | 6 | 7;
   header: string;
   /** "decimal": one decimal place, sign allowed. "percent": a whole percent from 0 to 100. */
@@ -130,8 +130,8 @@ function hkoField(
 }
 
 /**
- * Fields of the same Daily Extract row as the official metrics. Each is a custom metric with a fixed definition.
- * The first three are in use on Sepolia, so their documents must not change. The monthly file has no sunshine or wind.
+ * Fields from the same Daily Extract row as the official metrics. Each is a custom metric with a fixed definition.
+ * Sepolia markets use the first three. Their documents must not change. The monthly file has no sunshine or wind.
  */
 export const HKO_DAILY_EXTRACT_FIELDS: readonly HkoDailyExtractField[] = Object.freeze([
   hkoField("min-temperature", 4, "Absolute Daily Min (deg. C)", "decimal", "DAILY_MIN_TEMPERATURE", "degC", -10000, 10000, 10,

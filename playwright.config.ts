@@ -1,5 +1,5 @@
-// Browser E2E against a real local chain (fresh Hardhat node + the local deploy script + Vite dev server).
-// The injected test wallet forwards to the node; MetaMask itself is checked by hand.
+// Browser tests run against a fresh local chain: a Hardhat node, the local deploy script and the Vite dev server.
+// A test wallet forwards calls to the node. MetaMask is checked by hand.
 import { defineConfig } from "@playwright/test";
 
 export const E2E_PORT = 5182;

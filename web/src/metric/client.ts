@@ -6,9 +6,7 @@ import {
 import generatedAbi from "../generated/metric-abi.json";
 import generatedDeployments from "../generated/metric-deployments.json";
 import { LOG_BLOCK_SPAN, PacedReadProvider, readUrls } from "./rpc-reader";
-import {
-  assertNumericMarketRulesMatchChain, type NumericRulesChainExpectation,
-} from "@shared/metric/numeric-rules";
+import { type NumericRulesChainExpectation } from "@shared/metric/numeric-rules";
 import {
   deployedContractNames, validateMetricManifest, type MetricDeploymentManifest,
 } from "@shared/metric/deployment";
@@ -74,7 +72,7 @@ export interface Dashboard {
 
 const sameAddress = (a: string, b: string) => getAddress(a) === getAddress(b);
 
-/** Reject legacy ABI exports even when their old manifests agree. */
+/** Rejects legacy ABI exports, even with matching old manifests. */
 export function assertNumericMarketAbi(abi: InterfaceAbi): void {
   const message = "The exported market interface is outdated. Deploy and export the numeric contracts for this network (local: npm run deploy:metric:local; Sepolia: npm run deploy:metric:sepolia).";
   try {
@@ -119,8 +117,8 @@ export function selectMetricDeployment(
 }
 
 export function createReader(dep: MetricDeployment): JsonRpcProvider {
-  // Never pin the network without checking it: a local RPC can be restarted or switched.
-  // Current state from the fast public RPC, history from the manifest's gateway, which keeps it.
+  // Check the network before pinning it. A local RPC can restart or switch.
+  // Current state comes from the fast public RPC. History comes from the manifest's gateway.
   const { current, history } = readUrls(dep);
   if (history) return new PacedReadProvider(current, 250, history);
   return new JsonRpcProvider(current, undefined, { batchMaxCount: 20, cacheTimeout: -1 });
@@ -149,7 +147,7 @@ export function localTokenOf(dep: MetricDeployment, runner: ContractRunner): Tes
   return new Contract(dep.contracts.TestBondToken.address, ABI.TestBondToken, runner) as unknown as TestBondToken;
 }
 
-/** Bind displayed rules to independently read chain state. */
+/** Checks the displayed rules against chain state. */
 export function numericContextForMarket(market: MarketView): NumericRulesChainExpectation {
   return {
     config: market.config,
@@ -167,7 +165,7 @@ export function numericContextForMarket(market: MarketView): NumericRulesChainEx
   };
 }
 
-/** Read submission context at one block and reject a changed block. */
+/** Reads the submission context at one block. A changed block is rejected. */
 export async function readNumericContext(dep: MetricDeployment, reader: Provider, marketId: number) {
   if (!Number.isSafeInteger(marketId) || marketId <= 0) throw new Error("Invalid market ID");
   const [network, block] = await Promise.all([reader.getNetwork(), reader.getBlock("latest")]);
@@ -186,16 +184,9 @@ export async function readNumericContext(dep: MetricDeployment, reader: Provider
   return { expected, chainTimestamp: block.timestamp };
 }
 
-export function marketSourceLabel(market: MarketView): string {
-  try {
-    const rules = assertNumericMarketRulesMatchChain(market.rulesDocument, numericContextForMarket(market));
-    return rules.synthetic ? "Synthetic demo" : rules.config.sourceId === "HKO_DAILY_EXTRACT" ? "Hong Kong Observatory" : "Live data";
-  } catch { return "Unrecognized rules"; }
-}
-
-/** Call at startup and immediately before writes. A successful old check is not permanent. Reads may skip the
- * deployment receipts, which public RPCs can drop: the code and bindings checks still run. The check before a write,
- * on the wallet's RPC, keeps the receipts. */
+/** Call it at startup and right before each write. An old pass does not last.
+ * Reads may skip the deployment receipts. Public RPCs can drop them. The code and binding checks still run.
+ * The check before a write uses the wallet's RPC. It keeps the receipts. */
 export async function verifyMetricDeployment(dep: MetricDeployment, reader: Provider, options: { receipts?: boolean } = {}): Promise<void> {
   const receipts = options.receipts ?? true;
   assertNumericMarketAbi(ABI.PredictionMarket);
@@ -244,7 +235,7 @@ export async function verifyMetricDeployment(dep: MetricDeployment, reader: Prov
     const mock = mockOracleOf(dep, reader);
     if (!sameAddress(await mock.admin(at), dep.admin)) throw new Error("The local mock administrator does not match.");
   } else {
-    // External UMA/token contracts are not deployments made by this project.
+    // UMA and the bond token are external. This project did not deploy them.
     const [oracleCode, bondCode] = await Promise.all([
       reader.getCode(dep.oracle.optimisticOracleV3, block.number),
       reader.getCode(dep.oracle.bondCurrency, block.number),
@@ -256,7 +247,7 @@ export async function verifyMetricDeployment(dep: MetricDeployment, reader: Prov
   }
 }
 
-/** Dynamic admission policy applies to new oracle submissions, never market claims/refunds. */
+/** The live admission policy applies to new oracle submissions only. It never blocks claims or refunds. */
 export async function assertOracleSubmissionSupported(dep: MetricDeployment, runner: ContractRunner): Promise<void> {
   const at = { blockTag: "latest" };
   if (dep.environment === "LOCAL_MOCK") {

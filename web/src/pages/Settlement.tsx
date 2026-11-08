@@ -23,7 +23,7 @@ function outcomeText(market: MarketData, phase: DisplayPhase) {
   const isRefund = phase === "REFUND" || phase === "REFUND_ELIGIBLE";
   const a = market.assertion;
   const reading = a ? (a.kind === "TRACE" ? t("result.trace") : `${formatReading(a.value, market.metric)} ${unitOf(market.metric.unit)}`) : null;
-  // A rejected assertion refunds at once under the timeout's reason code. The assertion record tells them apart.
+  // A rejected assertion refunds at once. It uses the timeout's reason code. The assertion record tells the two apart.
   const refundKey = market.refundReason === "NO_VALID_SETTLEMENT" && a?.rejected ? "REJECTED" : market.refundReason;
   const title = !final ? t("settle.notFinal") : isRefund ? t(`settle.refund.${refundKey}` as MessageKey) : t(phase === "RESOLVED_YES" ? "settle.yesWon" : "settle.noWon");
   const basis = isRefund ? t(`reason.${refundKey}` as MessageKey) : reading ? t(market.subject.kind === "CUSTOM" ? "settle.basisCustom" : market.subject.kind === "SYNTHETIC" ? "settle.basisDemo" : "settle.basis", { reading, outcome: phase === "RESOLVED_YES" ? "Yes" : "No" }) : "—";

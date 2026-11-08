@@ -1,8 +1,8 @@
 import { configVariable, defineConfig } from "hardhat/config";
 import base from "./hardhat.config.js";
 
-// This configuration never loads a private key or connects a transaction signer
-// to Sepolia. Remote RPC requests only read state; transactions run in local EDR.
+// This configuration loads no private key and no signer.
+// It only reads state from Sepolia. Transactions run in local EDR.
 const requestedBlock = process.env.SEPOLIA_FORK_BLOCK;
 const blockNumber = requestedBlock === undefined ? undefined : Number(requestedBlock);
 if (requestedBlock !== undefined

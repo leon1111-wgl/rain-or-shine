@@ -1,4 +1,4 @@
-// The page's own server relays them byte for byte (launcher/hko-relay.mjs). Some system proxies break a direct connection to HKO.
+// HKO reads. The desktop server relays them byte for byte (launcher/hko-relay.mjs). Some system proxies break a direct link to HKO.
 // A static host has no relay. There the page reads data.weather.gov.hk directly. That host allows cross-origin reads.
 
 import {
@@ -47,7 +47,7 @@ const request = async (url: string, fetchImpl: typeof fetch) => {
   try {
     return await fetchImpl(url, { cache: "no-store", signal: AbortSignal.timeout(TIMEOUT_MS) });
   } catch (err) {
-    // fetch rejects with a TypeError when the connection fails. The timeout signal rejects with a TimeoutError.
+    // A failed connection rejects with a TypeError. The timeout rejects with a TimeoutError.
     if (err instanceof TypeError || (err as { name?: string } | null)?.name === "TimeoutError") throw new Error(HKO_UNREACHABLE, { cause: err });
     throw err;
   }
